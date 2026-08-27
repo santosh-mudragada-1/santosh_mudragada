@@ -1,0 +1,75 @@
+@use 'mixins' as *;
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-preloader);
+  overflow: hidden;
+  // The document is scroll-locked via html.is-loading while this is up; keeping
+  // it non-interactive means a skip-click still reaches window listeners.
+  pointer-events: none;
+}
+
+.rootReduced {
+  display: grid;
+  place-items: center;
+  background: var(--carbon);
+  color: var(--paper);
+}
+
+.panel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--carbon);
+  color: var(--paper);
+  will-change: opacity;
+}
+
+// Clips the outgoing / incoming word so the swap reads as one vertical motion.
+.mask {
+  display: grid;
+  overflow: hidden;
+  padding-block: 0.12em; // headroom for ascenders/descenders across scripts
+}
+
+.word {
+  --size-scale: 1;
+
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: center;
+
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.38em;
+
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: calc(clamp(2.6rem, 1.6rem + 4.6vw, 5.25rem) * var(--size-scale));
+  line-height: 1;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  color: var(--paper);
+  will-change: transform, opacity;
+}
+
+.dot {
+  align-self: center;
+  width: 0.26em;
+  height: 0.26em;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+  transform: translateY(-0.06em);
+}
+
+.curtain {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: calc(100dvh + 280px);
+  will-change: transform;
+}

@@ -1,0 +1,40 @@
+// -----------------------------------------------------------------------------
+// Sass variables — compile-time only. No CSS output lives here, so this file is
+// safe to `@use` from every module. Runtime theming is done with CSS custom
+// properties (see styles/globals.scss :root).
+// -----------------------------------------------------------------------------
+
+// Breakpoints (min-width, mobile-first)
+$bp: (
+  'xs': 480px,
+  'sm': 640px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1280px,
+  '2xl': 1536px,
+  '3xl': 1800px,
+);
+
+// Layout
+$container-max: 1680px;
+$content-max: 1200px;
+
+// Signature easing curves — mirrored in JS (lib/motion/config.ts) and GSAP.
+$ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+$ease-quart-in-out: cubic-bezier(0.76, 0, 0.24, 1); // primary transition curve
+$ease-quint-out: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-circ-out: cubic-bezier(0, 0.55, 0.45, 1);
+$ease-back-out: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+// z-index scale
+$z: (
+  'base': 0,
+  'raised': 10,
+  'sticky': 20,
+  'header': 50,
+  'progress': 60,
+  'cursor': 80,
+  'menu': 90,
+  'transition': 100,
+  'preloader': 9999,
+);

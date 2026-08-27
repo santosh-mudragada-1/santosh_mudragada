@@ -1,0 +1,186 @@
+@use 'reset';
+@use 'typography';
+@use 'mixins' as *;
+
+// ===========================================================================
+// Design tokens (runtime) — the orange identity lives here.
+// ===========================================================================
+:root {
+  // --- Raw palette -------------------------------------------------------
+  --paper: #f4f0e9; // warm off-white — primary surface
+  --paper-2: #ede7dc; // slightly deeper panel
+  --carbon: #0c0b0a; // near-black — dark sections / preloader
+  --carbon-2: #17150f;
+  --ink: #14110d; // primary text on paper
+
+  --orange-600: #d43a0b;
+  --orange-500: #ff4d1a; // signature
+  --orange-400: #ff6a3d;
+  --orange-300: #ff8a63;
+  --orange-tint: #ffe6d9; // washes / highlights
+
+  --smoke-700: #4a453d;
+  --smoke-500: #7c7568; // muted text
+  --smoke-300: #b7afa1;
+
+  // --- Semantic (light, default) --------------------------------------
+  --bg: var(--paper);
+  --bg-elev: var(--paper-2);
+  --fg: var(--ink);
+  --fg-muted: var(--smoke-500);
+  --line: rgba(20, 17, 13, 0.14);
+  --line-strong: rgba(20, 17, 13, 0.28);
+
+  --accent: var(--orange-500);
+  --accent-strong: var(--orange-600);
+  --accent-soft: var(--orange-300);
+  --accent-tint: var(--orange-tint);
+  --on-accent: #fff8f4;
+
+  --selection-bg: var(--orange-500);
+  --selection-fg: #fff8f4;
+
+  // --- Spacing scale (fluid) -----------------------------------------
+  --space-3xs: clamp(0.25rem, 0.24rem + 0.05vw, 0.3rem);
+  --space-2xs: clamp(0.5rem, 0.47rem + 0.15vw, 0.625rem);
+  --space-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.95rem);
+  --space-sm: clamp(1rem, 0.92rem + 0.4vw, 1.35rem);
+  --space-md: clamp(1.5rem, 1.35rem + 0.75vw, 2.1rem);
+  --space-lg: clamp(2.25rem, 1.9rem + 1.7vw, 3.5rem);
+  --space-xl: clamp(3.5rem, 2.7rem + 3.8vw, 6.5rem);
+  --space-2xl: clamp(5rem, 3.5rem + 7vw, 11rem);
+  --space-3xl: clamp(7rem, 4rem + 13vw, 17rem);
+
+  --gutter: clamp(1.25rem, 0.6rem + 3.2vw, 4rem);
+  --radius-sm: 6px;
+  --radius-md: 14px;
+  --radius-lg: 28px;
+
+  // --- Motion tokens (mirrored in lib/motion/config.ts + lib/gsap) ---
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-quart-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-quint-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-circ-out: cubic-bezier(0, 0.55, 0.45, 1);
+
+  --dur-fast: 0.35s;
+  --dur-base: 0.6s;
+  --dur-slow: 0.9s;
+
+  // --- z-index scale ------------------------------------------------
+  --z-raised: 10;
+  --z-sticky: 20;
+  --z-header: 50;
+  --z-progress: 60;
+  --z-cursor: 80;
+  --z-menu: 90;
+  --z-transition: 100;
+  --z-preloader: 9999;
+
+  --header-h: 84px;
+
+  color-scheme: light;
+}
+
+// Dark section context — opt in with `.theme-dark` / `[data-theme='dark']`.
+// Used later for full-bleed dark sections; kept here so the token contract is
+// established from Stage 1.
+.theme-dark,
+[data-theme='dark'] {
+  --bg: var(--carbon);
+  --bg-elev: var(--carbon-2);
+  --fg: var(--paper);
+  --fg-muted: var(--smoke-300);
+  --line: rgba(244, 240, 233, 0.16);
+  --line-strong: rgba(244, 240, 233, 0.32);
+  color-scheme: dark;
+}
+
+// ===========================================================================
+// Base
+// ===========================================================================
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  overflow-x: clip;
+  font-synthesis-weight: none;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+a {
+  color: inherit;
+}
+
+// ===========================================================================
+// Lenis smooth scroll (recommended stylesheet, inlined)
+// https://github.com/darkroomengineering/lenis#considerations
+// ===========================================================================
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+// While the preloader owns the screen, lock the document.
+html.is-loading,
+html.is-loading body {
+  overflow: clip;
+  height: 100%;
+}
+
+// ===========================================================================
+// Reduced motion — global damping. Individual components also branch in JS.
+// ===========================================================================
+@include reduced-motion {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// ===========================================================================
+// Utilities
+// ===========================================================================
+.u-container {
+  @include container;
+}
+
+.u-visually-hidden {
+  @include visually-hidden;
+}
+
+.js-preloader {
+  // stable hook so <noscript> can hide the preloader when JS is off
+}
