@@ -56,11 +56,11 @@
   pointer-events: none;
 }
 
-// ogl sets width/height in px (frame width x frame height * OVERSCAN 1.25).
-// `top: -12.5%` centres that 25% overscan above + below the box.
+// ogl sets width/height in px (frame width x frame height * OVERSCAN 1.35).
+// `top: -17.5%` centres that 35% overscan above + below the box.
 .glCanvas {
   position: absolute;
-  top: -12.5%;
+  top: -17.5%;
   left: 0;
   opacity: 0;
   transition: opacity 0.4s var(--ease-quart-in-out);

@@ -26,16 +26,23 @@ const D_LENGTH = 6300;
 /**
  * Background line threading the work composition. The stroke is the section's
  * own cream, so only the stacked orange inner shadows read — a soft orange
- * gradient in the shape of the path. `stroke-dashoffset` is scrubbed
- * length -> 0 across the section, so it draws in as you scroll.
+ * gradient in the shape of the path.
+ *
+ * The draw-in is done with a MASK wipe, not by animating the filtered stroke:
+ * the `<g filter>` (two blurred inner-shadow passes) stays static, so the
+ * browser rasterises that multi-pass filter once and just composites it each
+ * frame. Only the mask — a plain thick stroke with a scrubbed
+ * `stroke-dashoffset` — updates per frame, which is a cheap single-fill
+ * re-raster. Animating the filtered path directly re-ran the whole blur chain
+ * on every scroll tick.
  */
 export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
-  const pathRef = useRef<SVGPathElement>(null);
+  const maskRef = useRef<SVGPathElement>(null);
   const reduced = usePrefersReducedMotion();
 
   useGSAP(
     () => {
-      const path = pathRef.current;
+      const path = maskRef.current;
       if (!path) return;
       // derive the trigger from the live DOM so parent-ref timing can't skip us
       const trigger =
@@ -65,7 +72,9 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
         scrollTrigger: {
           trigger,
           start: 'top 75%',
-          end: 'bottom 25%',
+          // finish the draw-in around mid-section, then hold — no per-frame
+          // mask work while you scroll the rest of the section
+          end: 'center 40%',
           scrub: true,
           invalidateOnRefresh: true,
         },
@@ -86,15 +95,6 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
       fill="none"
       aria-hidden
     >
-      <g filter="url(#wpInnerShadows)">
-        <path
-          ref={pathRef}
-          d={D}
-          stroke="#F2E9DB"
-          strokeWidth="120"
-          strokeLinecap="round"
-        />
-      </g>
       <defs>
         <filter
           id="wpInnerShadows"
@@ -137,7 +137,30 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
             </Fragment>
           ))}
         </filter>
+
+        {/* reveal wipe — plain wide stroke, well clear of the 120px visible
+            stroke so its edges never fringe it; only its dashoffset animates */}
+        <mask
+          id="wpReveal"
+          maskUnits="userSpaceOnUse"
+          x="-384.016"
+          y="-163"
+          width="2495.52"
+          height="1746.09"
+        >
+          <path
+            ref={maskRef}
+            d={D}
+            stroke="#fff"
+            strokeWidth="200"
+            strokeLinecap="round"
+          />
+        </mask>
       </defs>
+
+      <g filter="url(#wpInnerShadows)" mask="url(#wpReveal)">
+        <path d={D} stroke="#F2E9DB" strokeWidth="120" strokeLinecap="round" />
+      </g>
     </svg>
   );
 }

@@ -31,7 +31,7 @@ type Props = {
  * Left/right edges stay put (sin(u·π) = 0 there). Springs back to flat at rest.
  */
 
-const OVERSCAN = 1.25; // canvas height / card box height (room for the bow-out)
+const OVERSCAN = 1.35; // canvas height / card box height (room for the bow-out)
 const DPR_CAP = 1.5; // plenty for a baked photo + text; ~44% fewer pixels than 2
 
 const vertex = /* glsl */ `
@@ -260,9 +260,9 @@ export function WorkCardGL({
       let amp = 0;
       let vel = 0;
       let idle = 0;
-      const STIFF = 0.07;
+      const STIFF = 0.085; // higher -> amp tracks the target faster (snappier)
       const DAMP = 0.84; // higher -> the jelly rings longer after you stop
-      const MAX = 0.07; // NDC — bow amplitude
+      const MAX = 0.12; // NDC — bow amplitude (clears the 0.26 overscan headroom)
 
       const update = () => {
         const lenis = getLenisInstance() as { velocity?: number } | null;
@@ -273,8 +273,8 @@ export function WorkCardGL({
           raw = window.scrollY - last;
           last = window.scrollY;
         }
-        // Lenis .velocity is small (~tens), not px/s — divide by ~40, not ~1000
-        const target = Math.max(-1, Math.min(1, raw / 42));
+        // Lenis .velocity is small (~tens), not px/s — divide by ~30, not ~1000
+        const target = Math.max(-1, Math.min(1, raw / 30));
         vel += (target - amp) * STIFF;
         vel *= DAMP;
         amp += vel;
