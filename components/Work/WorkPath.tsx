@@ -35,42 +35,29 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
       const trigger = scope.current;
       if (!path || !trigger) return;
 
-      let tween: gsap.core.Tween | undefined;
-      let raf = 0;
-      let tries = 0;
+      // `pathLength="1"` normalises the geometry, so the dash values are just
+      // 0..1 — no getTotalLength() call, which reads 0 in production when this
+      // layout effect fires before the SVG subtree has been laid out.
+      gsap.set(path, {
+        strokeDasharray: 1,
+        strokeDashoffset: reduced ? 0 : 1,
+      });
+      if (reduced) return;
 
-      // In production getTotalLength() can read 0 for a beat (path not yet
-      // measurable). Retry a few frames, then fall back so it always animates.
-      const build = () => {
-        const measured = path.getTotalLength();
-        if (!measured && tries++ < 30) {
-          raf = requestAnimationFrame(build);
-          return;
-        }
-        const length = measured || 9000; // over-estimate: still hides then draws
-        gsap.set(path, {
-          strokeDasharray: length,
-          strokeDashoffset: reduced ? 0 : length,
-        });
-        if (reduced) return;
-        tween = gsap.to(path, {
-          strokeDashoffset: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger,
-            start: 'top 75%',
-            end: 'bottom 25%',
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        });
-      };
-      build();
-
+      const tween = gsap.to(path, {
+        strokeDashoffset: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger,
+          start: 'top 75%',
+          end: 'bottom 25%',
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      });
       return () => {
-        cancelAnimationFrame(raf);
-        tween?.scrollTrigger?.kill();
-        tween?.kill();
+        tween.scrollTrigger?.kill();
+        tween.kill();
       };
     },
     { dependencies: [reduced], scope },
@@ -88,6 +75,7 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
         <path
           ref={pathRef}
           d={D}
+          pathLength={1}
           stroke="#F2E9DB"
           strokeWidth="120"
           strokeLinecap="round"

@@ -91,6 +91,10 @@ export function WorkCard({
               src={src}
               alt={`${title} — project visual (placeholder)`}
               className={styles.img}
+              // same CORS mode as WorkCardGL's loader so the two requests share
+              // one cache entry — otherwise the GL canvas gets tainted in prod
+              // (works on localhost with "disable cache" on) and falls back flat
+              crossOrigin="anonymous"
               loading="lazy"
               decoding="async"
               draggable={false}
