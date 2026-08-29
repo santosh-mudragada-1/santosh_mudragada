@@ -16,11 +16,17 @@ import styles from './SelectedWork.module.scss';
  * proportional to each card automatically — one shared `uAmp` reproduces the
  * old per-card amplitude exactly:
  *
- *   old: p.y += A · MAX  in a canvas MAX·... tall  ->  px bow = 0.0525 · cardH
- *   new: p.y += A · MAX  (unit),  · uScale.y=2·cardH/glH  ->  px bow = A·MAX·cardH
- *   so MAX = 0.0525
+ *   p.y += A · MAX  (unit),  scaled by uScale.y = 2·cardH/glH  ->  px bow = A·MAX·cardH
+ *
+ * The spring below turns scroll velocity into A (−1..1). Tuning knobs:
+ *   VEL_DIV  lower = a gentle scroll already reaches a full bow
+ *   STIFF    higher = A tracks the target faster (snappier pop)
+ *   MAX      the bow's ceiling, as a fraction of each card's height
  */
-const MAX = 0.0525; // unit-space bow amplitude
+const MAX = 0.09; // unit-space bow amplitude (≈ 9% of card height at full tilt)
+const VEL_DIV = 16; // scroll velocity that maps to a full bow
+const STIFF = 0.13;
+const DAMP = 0.85; // higher -> the jelly rings a little longer after you stop
 
 const vertex = /* glsl */ `
   attribute vec2 uv;
@@ -286,19 +292,17 @@ export function WorkGLLayer({ boxRef, onFail }: Props) {
       let amp = 0;
       let vel = 0;
       let idle = 0;
-      const STIFF = 0.07;
-      const DAMP = 0.84;
 
       const update = () => {
         const lenis = getLenisInstance() as { velocity?: number } | null;
         let raw: number;
-        if (lenis && typeof lenis.velocity === 'number') {
+        if (lenis && typeof lenis.velocity === 'number' && lenis.velocity !== 0) {
           raw = lenis.velocity;
         } else {
           raw = window.scrollY - last;
-          last = window.scrollY;
         }
-        const target = Math.max(-1, Math.min(1, raw / 42));
+        last = window.scrollY;
+        const target = Math.max(-1, Math.min(1, raw / VEL_DIV));
         vel += (target - amp) * STIFF;
         vel *= DAMP;
         amp += vel;
