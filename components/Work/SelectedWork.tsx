@@ -82,8 +82,6 @@ export function SelectedWork() {
       className={styles.section}
       aria-label="Selected work"
     >
-      <div className={styles.glow} aria-hidden />
-
       <div className={styles.head}>
         <span className={styles.kicker}>
           <span className={styles.kickerArrow} aria-hidden>
