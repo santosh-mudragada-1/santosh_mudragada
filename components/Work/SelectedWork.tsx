@@ -1,15 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
-import { useIsTouch } from '@/lib/hooks/useIsTouch';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { revealUp } from '@/lib/motion/reveal';
 import { WORK } from '@/lib/content/work';
 import { WorkPath } from './WorkPath';
 import { WorkCard } from './WorkCard';
-import { WorkGLLayer } from './WorkGLLayer';
 import styles from './SelectedWork.module.scss';
 
 const DEPTH: Record<'a' | 'b' | 'c', number> = { a: 0.45, b: 0.55, c: 0.5 };
@@ -21,17 +19,9 @@ const DEPTH: Record<'a' | 'b' | 'c', number> = { a: 0.45, b: 0.55, c: 0.5 };
  */
 export function SelectedWork() {
   const sectionRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
-  const isTouch = useIsTouch();
-  // headings sweep + the shared WebGL layer only on the wide desktop composition
+  // headings only sweep sideways on the wide, single-row desktop composition
   const wide = useMediaQuery('(min-width: 1024px)');
-
-  const [mounted, setMounted] = useState(false);
-  const [glFailed, setGlFailed] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const onGlFail = useCallback(() => setGlFailed(true), []);
-  const useGL = mounted && wide && !isTouch && !reduced && !glFailed;
 
   // one-shot heading entrance — never re-run by the media query below
   useGSAP(
@@ -106,7 +96,7 @@ export function SelectedWork() {
 
       <WorkPath scope={sectionRef} />
 
-      <div ref={canvasRef} className={styles.canvas}>
+      <div className={styles.canvas}>
         {WORK.map((project) => (
           <div key={project.slug} className={styles.slot} data-slot={project.slot}>
             <WorkCard
@@ -121,7 +111,6 @@ export function SelectedWork() {
             />
           </div>
         ))}
-        {useGL && <WorkGLLayer boxRef={canvasRef} onFail={onGlFail} />}
       </div>
     </section>
   );

@@ -79,22 +79,6 @@
   }
 }
 
-// one WebGL canvas over the whole composition (all three card bows). The 9%
-// vertical bleed gives a bowing card's leading edge room before the canvas
-// edge clips it.
-.glLayer {
-  position: absolute;
-  inset: -9% 0;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s var(--ease-quart-in-out);
-
-  &[data-ready] {
-    opacity: 1;
-  }
-}
-
 // --- tablet & down: clean full-width vertical stack --------------------
 @include mq-max('lg') {
   .section {

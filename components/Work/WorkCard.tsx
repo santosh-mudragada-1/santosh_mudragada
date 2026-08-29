@@ -1,9 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
+import { useIsTouch } from '@/lib/hooks/useIsTouch';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+import { WorkCardGL } from './WorkCardGL';
 import styles from './WorkCard.module.scss';
 
 type WorkCardProps = {
@@ -21,10 +23,11 @@ type WorkCardProps = {
 /**
  * Card shell.
  *   .outer  — transparent, overflow visible, sets the card's aspect-ratio box.
- *   .inner  — same size, overflow hidden: the real <img> + text. This is the
- *             at-rest card and the fallback when the shared WebGL layer
- *             (WorkGLLayer, one context for all three cards) isn't running.
- *             When it is, its canvas covers .inner and does the bow.
+ *   .inner  — same size, overflow hidden: the real <img> + text (clipped). This
+ *             is the at-rest card, the WebGL-fail fallback, and the dark ground
+ *             a bowed edge lifts off.
+ *   <WorkCardGL> — a canvas sibling of .inner that overscans the box; its bow
+ *             spills past the card because .outer doesn't clip.
  */
 export function WorkCard({
   index,
@@ -37,7 +40,15 @@ export function WorkCard({
   depth = 0.5,
 }: WorkCardProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
+  const isTouch = useIsTouch();
   const reduced = usePrefersReducedMotion();
+
+  const [mounted, setMounted] = useState(false);
+  const [glFailed, setGlFailed] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const onGlFail = useCallback(() => setGlFailed(true), []);
+
+  const useGL = mounted && !isTouch && !reduced && !glFailed;
 
   useGSAP(
     () => {
@@ -80,8 +91,9 @@ export function WorkCard({
               src={src}
               alt={`${title} — project visual (placeholder)`}
               className={styles.img}
-              // same CORS mode as WorkGLLayer's loader so the two share one
-              // cache entry — otherwise the GL canvas gets tainted in prod
+              // same CORS mode as WorkCardGL's loader so the two requests share
+              // one cache entry — otherwise the GL canvas gets tainted in prod
+              // (works on localhost with "disable cache" on) and falls back flat
               crossOrigin="anonymous"
               loading="lazy"
               decoding="async"
@@ -98,6 +110,17 @@ export function WorkCard({
               </p>
             </div>
           </div>
+
+          {useGL && (
+            <WorkCardGL
+              index={index}
+              title={title}
+              discipline={discipline}
+              year={year}
+              src={src}
+              onFail={onGlFail}
+            />
+          )}
         </div>
       </div>
     </Link>
