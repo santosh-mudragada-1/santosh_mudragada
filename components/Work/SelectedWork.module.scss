@@ -7,6 +7,59 @@
   overflow: clip;
 }
 
+// faint drafting-grid texture under the composition, faded top and bottom so
+// it emerges and recedes rather than hard-stopping at the section edges
+.section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(42, 20, 8, 0.06) 1px,
+    transparent 0
+  );
+  background-size: 44px 44px;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 16%,
+    #000 76%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 16%,
+    #000 76%,
+    transparent
+  );
+}
+
+// soft orange warmth bleeding in from two opposite corners — restores the
+// glow the threading line used to give the section. Drifts a little on
+// scroll (SelectedWork adds the tween); the overscan keeps an edge from
+// ever showing.
+.glow {
+  position: absolute;
+  inset: -20% -10%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      38vw 38vw at 84% 10%,
+      rgba(255, 77, 26, 0.07),
+      transparent 70%
+    ),
+    radial-gradient(
+      46vw 46vw at 6% 94%,
+      rgba(255, 77, 26, 0.055),
+      transparent 72%
+    );
+  will-change: transform;
+}
+
 .head {
   position: relative;
   z-index: 2;
@@ -127,5 +180,8 @@
   }
   .canvas {
     gap: clamp(1.5rem, 8vw, 3rem);
+  }
+  .section::after {
+    background-size: 32px 32px;
   }
 }
