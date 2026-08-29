@@ -20,7 +20,8 @@
 }
 
 // inner: same size, clipped. The real <img> + text; also the dark ground a
-// bowed edge lifts off, and the fallback when WebGL isn't running.
+// bowed edge lifts off, and the fallback when the shared WebGL layer isn't
+// running. When it is, its canvas covers this (its own hairline is baked in).
 .inner {
   position: absolute;
   inset: 0;
@@ -28,8 +29,7 @@
   overflow: hidden;
   background: var(--carbon);
 
-  // hairline only matters when this is the visible layer (no GL sibling)
-  &:only-child::after {
+  &::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -46,28 +46,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-// --- WebGL layer ------------------------------------------------------
-.glWrap {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
-// ogl sets width/height in px (frame width x frame height * OVERSCAN 1.5).
-// `top: -25%` centres that 50% overscan above + below the box.
-.glCanvas {
-  position: absolute;
-  top: -25%;
-  left: 0;
-  opacity: 0;
-  transition: opacity 0.4s var(--ease-quart-in-out);
-
-  &[data-ready] {
-    opacity: 1;
-  }
 }
 
 .scrim {
