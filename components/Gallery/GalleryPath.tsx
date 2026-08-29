@@ -5,9 +5,9 @@ import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './GalleryPath.module.scss';
 
-// wide, mostly-horizontal squiggle: enters top-left, exits off the right edge
+// wide squiggle: drops in from the top-left, exits off the right edge
 const D =
-  'M83.0234 219.681C83.0234 219.681 1022.18 -122.695 1193.79 276.309C1309.72 545.843 734.957 932.739 1011.52 1005.18C1378.02 1101.18 1558.2 365.184 1744.52 589.183C1860.62 728.755 1600.63 879.228 1800.16 1050.72C1996.37 1219.37 2272.02 890.182 2272.02 890.182';
+  'M83.0078 83.0078C83.0078 83.0078 528.214 137.576 656.008 348.508C790.322 570.201 409.011 836.418 601.508 1010.01C813.654 1201.32 1053.71 613.22 1292.51 770.008C1475.23 889.978 1287.63 1190.89 1478.14 1298.05C1703.64 1424.89 2092.51 1050.11 2092.51 1050.11';
 
 // #FF6520 as a colour-matrix row (r 1, g 0.396078, b 0.12549)
 const ORANGE = '0 0 0 0 1 0 0 0 0 0.396078 0 0 0 0 0.12549';
@@ -21,15 +21,14 @@ const SHADOWS: Array<[number, number, number]> = [
   [-204, 61, 0.17],
 ];
 
-// measured length of D (~4029) — the fallback when getTotalLength() reads 0
+// measured length of D (~3450) — the fallback when getTotalLength() reads 0
 // (it does, in production, when this layout effect runs before SVG layout)
-const D_LENGTH = 4100;
+const D_LENGTH = 3550;
 
 /**
- * Soft orange line sweeping behind the archive rows — enters from the
- * top-left and draws out through the right edge of the screen. The stroke is
- * the section's own paper colour, so only the stacked orange inner shadows
- * read.
+ * Soft orange line behind the archive rows — drops in from the top-left and
+ * draws out through the right edge of the screen. The stroke is the section's
+ * own paper colour, so only the stacked orange inner shadows read.
  *
  * The draw-in is done with a MASK wipe, not by animating the filtered stroke:
  * the `<g filter>` (blurred inner-shadow passes) stays static, so the browser
@@ -92,7 +91,7 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   return (
     <svg
       className={styles.svg}
-      viewBox="0 0 2356 1182"
+      viewBox="0 0 2176 1408"
       preserveAspectRatio="xMidYMid meet"
       fill="none"
       aria-hidden
@@ -102,8 +101,8 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
           id="gpInnerShadows"
           x="0"
           y="-159"
-          width="2355.02"
-          height="1340.79"
+          width="2175.51"
+          height="1566.24"
           filterUnits="userSpaceOnUse"
           colorInterpolationFilters="sRGB"
         >
@@ -145,10 +144,10 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         <mask
           id="gpReveal"
           maskUnits="userSpaceOnUse"
-          x="0"
-          y="-159"
-          width="2355.02"
-          height="1340.79"
+          x="-140"
+          y="-220"
+          width="2460"
+          height="1760"
         >
           <path
             ref={maskRef}

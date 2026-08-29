@@ -1,15 +1,16 @@
 .svg {
   position: absolute;
-  top: 50%;
-  left: 52%;
-  // wider than the viewport and nudged right so the tail draws out past the
-  // right edge (not off the bottom). Explicit height (not `auto`) — Safari
-  // doesn't derive an intrinsic ratio from viewBox alone on an absolutely
-  // positioned <svg>, so `height: auto` there collapses to 150px.
-  width: 124vw;
-  height: calc(124vw * 1182 / 2356);
-  aspect-ratio: 2356 / 1182;
-  transform: translate(-50%, -50%);
+  // start point (≈4% / 6% of the viewBox) lands ~14vw in and just above the
+  // section top, so the line drops in from the top; end point (≈96% / 75%)
+  // lands past the right edge, well clear of the bottom.
+  left: 10vw;
+  top: -8vh;
+  // Explicit height (not `auto`) — Safari doesn't derive an intrinsic ratio
+  // from viewBox alone on an absolutely positioned <svg>, so `height: auto`
+  // there collapses to 150px.
+  width: 98vw;
+  height: calc(98vw * 1408 / 2176);
+  aspect-ratio: 2176 / 1408;
   z-index: 0;
   pointer-events: none;
   overflow: visible;
