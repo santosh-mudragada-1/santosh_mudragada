@@ -36,15 +36,12 @@ const WEBKIT_GLOW_SRC = '/images/archive-line-safari.webp';
  * orange inner shadows (feGaussianBlur), revealed by a scroll-scrubbed
  * stroke-dashoffset mask wipe.
  *
- * Safari / WebKit: any live SVG filter (even one blur pass) freezes the
- * section while a reveal animates under it. So: the pre-rendered glow bitmap,
- * wiped in by a <mask> stroke ONCE (~1.8s) when the section enters, then the
- * ScrollTrigger self-destructs. No filter, and no per-frame mask work after
- * the one-shot completes.
+ * Safari / WebKit: any live SVG filter (even one blur pass), and even a
+ * one-shot mask wipe, stutters this section on entry. So WebKit just shows
+ * the pre-rendered glow bitmap, static — no filter, no mask, no animation.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
-  const webkitMaskRef = useRef<SVGPathElement>(null);
   const reduced = usePrefersReducedMotion();
   const isWebKit = useIsWebKit();
 
@@ -99,52 +96,9 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit: one-shot mask wipe of the glow bitmap -------------
-  useGSAP(
-    () => {
-      if (!isWebKit) return;
-
-      const path = webkitMaskRef.current;
-      if (!path) return;
-
-      let len = D_LENGTH;
-      try {
-        const m = path.getTotalLength();
-        if (m && Number.isFinite(m)) len = m;
-      } catch {
-        /* keep the fallback */
-      }
-
-      gsap.set(path, {
-        strokeDasharray: len,
-        strokeDashoffset: reduced ? 0 : len,
-      });
-      if (reduced) return;
-
-      const trigger = scope.current ?? path.closest('section') ?? undefined;
-      if (!trigger) return;
-
-      // one-shot: the mask wipes the bitmap in over ~1.8s when the section
-      // first enters view, then the ScrollTrigger destroys itself (`once`).
-      // The mask re-composites the image only during that draw-in — zero
-      // per-frame cost while scrolling the section afterwards.
-      const tween = gsap.to(path, {
-        strokeDashoffset: 0,
-        duration: 1.8,
-        ease: 'power1.inOut',
-        scrollTrigger: { trigger, start: 'top 78%', once: true },
-      });
-      return () => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
-      };
-    },
-    { dependencies: [reduced, isWebKit], scope },
-  );
-
   // --- Safari / WebKit render -------------------------------------------
-  // The pre-rendered glow bitmap, revealed by a plain dash-animated stroke
-  // mask (one-shot, see the effect above). No <filter> anywhere.
+  // Static pre-rendered glow bitmap. No filter, no mask, no animation — every
+  // animated variant stuttered this section on WebKit.
   if (isWebKit) {
     return (
       <svg
@@ -154,27 +108,6 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         fill="none"
         aria-hidden
       >
-        <defs>
-          <mask
-            id="gpWebkitReveal"
-            maskUnits="userSpaceOnUse"
-            x="-160"
-            y="-220"
-            width="2500"
-            height="1780"
-          >
-            <path
-              ref={webkitMaskRef}
-              d={D}
-              stroke="#fff"
-              strokeWidth="340"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          </mask>
-        </defs>
-
         <image
           href={WEBKIT_GLOW_SRC}
           x="0"
@@ -182,7 +115,6 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
           width="2176"
           height="1408"
           preserveAspectRatio="xMidYMid meet"
-          mask="url(#gpWebkitReveal)"
         />
       </svg>
     );
