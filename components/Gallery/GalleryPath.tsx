@@ -39,9 +39,9 @@ const WEBKIT_STROKES: Array<[number, number]> = [[92, 0.32]];
  *
  * Safari / WebKit: that filter + mask pipeline froze the section, so this is a
  * cheaper equivalent — a single plain orange stroke (no <filter>, no <mask>,
- * no shadows, no offscreen buffer) that draws itself in ONCE via
- * stroke-dashoffset when the section first enters view (ScrollTrigger
- * `once: true`), then holds. No per-frame work afterwards.
+ * no shadows, no offscreen buffer) whose stroke-dashoffset is scrubbed to
+ * scroll while the section is on screen, same feel as Chromium. Rasterising
+ * one plain stroke per frame is far cheaper than the filtered+masked path.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
@@ -100,7 +100,7 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit: one-shot stroke draw-in, no filter/mask -------------
+  // --- Safari / WebKit: scroll-scrubbed stroke draw-in, no filter/mask -----
   useGSAP(
     () => {
       if (!isWebKit) return;
@@ -127,13 +127,19 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
       const trigger = scope.current ?? g.closest('section') ?? undefined;
       if (!trigger) return;
 
-      // one-shot: draws in when the section first arrives, then ScrollTrigger
-      // kills itself (`once`). No scrub, no per-frame cost afterwards.
+      // scrub the dashoffset with scroll — same range/feel as the Chromium
+      // version, but on ONE plain stroke (no filter, no mask, no offscreen
+      // buffer). The tween is inert whenever the section is off-screen.
       const tween = gsap.to(paths, {
         strokeDashoffset: 0,
-        duration: 1.8,
-        ease: 'power1.inOut',
-        scrollTrigger: { trigger, start: 'top 78%', once: true },
+        ease: 'none',
+        scrollTrigger: {
+          trigger,
+          start: 'top 85%',
+          end: 'bottom 15%',
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
       });
       return () => {
         tween.scrollTrigger?.kill();
