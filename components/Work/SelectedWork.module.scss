@@ -38,26 +38,25 @@
 }
 
 // soft orange warmth bleeding in from two opposite corners — restores the
-// glow the threading line used to give the section. Drifts a little on
-// scroll (SelectedWork adds the tween); the overscan keeps an edge from
-// ever showing.
+// glow the threading line used to give the section. Static: no will-change /
+// no scroll tween, so Safari doesn't carry a huge promoted gradient layer
+// through the section alongside the three WebGL card contexts.
 .glow {
   position: absolute;
-  inset: -20% -10%;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
   background:
     radial-gradient(
-      38vw 38vw at 84% 10%,
+      38vw 38vw at 84% 8%,
       rgba(255, 77, 26, 0.07),
       transparent 70%
     ),
     radial-gradient(
-      46vw 46vw at 6% 94%,
+      46vw 46vw at 6% 96%,
       rgba(255, 77, 26, 0.055),
       transparent 72%
     );
-  will-change: transform;
 }
 
 .head {

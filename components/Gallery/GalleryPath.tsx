@@ -13,12 +13,14 @@ const D =
 const ORANGE = '0 0 0 0 1 0 0 0 0 0.396078 0 0 0 0 0.12549';
 const ALPHA = '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0';
 
-// 3 of the Figma export's 5 stacked orange inner shadows (the faintest two,
-// α 0.05 / 0.01, don't read) — dy, stdDeviation (blur/2), alpha
+// two SMALL orange inner-shadow passes (was the Figma export's 5). Safari
+// re-rasterises the whole filter chain as the mask wipes, and stacked
+// large-radius feGaussianBlur over this width is what froze it there — small
+// radii keep the soft-orange read at a fraction of the cost.
+// — dy, stdDeviation (blur/2), alpha
 const SHADOWS: Array<[number, number, number]> = [
-  [-23, 25, 0.33],
-  [-91, 45.5, 0.29],
-  [-204, 61, 0.17],
+  [-30, 16, 0.5],
+  [-84, 30, 0.3],
 ];
 
 // measured length of D (~3450) — the fallback when getTotalLength() reads 0
@@ -99,10 +101,10 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
       <defs>
         <filter
           id="gpInnerShadows"
-          x="0"
-          y="-159"
-          width="2175.51"
-          height="1566.24"
+          x="-20"
+          y="-40"
+          width="2216"
+          height="1500"
           filterUnits="userSpaceOnUse"
           colorInterpolationFilters="sRGB"
         >

@@ -76,36 +76,6 @@ export function SelectedWork() {
     { scope: sectionRef, dependencies: [reduced, wide] },
   );
 
-  // ambient orange glow drifts a little as the section passes
-  useGSAP(
-    () => {
-      if (reduced) return;
-      const glow = sectionRef.current!.querySelector<HTMLElement>(
-        `.${styles.glow}`,
-      );
-      if (!glow) return;
-      const t = gsap.fromTo(
-        glow,
-        { yPercent: -6 },
-        {
-          yPercent: 6,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-          },
-        },
-      );
-      return () => {
-        t.scrollTrigger?.kill();
-        t.kill();
-      };
-    },
-    { scope: sectionRef, dependencies: [reduced] },
-  );
-
   return (
     <section
       ref={sectionRef}
