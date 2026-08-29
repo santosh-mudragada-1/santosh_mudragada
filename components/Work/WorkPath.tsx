@@ -19,6 +19,10 @@ const SHADOWS: Array<[number, number, number]> = [
   [-54.6, 27.3, 0.29],
 ];
 
+// measured length of D — the fallback when getTotalLength() reads 0 (it does,
+// in production, when this layout effect runs before the SVG is laid out)
+const D_LENGTH = 6300;
+
 /**
  * Background line threading the work composition. The stroke is the section's
  * own cream, so only the stacked orange inner shadows read — a soft orange
@@ -32,15 +36,26 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
   useGSAP(
     () => {
       const path = pathRef.current;
-      const trigger = scope.current;
-      if (!path || !trigger) return;
+      if (!path) return;
+      // derive the trigger from the live DOM so parent-ref timing can't skip us
+      const trigger =
+        scope.current ?? path.closest('section') ?? undefined;
+      if (!trigger) return;
 
-      // `pathLength="1"` normalises the geometry, so the dash values are just
-      // 0..1 — no getTotalLength() call, which reads 0 in production when this
-      // layout effect fires before the SVG subtree has been laid out.
+      // real length if the browser gives one, hardcoded fallback if it reads 0
+      let len = D_LENGTH;
+      try {
+        const m = path.getTotalLength();
+        if (m && Number.isFinite(m)) len = m;
+      } catch {
+        /* keep the fallback */
+      }
+
+      // NOTE: no pathLength attr — Blink doesn't scale style-set (GSAP) dash
+      // values by it, so `1` would read as 1px and the path would look solid.
       gsap.set(path, {
-        strokeDasharray: 1,
-        strokeDashoffset: reduced ? 0 : 1,
+        strokeDasharray: len,
+        strokeDashoffset: reduced ? 0 : len,
       });
       if (reduced) return;
 
@@ -75,7 +90,6 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
         <path
           ref={pathRef}
           d={D}
-          pathLength={1}
           stroke="#F2E9DB"
           strokeWidth="120"
           strokeLinecap="round"
