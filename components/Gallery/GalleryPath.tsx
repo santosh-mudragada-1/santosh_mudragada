@@ -2,6 +2,7 @@
 
 import { Fragment, useRef, type RefObject } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
+import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './GalleryPath.module.scss';
 
@@ -38,10 +39,15 @@ const D_LENGTH = 3550;
  * Only the mask — a plain thick stroke with a scrubbed `stroke-dashoffset` —
  * updates per frame, a cheap single-fill re-raster. Animating the filtered
  * path directly re-ran the whole blur chain on every scroll tick.
+ *
+ * WebKit re-rasterises the filter anyway whenever the mask changes, which
+ * freezes the section — there it renders fully drawn, no scrub.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
   const reduced = usePrefersReducedMotion();
+  const isWebKit = useIsWebKit();
+  const still = reduced || isWebKit;
 
   useGSAP(
     () => {
@@ -65,9 +71,9 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
       // values by it, so `1` would read as 1px and the path would look solid.
       gsap.set(path, {
         strokeDasharray: len,
-        strokeDashoffset: reduced ? 0 : len,
+        strokeDashoffset: still ? 0 : len,
       });
-      if (reduced) return;
+      if (still) return;
 
       const tween = gsap.to(path, {
         strokeDashoffset: 0,
@@ -87,7 +93,7 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         tween.kill();
       };
     },
-    { dependencies: [reduced], scope },
+    { dependencies: [still], scope },
   );
 
   return (

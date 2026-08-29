@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { useIsTouch } from '@/lib/hooks/useIsTouch';
+import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { WorkCardGL } from './WorkCardGL';
 import styles from './WorkCard.module.scss';
@@ -41,6 +42,7 @@ export function WorkCard({
 }: WorkCardProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
   const isTouch = useIsTouch();
+  const isWebKit = useIsWebKit();
   const reduced = usePrefersReducedMotion();
 
   const [mounted, setMounted] = useState(false);
@@ -48,7 +50,9 @@ export function WorkCard({
   useEffect(() => setMounted(true), []);
   const onGlFail = useCallback(() => setGlFailed(true), []);
 
-  const useGL = mounted && !isTouch && !reduced && !glFailed;
+  // WebKit freezes with multiple concurrent WebGL card contexts — it falls
+  // back to the static .inner card there (same as touch / reduced-motion)
+  const useGL = mounted && !isTouch && !isWebKit && !reduced && !glFailed;
 
   useGSAP(
     () => {
