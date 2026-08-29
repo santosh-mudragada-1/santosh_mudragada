@@ -36,13 +36,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  // Kept on WebKit too: without a stable compositing layer, Safari can leave
+  // this stuck at the GSAP `y: -70` entrance offset (pulling the headline up
+  // into the light curve) or fail to repaint it. It's a single layer.
   will-change: transform;
-
-  // Safari: this wraps the whole footer; GSAP promotes it for the entrance
-  // parallax, no need to keep the layer resident the rest of the session.
-  :global(html.is-webkit) & {
-    will-change: auto;
-  }
 }
 
 // --- headline (two lines) ------------------------------------------------
@@ -64,12 +61,10 @@
 
 .line {
   display: block;
+  // Kept on WebKit too: the one-shot `gsap.from` completes and GSAP drops the
+  // 3D transform; inside `overflow: hidden` that layer teardown leaves the
+  // line blank on Safari. Two small text elements — cheap to keep promoted.
   will-change: transform;
-
-  // Safari: only animates once on the reveal — GSAP promotes it for that.
-  :global(html.is-webkit) & {
-    will-change: auto;
-  }
 }
 
 .square {
