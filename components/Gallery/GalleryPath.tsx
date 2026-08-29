@@ -24,27 +24,39 @@ const SHADOWS: Array<[number, number, number]> = [
 // measured length of D (~3450) — the fallback when getTotalLength() reads 0
 const D_LENGTH = 3550;
 
+// Safari fake-glow: concentric plain strokes (no filter) — [width, rgba alpha].
+// Wide + faint down to a defined core reads as a soft orange line without a
+// single feGaussianBlur.
+const WEBKIT_STROKES: Array<[number, number]> = [
+  [220, 0.06],
+  [130, 0.12],
+  [56, 0.34],
+];
+
 /**
  * Soft orange line behind the archive rows — drops in from the top-left and
- * draws out through the right edge of the screen.
+ * draws out toward the right edge of the screen.
  *
- * DIAGNOSTIC (Safari / WebKit): the whole SVG-filter + mask pipeline is
- * skipped. WebKit renders a single plain <path> — no <filter>, no <feGaussianBlur>,
- * no <mask>, no <defs>, no animated stroke-dashoffset, nothing that forces an
- * offscreen buffer. This is to test whether that pipeline is what freezes the
- * Archive section on Safari.
+ * Chromium / Blink: a paper-colour stroke that reads only through stacked
+ * orange inner shadows (feGaussianBlur), revealed by a scroll-scrubbed
+ * stroke-dashoffset mask wipe.
  *
- * Chromium / Blink is completely untouched: the filtered + masked <g> with a
- * scroll-scrubbed stroke-dashoffset mask wipe, exactly as before.
+ * Safari / WebKit: that filter + mask pipeline froze the section, so this is a
+ * cheaper equivalent with the same visual impression — three concentric plain
+ * orange strokes (no <filter>, no <mask>, no offscreen buffer) that draw
+ * themselves in ONCE via stroke-dashoffset when the section first enters view
+ * (ScrollTrigger `once: true`), then hold. No per-frame work afterwards.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
+  const webkitRef = useRef<SVGGElement>(null);
   const reduced = usePrefersReducedMotion();
   const isWebKit = useIsWebKit();
 
+  // --- Chromium / Blink: UNCHANGED -------------------------------------------
   useGSAP(
     () => {
-      // Safari renders the static branch below — no tween, no ScrollTrigger.
+      // Safari uses the branch below — no filter/mask, no scrub here.
       if (isWebKit) return;
 
       const path = maskRef.current;
@@ -92,10 +104,50 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit: DIAGNOSTIC static stroke ----------------------------
-  // Same path geometry only. Plain translucent-orange stroke (the Chromium
-  // stroke is the paper colour and only reads through the inner shadows, which
-  // are removed here). No filter, no mask, no dash, no offscreen compositing.
+  // --- Safari / WebKit: one-shot stroke draw-in, no filter/mask -------------
+  useGSAP(
+    () => {
+      if (!isWebKit) return;
+
+      const g = webkitRef.current;
+      if (!g) return;
+      const paths = Array.from(g.querySelectorAll('path'));
+      if (!paths.length) return;
+
+      let len = D_LENGTH;
+      try {
+        const m = paths[0].getTotalLength();
+        if (m && Number.isFinite(m)) len = m;
+      } catch {
+        /* keep the fallback */
+      }
+
+      gsap.set(paths, {
+        strokeDasharray: len,
+        strokeDashoffset: reduced ? 0 : len,
+      });
+      if (reduced) return;
+
+      const trigger = scope.current ?? g.closest('section') ?? undefined;
+      if (!trigger) return;
+
+      // one-shot: draws in when the section first arrives, then ScrollTrigger
+      // kills itself (`once`). No scrub, no per-frame cost afterwards.
+      const tween = gsap.to(paths, {
+        strokeDashoffset: 0,
+        duration: 1.8,
+        ease: 'power1.inOut',
+        scrollTrigger: { trigger, start: 'top 78%', once: true },
+      });
+      return () => {
+        tween.scrollTrigger?.kill();
+        tween.kill();
+      };
+    },
+    { dependencies: [reduced, isWebKit], scope },
+  );
+
+  // --- Safari / WebKit render ---------------------------------------------
   if (isWebKit) {
     return (
       <svg
@@ -105,17 +157,23 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         fill="none"
         aria-hidden
       >
-        <path
-          d={D}
-          stroke="rgba(255, 101, 32, 0.3)"
-          strokeWidth="110"
-          strokeLinecap="round"
-        />
+        <g ref={webkitRef}>
+          {WEBKIT_STROKES.map(([w, a], i) => (
+            <path
+              key={i}
+              d={D}
+              fill="none"
+              stroke={`rgba(255, 101, 32, ${a})`}
+              strokeWidth={w}
+              strokeLinecap="round"
+            />
+          ))}
+        </g>
       </svg>
     );
   }
 
-  // --- Chromium / Blink: UNCHANGED ----------------------------------------
+  // --- Chromium / Blink render: UNCHANGED --------------------------------
   return (
     <svg
       className={styles.svg}
