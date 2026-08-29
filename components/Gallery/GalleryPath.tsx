@@ -5,35 +5,38 @@ import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './GalleryPath.module.scss';
 
+// wide, mostly-horizontal squiggle: enters top-left, exits off the right edge
 const D =
-  'M-284 121.074C-284 121.074 142.824 38.4108 313.5 200.519C505.41 382.796 87.7441 647.042 275.5 759.02C470 875.02 538.896 330.449 790.5 363.02C997 389.751 404.783 1156.94 740 1258.52C1070 1358.52 1053.5 329.02 1574.5 538.019C2095.5 747.019 1066 1362.52 1397 1451.52C1997.18 1612.9 2011.5 1103.02 2011.5 1103.02';
+  'M83.0234 219.681C83.0234 219.681 1022.18 -122.695 1193.79 276.309C1309.72 545.843 734.957 932.739 1011.52 1005.18C1378.02 1101.18 1558.2 365.184 1744.52 589.183C1860.62 728.755 1600.63 879.228 1800.16 1050.72C1996.37 1219.37 2272.02 890.182 2272.02 890.182';
 
 // #FF6520 as a colour-matrix row (r 1, g 0.396078, b 0.12549)
 const ORANGE = '0 0 0 0 1 0 0 0 0 0.396078 0 0 0 0 0.12549';
 const ALPHA = '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0';
 
-// 2 stacked orange inner shadows (Figma values x0.6, matching the 60% weight)
-// — dy, stdDeviation (blur/2), alpha
+// 3 of the Figma export's 5 stacked orange inner shadows (the faintest two,
+// α 0.05 / 0.01, don't read) — dy, stdDeviation (blur/2), alpha
 const SHADOWS: Array<[number, number, number]> = [
-  [-13.8, 15, 0.33],
-  [-54.6, 27.3, 0.29],
+  [-23, 25, 0.33],
+  [-91, 45.5, 0.29],
+  [-204, 61, 0.17],
 ];
 
-// measured length of D — the fallback when getTotalLength() reads 0 (it does,
-// in production, when this layout effect runs before the SVG is laid out)
-const D_LENGTH = 6300;
+// measured length of D (~4029) — the fallback when getTotalLength() reads 0
+// (it does, in production, when this layout effect runs before SVG layout)
+const D_LENGTH = 4100;
 
 /**
- * Soft orange line sweeping behind the archive rows. The stroke is the
- * section's own paper colour, so only the stacked orange inner shadows read.
+ * Soft orange line sweeping behind the archive rows — enters from the
+ * top-left and draws out through the right edge of the screen. The stroke is
+ * the section's own paper colour, so only the stacked orange inner shadows
+ * read.
  *
  * The draw-in is done with a MASK wipe, not by animating the filtered stroke:
- * the `<g filter>` (two blurred inner-shadow passes) stays static, so the
- * browser rasterises that multi-pass filter once and just composites it each
- * frame. Only the mask — a plain thick stroke with a scrubbed
- * `stroke-dashoffset` — updates per frame, which is a cheap single-fill
- * re-raster. Animating the filtered path directly re-ran the whole blur chain
- * on every scroll tick.
+ * the `<g filter>` (blurred inner-shadow passes) stays static, so the browser
+ * rasterises that multi-pass filter once and just composites it each frame.
+ * Only the mask — a plain thick stroke with a scrubbed `stroke-dashoffset` —
+ * updates per frame, a cheap single-fill re-raster. Animating the filtered
+ * path directly re-ran the whole blur chain on every scroll tick.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
@@ -71,9 +74,9 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         scrollTrigger: {
           trigger,
           start: 'top 80%',
-          // finish the draw-in around mid-section, then hold — no per-frame
-          // mask work while you scroll the rest of the section
-          end: 'center 45%',
+          // finish the sweep around mid-section, then hold — no per-frame mask
+          // work while you scroll the rest of the section
+          end: 'center 40%',
           scrub: true,
           invalidateOnRefresh: true,
         },
@@ -89,7 +92,7 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   return (
     <svg
       className={styles.svg}
-      viewBox="0 0 1728 1584"
+      viewBox="0 0 2356 1182"
       preserveAspectRatio="xMidYMid meet"
       fill="none"
       aria-hidden
@@ -97,10 +100,10 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
       <defs>
         <filter
           id="gpInnerShadows"
-          x="-384.016"
-          y="-163"
-          width="2495.52"
-          height="1746.09"
+          x="0"
+          y="-159"
+          width="2355.02"
+          height="1340.79"
           filterUnits="userSpaceOnUse"
           colorInterpolationFilters="sRGB"
         >
@@ -137,28 +140,28 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
           ))}
         </filter>
 
-        {/* reveal wipe — plain wide stroke, well clear of the 120px visible
+        {/* reveal wipe — plain wide stroke, well clear of the 166px visible
             stroke so its edges never fringe it; only its dashoffset animates */}
         <mask
           id="gpReveal"
           maskUnits="userSpaceOnUse"
-          x="-384.016"
-          y="-163"
-          width="2495.52"
-          height="1746.09"
+          x="0"
+          y="-159"
+          width="2355.02"
+          height="1340.79"
         >
           <path
             ref={maskRef}
             d={D}
             stroke="#fff"
-            strokeWidth="200"
+            strokeWidth="260"
             strokeLinecap="round"
           />
         </mask>
       </defs>
 
       <g filter="url(#gpInnerShadows)" mask="url(#gpReveal)">
-        <path d={D} stroke="#F2E9DB" strokeWidth="120" strokeLinecap="round" />
+        <path d={D} stroke="#F2E9DB" strokeWidth="166" strokeLinecap="round" />
       </g>
     </svg>
   );
