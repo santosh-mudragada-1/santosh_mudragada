@@ -7,6 +7,7 @@ import { useIsTouch } from '@/lib/hooks/useIsTouch';
 import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { WorkCardGL } from './WorkCardGL';
+import { addCardSkew } from './cardSkew';
 import styles from './WorkCard.module.scss';
 
 type WorkCardProps = {
@@ -28,7 +29,10 @@ type WorkCardProps = {
  *             is the at-rest card, the WebGL-fail fallback, and the dark ground
  *             a bowed edge lifts off.
  *   <WorkCardGL> — a canvas sibling of .inner that overscans the box; its bow
- *             spills past the card because .outer doesn't clip.
+ *             spills past the card because .outer doesn't clip. Chromium only.
+ *
+ * WebKit gets none of the WebGL — instead a cheap scroll-velocity `skewY` on
+ * .outer (see cardSkew), one shared ticker callback, GPU transform only.
  */
 export function WorkCard({
   index,
@@ -41,6 +45,7 @@ export function WorkCard({
   depth = 0.5,
 }: WorkCardProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
   const isTouch = useIsTouch();
   const isWebKit = useIsWebKit();
   const reduced = usePrefersReducedMotion();
@@ -53,6 +58,8 @@ export function WorkCard({
   // WebKit freezes with multiple concurrent WebGL card contexts — it falls
   // back to the static .inner card there (same as touch / reduced-motion)
   const useGL = mounted && !isTouch && !isWebKit && !reduced && !glFailed;
+  // ...and gets the cheap scroll-velocity skew instead
+  const useSkew = mounted && isWebKit && !isTouch && !reduced;
 
   useGSAP(
     () => {
@@ -80,6 +87,34 @@ export function WorkCard({
     { scope: parallaxRef, dependencies: [reduced, depth] },
   );
 
+  // Safari deformation stand-in: wire the card box into the shared skew ticker
+  // while it's near the viewport, unwire it when it leaves. No per-frame work
+  // here — cardSkew owns the one loop.
+  useEffect(() => {
+    if (!useSkew || depth === 0) return;
+    const el = outerRef.current;
+    if (!el) return;
+
+    let detach: (() => void) | null = null;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !detach) {
+          detach = addCardSkew(el, 5 * depth);
+        } else if (!entry.isIntersecting && detach) {
+          detach();
+          detach = null;
+        }
+      },
+      { rootMargin: '200px 0px' },
+    );
+    io.observe(el);
+
+    return () => {
+      io.disconnect();
+      detach?.();
+    };
+  }, [useSkew, depth]);
+
   return (
     <Link
       href={href}
@@ -88,7 +123,7 @@ export function WorkCard({
       aria-label={`${title} — ${discipline}, ${year}`}
     >
       <div ref={parallaxRef} className={styles.parallax}>
-        <div className={styles.outer} style={{ aspectRatio: ratio }}>
+        <div ref={outerRef} className={styles.outer} style={{ aspectRatio: ratio }}>
           <div className={styles.inner}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
