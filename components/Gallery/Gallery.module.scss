@@ -3,7 +3,7 @@
 .section {
   // sits right after the full-screen paint section, ahead of the footer curve
   position: relative; // anchors the absolutely-placed background line
-  padding-block: clamp(180px, 24vh, 320px);
+  padding-block: clamp(280px, 38vh, 520px);
   background: var(--bg); // == --paper, matches the footer curve fill
   overflow: clip;
 }
@@ -55,7 +55,7 @@
 
 @include mq-max('sm') {
   .section {
-    padding-block: clamp(90px, 16vh, 160px);
+    padding-block: clamp(140px, 22vh, 240px);
   }
   .item {
     width: clamp(240px, 76vw, 340px);
