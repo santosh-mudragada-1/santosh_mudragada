@@ -1,0 +1,217 @@
+@use 'mixins' as *;
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: var(--header-h) var(--gutter) var(--space-xl);
+  overflow: clip; // the portrait is sized to crop against this edge
+}
+
+.grid {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start; // portrait pins near the top; copy re-centres itself
+  gap: clamp(2rem, 1rem + 4vw, 6rem);
+}
+
+// --- left: editorial copy ----------------------------------------------------
+.copy {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+}
+
+.eyebrow {
+  margin-bottom: clamp(1rem, 0.7rem + 1.6vw, 2.1rem);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.headline {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 1rem + 6.4vw, 6.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+}
+
+.lines {
+  display: block;
+}
+
+.lineMask {
+  display: block;
+  overflow: hidden; // masks the per-line rise-in
+  padding-block: 0.06em;
+}
+
+.line {
+  display: block;
+  will-change: transform;
+}
+
+// only the trailing full stop is orange; the words stay ink
+.period {
+  color: var(--accent);
+}
+
+.support {
+  margin-top: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  max-width: 42ch;
+  font-size: var(--fs-1);
+  color: var(--fg-muted);
+}
+
+.supportItem {
+  display: block;
+}
+
+// --- right: portrait composition ------------------------------------------
+// Big enough that, pinned near the top of the hero, the figure runs off the
+// bottom edge around knee height. `overflow: clip` on .hero does the crop.
+// `margin-bottom` is negative only to stop the tall figure from stretching the
+// hero taller than the viewport (which would reveal the whole body + add scroll).
+.figure {
+  position: relative;
+  align-self: start;
+  justify-self: end;
+  width: min(50vw, 800px);
+  margin-top: clamp(1rem, 4vw, 5rem);
+  margin-right: clamp(-3.5rem, -2.5vw, -1rem); // bleeds toward the viewport edge
+  margin-bottom: clamp(-15rem, -19vw, -5rem);
+}
+
+.halo {
+  position: absolute;
+  z-index: 0;
+  // large, pushed out past the head — a soft wash rather than a shape
+  inset: -16% -24% auto auto;
+  width: 120%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle at 52% 44%,
+    rgba(255, 77, 26, 0.5),
+    rgba(255, 77, 26, 0.14) 40%,
+    rgba(255, 77, 26, 0) 66%
+  );
+  opacity: 0.9;
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+// --- scroll cue ----------------------------------------------------------
+.cue {
+  position: absolute;
+  left: var(--gutter);
+  bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.cueLine {
+  width: 1px;
+  height: 42px;
+  background: currentColor;
+  transform-origin: 50% 0;
+  animation: heroCue 2.6s var(--ease-quart-in-out) infinite;
+}
+
+@keyframes heroCue {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 0.7;
+  }
+}
+
+// --- responsive --------------------------------------------------------
+// tablet & down: single column, portrait below the copy, no crop
+@include mq-max('lg') {
+  .hero {
+    min-height: auto;
+    align-items: flex-start;
+    padding: calc(var(--header-h) + var(--space-md)) var(--gutter)
+      var(--space-xl);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: clamp(1.75rem, 4vw, 3.25rem);
+    align-items: start;
+  }
+
+  .copy {
+    align-self: start;
+  }
+
+  .headline {
+    font-size: clamp(2.4rem, 1rem + 7vw, 5rem);
+  }
+
+  .figure {
+    justify-self: start;
+    width: min(70vw, 460px);
+    margin: var(--space-sm) 0 0;
+  }
+
+  .halo {
+    inset: -10% auto auto 42%;
+    width: 92%;
+    transform: translateX(-40%);
+  }
+
+  .cue {
+    display: none;
+  }
+}
+
+@include mq-max('sm') {
+  .headline {
+    font-size: clamp(2rem, 1.1rem + 5.6vw, 3rem);
+  }
+  .support {
+    margin-top: var(--space-md);
+    font-size: 1rem;
+  }
+  .figure {
+    justify-self: center;
+    width: min(82vw, 360px);
+  }
+  .halo {
+    inset: -6% auto auto 50%;
+    width: 98%;
+    transform: translateX(-50%);
+  }
+}
+
+@include reduced-motion {
+  .cueLine {
+    animation: none;
+    transform: scaleY(1);
+    opacity: 0.5;
+  }
+}

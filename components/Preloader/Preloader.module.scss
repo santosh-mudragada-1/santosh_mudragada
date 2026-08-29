@@ -4,43 +4,39 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-preloader);
-  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--carbon);
   // The document is scroll-locked via html.is-loading while this is up; keeping
   // it non-interactive means a skip-click still reaches window listeners.
   pointer-events: none;
+  will-change: transform;
 }
 
 .rootReduced {
-  display: grid;
-  place-items: center;
   background: var(--carbon);
   color: var(--paper);
 }
 
-.panel {
+// the dark shape whose bottom edge (bulged down 300px) flattens on exit
+.curve {
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: var(--carbon);
-  color: var(--paper);
-  will-change: opacity;
-}
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 300px);
 
-// Clips the outgoing / incoming word so the swap reads as one vertical motion.
-.mask {
-  display: grid;
-  overflow: hidden;
-  padding-block: 0.12em; // headroom for ascenders/descenders across scripts
+  path {
+    fill: var(--carbon);
+  }
 }
 
 .word {
   --size-scale: 1;
 
-  grid-area: 1 / 1;
-  align-self: center;
-  justify-self: center;
-
+  position: relative;
+  z-index: 1;
+  margin: 0;
   display: inline-flex;
   align-items: baseline;
   gap: 0.38em;
@@ -52,7 +48,7 @@
   letter-spacing: -0.015em;
   white-space: nowrap;
   color: var(--paper);
-  will-change: transform, opacity;
+  will-change: opacity;
 }
 
 .dot {
@@ -63,13 +59,4 @@
   background: var(--accent);
   flex: none;
   transform: translateY(-0.06em);
-}
-
-.curtain {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: calc(100dvh + 280px);
-  will-change: transform;
 }

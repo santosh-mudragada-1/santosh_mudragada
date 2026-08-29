@@ -1,12 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
-import { EASE } from '@/lib/motion/config';
 import { GREETINGS } from './greetings';
-import { curtainPath, curtainTravel, OVERSCAN } from './curve';
 import styles from './Preloader.module.scss';
 
 type Phase = 'greet' | 'wipe' | 'done';
@@ -16,13 +14,20 @@ type PreloaderProps = {
   fontFamilies: string[];
 };
 
-// Timing — the greeting run is the load screen. Keep it short and confident.
-const FIRST_MS = 560; // first word lingers a beat longer
-const STEP_MS = 420; // each subsequent word
-const HOLD_MS = 520; // hold on the final word before the wipe
-const WIPE_S = 1.15; // orange curved wipe
-const FONT_TIMEOUT_MS = 1400; // don't wait on fonts forever
-const FAILSAFE_MS = 6500; // hard stop if anything stalls
+// Animation values are 1:1 with references/dennis (components/Preloader):
+//   words        first 1000ms, then 150ms each, stops on the last
+//   word opacity 0 -> 0.75 over 1s, delay 0.2 (once — plain text swap after)
+//   slide up     top/y 0 -> -100vh, 0.8s, cubic-bezier(0.76,0,0.24,1), delay 0.2
+//   curve morph  bottom edge (h+300 bulge) -> flat, 0.7s, same ease, delay 0.3
+const EASE = [0.76, 0, 0.24, 1] as const;
+const WORD_FIRST_MS = 1000;
+const WORD_STEP_MS = 150;
+const HOLD_MS = 220; // brief beat on the last word before the reveal
+const SLIDE = { duration: 0.8, ease: EASE, delay: 0.2 };
+const CURVE = { duration: 0.7, ease: EASE, delay: 0.3 };
+const WORD_IN = { duration: 1, delay: 0.2 };
+const FONT_TIMEOUT_MS = 900;
+const FAILSAFE_MS = 5500;
 
 export function Preloader({ fontFamilies }: PreloaderProps) {
   const prefersReduced = usePrefersReducedMotion();
@@ -34,7 +39,6 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
   const [dims, setDims] = useState({ w: 0, h: 0 });
   const finishedRef = useRef(false);
 
-  // ---- mount + viewport size ---------------------------------------------
   useEffect(() => {
     setMounted(true);
     const measure = () =>
@@ -44,7 +48,6 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  // ---- lock the document while the preloader owns the screen ------------
   useEffect(() => {
     if (phase === 'done') return;
     const html = document.documentElement;
@@ -56,7 +59,6 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
     };
   }, [phase, stop, start]);
 
-  // ---- greeting sequence ----------------------------------------------
   useEffect(() => {
     if (!mounted || phase !== 'greet') return;
 
@@ -70,9 +72,6 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
     };
 
     const run = async () => {
-      // Force-load every script's face before we render its glyphs, so a word
-      // never flashes in a fallback and then reflows. Capped so a slow/blocked
-      // font network can't hold the screen.
       try {
         const fontLoads =
           typeof document !== 'undefined' && 'fonts' in document
@@ -89,14 +88,13 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
           new Promise((resolve) => wait(FONT_TIMEOUT_MS, () => resolve(null))),
         ]);
       } catch {
-        /* fall through to the sequence regardless */
+        /* fall through */
       }
       if (cancelled) return;
 
       const order = prefersReduced
         ? [0, GREETINGS.length - 1]
         : GREETINGS.map((_, i) => i);
-      const stepMs = prefersReduced ? 460 : STEP_MS;
 
       let step = 0;
       const advance = () => {
@@ -104,24 +102,21 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
         step += 1;
         if (step < order.length) {
           setIndex(order[step]);
-          wait(stepMs, advance);
+          wait(prefersReduced ? 420 : WORD_STEP_MS, advance);
         } else {
-          wait(prefersReduced ? 260 : HOLD_MS, toWipe);
+          wait(prefersReduced ? 240 : HOLD_MS, toWipe);
         }
       };
 
       setIndex(order[0]);
-      wait(prefersReduced ? 460 : FIRST_MS, advance);
+      wait(prefersReduced ? 420 : WORD_FIRST_MS, advance);
     };
 
     void run();
 
-    // Skip ahead on the first deliberate interaction.
     const onSkip = () => toWipe();
     window.addEventListener('pointerdown', onSkip, { once: true });
     window.addEventListener('keydown', onSkip, { once: true });
-
-    // Absolute backstop.
     wait(FAILSAFE_MS, toWipe);
 
     return () => {
@@ -142,12 +137,10 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
 
   if (phase === 'done') return null;
 
-  // Pre-hydration / pre-mount: a plain dark cover matching the server markup
-  // exactly (no words, no SVG) — no hydration mismatch, no unstyled flash.
   if (!mounted) {
     return (
       <div className={`js-preloader ${styles.root}`} aria-hidden>
-        <div className={styles.panel} />
+        <span />
       </div>
     );
   }
@@ -159,7 +152,6 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
     '--size-scale': current.sizeScale,
   } as CSSProperties;
 
-  // Reduced motion: opacity only. No movement, no curved wipe.
   if (prefersReduced) {
     return (
       <motion.div
@@ -180,54 +172,43 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
   }
 
   const { w, h } = dims;
-  const travel = curtainTravel(h);
+  // belly depth follows the viewport — the ~16" look, scaled down on small screens
+  const belly = Math.min(300, Math.max(140, h * 0.27));
+  const bulged = `M0 0 L${w} 0 L${w} ${h} Q${w / 2} ${h + belly} 0 ${h} L0 0`;
+  const flat = `M0 0 L${w} 0 L${w} ${h} Q${w / 2} ${h} 0 ${h} L0 0`;
 
   return (
-    <div className={`js-preloader ${styles.root}`} aria-hidden>
-      <motion.div
-        className={styles.panel}
-        initial={{ opacity: 1 }}
-        animate={{ opacity: phase === 'wipe' ? 0 : 1 }}
-        transition={{
-          duration: 0.34,
-          ease: 'linear',
-          delay: phase === 'wipe' ? WIPE_S * 0.32 : 0,
-        }}
+    <motion.div
+      className={`js-preloader ${styles.root}`}
+      aria-hidden
+      initial={{ y: 0 }}
+      animate={{ y: phase === 'wipe' ? '-100vh' : 0 }}
+      transition={SLIDE}
+      onAnimationComplete={() => {
+        if (phase === 'wipe') finish();
+      }}
+    >
+      <motion.p
+        className={styles.word}
+        lang={current.lang}
+        style={wordStyle}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.75 }}
+        transition={WORD_IN}
       >
-        <div className={styles.mask}>
-          <AnimatePresence initial={false}>
-            <motion.span
-              key={index}
-              className={styles.word}
-              lang={current.lang}
-              style={wordStyle}
-              initial={{ y: '108%', opacity: 0 }}
-              animate={{ y: '0%', opacity: 1 }}
-              exit={{ y: '-108%', opacity: 0 }}
-              transition={{ duration: 0.52, ease: EASE.quartInOut }}
-            >
-              <span className={styles.dot} aria-hidden />
-              {current.text}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-      </motion.div>
+        <span className={styles.dot} aria-hidden />
+        {current.text}
+      </motion.p>
 
       {w > 0 && (
-        <motion.svg
-          className={styles.curtain}
-          viewBox={`0 0 ${w} ${h + OVERSCAN}`}
-          preserveAspectRatio="none"
-          initial={{ y: travel.below }}
-          animate={{ y: phase === 'wipe' ? travel.gone : travel.below }}
-          transition={{ duration: WIPE_S, ease: EASE.quartInOut }}
-          onAnimationComplete={() => {
-            if (phase === 'wipe') finish();
-          }}
-        >
-          <path d={curtainPath(w, h)} fill="var(--accent)" />
-        </motion.svg>
+        <svg className={styles.curve} preserveAspectRatio="none" aria-hidden>
+          <motion.path
+            initial={{ d: bulged }}
+            animate={{ d: phase === 'wipe' ? flat : bulged }}
+            transition={CURVE}
+          />
+        </svg>
       )}
-    </div>
+    </motion.div>
   );
 }

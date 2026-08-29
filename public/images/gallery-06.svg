@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="1300" viewBox="0 0 1300 1300">
+  <rect width="1300" height="1300" fill="#12100c"/>
+  <rect x="65" y="38" width="834" height="394" fill="#f4f0e9" opacity="0.85"/>
+  <circle cx="693" cy="553" r="353" fill="#ff4d1a"/>
+  <rect x="0" y="1055" width="1300" height="169" fill="#8a857c" opacity="0.5"/>
+  <rect x="104" y="170" width="381" height="16" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="104" y="266" width="634" height="16" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="104" y="343" width="708" height="16" fill="#f4f0e9" opacity="0.9"/>
+  <text x="65" y="1235" font-family="Georgia, 'Times New Roman', serif" font-size="78" fill="#f4f0e9" opacity="0.85">Frame 06</text>
+  <text x="65" y="117" font-family="ui-monospace, Menlo, monospace" font-size="39" fill="#ff4d1a" letter-spacing="2">PLACEHOLDER</text>
+</svg>

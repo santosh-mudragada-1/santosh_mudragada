@@ -1,6 +1,8 @@
 // Single GSAP entry point for the whole app.
-// Import `{ gsap, ScrollTrigger, useGSAP }` from here — never register plugins
-// anywhere else, so registration happens exactly once.
+// Import `{ gsap, ScrollTrigger, useGSAP }` from here. ScrollTrigger is used
+// everywhere so it's registered up front; heavier, single-use plugins
+// (Draggable / InertiaPlugin) are imported lazily by the component that needs
+// them so they stay out of the shared bundle.
 
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -8,15 +10,12 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-// Project-wide defaults so tweens feel consistent unless a component overrides.
 gsap.defaults({ ease: 'power3.out', duration: 0.8 });
 
-// GSAP is authoritative for scroll-linked work; keep ScrollTrigger from
-// smoothing over frame drops during heavy scenes so scrubbed animation stays
-// locked to scroll position.
+// Keep ScrollTrigger from smoothing over frame drops during heavy scenes so
+// scrubbed animation stays locked to scroll position.
 ScrollTrigger.config({ ignoreMobileResize: true });
 
-// Named eases mirrored from the CSS custom properties / Framer config.
 export const GSAP_EASE = {
   primary: 'power4.out',
   inOut: 'power3.inOut',

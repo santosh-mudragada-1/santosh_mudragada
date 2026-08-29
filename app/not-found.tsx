@@ -9,7 +9,12 @@ export default function NotFound() {
         Nothing <em>here</em>
       </h1>
       <p className={styles.copy}>That page doesn&rsquo;t exist.</p>
-      <Link href="/" className={styles.back}>
+      <Link
+        href="/"
+        className={styles.back}
+        data-cursor-reveal
+        data-cursor-sticky
+      >
         ← Home
       </Link>
     </main>

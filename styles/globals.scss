@@ -67,12 +67,14 @@
   --dur-slow: 0.9s;
 
   // --- z-index scale ------------------------------------------------
+  // progress < menu < header (burger stays clickable over the panel)
+  //          < cursor (rides over the menu) < transition < preloader
   --z-raised: 10;
   --z-sticky: 20;
-  --z-header: 50;
   --z-progress: 60;
-  --z-cursor: 80;
-  --z-menu: 90;
+  --z-menu: 80;
+  --z-header: 90;
+  --z-cursor: 95;
   --z-transition: 100;
   --z-preloader: 9999;
 
@@ -154,6 +156,18 @@ html.is-loading,
 html.is-loading body {
   overflow: clip;
   height: 100%;
+}
+
+// While the menu owns the screen.
+html.menu-open,
+html.menu-open body {
+  overflow: clip;
+}
+
+// Custom cursor active — hide the native one everywhere.
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
 }
 
 // ===========================================================================

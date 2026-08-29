@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000">
+  <rect width="1500" height="1000" fill="#12100c"/>
+  <rect x="32" y="26" width="831" height="315" fill="#f4f0e9" opacity="0.85"/>
+  <circle cx="1146" cy="777" r="126" fill="#ff4d1a"/>
+  <rect x="0" y="696" width="1500" height="65" fill="#8a857c" opacity="0.5"/>
+  <rect x="120" y="126" width="411" height="12" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="120" y="202" width="788" height="12" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="120" y="276" width="634" height="12" fill="#f4f0e9" opacity="0.9"/>
+  <text x="75" y="950" font-family="Georgia, 'Times New Roman', serif" font-size="60" fill="#f4f0e9" opacity="0.85">Halflight</text>
+  <text x="75" y="90" font-family="ui-monospace, Menlo, monospace" font-size="30" fill="#ff4d1a" letter-spacing="2">PLACEHOLDER</text>
+</svg>

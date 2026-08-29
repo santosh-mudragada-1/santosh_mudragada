@@ -1,0 +1,149 @@
+@use 'mixins' as *;
+
+.header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: var(--z-header);
+  pointer-events: none;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(1.1rem, 1rem + 1vw, 2rem) var(--gutter);
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+.linksSlot {
+  position: relative;
+  will-change: opacity;
+
+  // mobile / tablet: burger only
+  @include mq-max('lg') {
+    display: none;
+  }
+}
+
+// --- primary links ---------------------------------------------------------
+.navLinks {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(1.1rem, 0.6rem + 1.4vw, 2.1rem);
+}
+
+.navLink {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.35em 0.1em;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--fg);
+  transition: color 0.3s var(--ease-quart-in-out);
+}
+
+.navDot {
+  position: absolute;
+  bottom: -0.15em;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateX(-50%) scale(0);
+  transition: transform 0.25s var(--ease-quart-in-out);
+}
+
+@include hover {
+  .navLink:hover {
+    color: var(--accent);
+
+    .navDot {
+      transform: translateX(-50%) scale(1);
+    }
+  }
+}
+
+// --- round menu button (Dennis) -----------------------------------------
+.circleMag {
+  position: fixed;
+  top: clamp(14px, 1.6vw, 26px);
+  right: clamp(14px, 1.6vw, 26px);
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.circle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(56px, 5.4vw, 74px);
+  height: clamp(56px, 5.4vw, 74px);
+  border-radius: 50%;
+  background: var(--carbon);
+  overflow: hidden;
+  transform: scale(0); // GSAP scales it in past the first section
+  will-change: transform;
+
+  // compact: the burger is the only nav — always visible, no scroll swap.
+  // `!important` beats any stale inline transform GSAP may leave behind.
+  @include mq-max('lg') {
+    transform: scale(1) !important;
+  }
+
+  // accent fill wipes in on hover
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: scale(0);
+    transition: transform 0.4s var(--ease-quart-in-out);
+  }
+
+  @include hover {
+    &:hover::before {
+      transform: scale(1);
+    }
+  }
+}
+
+.circleBurger {
+  position: relative;
+  z-index: 1;
+  width: 42%;
+  height: 9px;
+
+  span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: var(--paper);
+    border-radius: 2px;
+    transition: transform 0.36s var(--ease-quart-in-out);
+
+    &:first-child {
+      top: 0;
+    }
+    &:last-child {
+      bottom: 0;
+    }
+  }
+
+  &[data-open] span {
+    &:first-child {
+      transform: translateY(3.75px) rotate(45deg);
+    }
+    &:last-child {
+      transform: translateY(-3.75px) rotate(-45deg);
+    }
+  }
+}

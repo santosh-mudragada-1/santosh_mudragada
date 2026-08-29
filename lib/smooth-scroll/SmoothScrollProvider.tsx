@@ -12,6 +12,7 @@ import {
 import Lenis from 'lenis';
 import { gsap, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+import { setLenisInstance } from './lenis-instance';
 
 type ScrollToTarget = number | string | HTMLElement;
 type ScrollToOptions = {
@@ -81,6 +82,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
 
     lenisRef.current = lenisInstance;
     setLenis(lenisInstance);
+    setLenisInstance(lenisInstance);
 
     // If the preloader is still holding the screen, start paused — it calls
     // start() when it lifts. Closes the gap between this effect and the
@@ -120,6 +122,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       lenisInstance.off('scroll', ScrollTrigger.update);
       lenisInstance.destroy();
       lenisRef.current = null;
+      setLenisInstance(null);
       setLenis(null);
     };
   }, [prefersReduced]);

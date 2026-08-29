@@ -1,0 +1,44 @@
+@use 'mixins' as *;
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: -0.005em;
+  color: var(--fg);
+  line-height: 1.15;
+  -webkit-user-select: none;
+  user-select: none;
+
+  @include hover {
+    .track {
+      transform: translateX(calc(-1 * var(--shift, 0px)));
+    }
+  }
+}
+
+.viewport {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+// Fixes the visible width to "Design with Santosh" — never changes.
+.sizer {
+  display: block;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.track {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  transform: translateX(0);
+  transition: transform 0.6s var(--ease-quart-in-out);
+  will-change: transform;
+}

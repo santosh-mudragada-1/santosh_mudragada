@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="800" viewBox="0 0 1600 800">
+  <rect width="1600" height="800" fill="#12100c"/>
+  <rect x="53" y="28" width="768" height="440" fill="#f4f0e9" opacity="0.85"/>
+  <circle cx="1293" cy="241" r="188" fill="#ff4d1a"/>
+  <rect x="0" y="501" width="1600" height="65" fill="#8a857c" opacity="0.5"/>
+  <rect x="128" y="109" width="493" height="10" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="128" y="158" width="547" height="10" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="128" y="216" width="731" height="10" fill="#f4f0e9" opacity="0.9"/>
+  <text x="80" y="760" font-family="Georgia, 'Times New Roman', serif" font-size="48" fill="#f4f0e9" opacity="0.85">Northwind</text>
+  <text x="80" y="72" font-family="ui-monospace, Menlo, monospace" font-size="24" fill="#ff4d1a" letter-spacing="2">PLACEHOLDER</text>
+</svg>

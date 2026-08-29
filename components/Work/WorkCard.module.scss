@@ -1,0 +1,124 @@
+@use 'mixins' as *;
+
+.card {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  color: var(--fg);
+}
+
+.parallax {
+  will-change: transform;
+}
+
+// outer: no background, no clip — the WebGL bow spills past it. Sets the box.
+.outer {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+// inner: same size, clipped. The real <img> + text; also the dark ground a
+// bowed edge lifts off, and the fallback when WebGL isn't running.
+.inner {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--carbon);
+
+  // hairline only matters when this is the visible layer (no GL sibling)
+  &:only-child::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+    pointer-events: none;
+    z-index: 3;
+  }
+}
+
+.img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// --- WebGL layer ------------------------------------------------------
+.glWrap {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+// ogl sets width/height in px (frame width x frame height * OVERSCAN 1.5).
+// `top: -25%` centres that 50% overscan above + below the box.
+.glCanvas {
+  position: absolute;
+  top: -25%;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-quart-in-out);
+
+  &[data-ready] {
+    opacity: 1;
+  }
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(8, 7, 6, 0.74) 0%,
+    rgba(8, 7, 6, 0.32) 26%,
+    rgba(8, 7, 6, 0) 52%
+  );
+  opacity: 0.85;
+  transition: opacity 0.5s var(--ease-quart-in-out);
+}
+
+.overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  padding: clamp(1rem, 0.7rem + 1.4vw, 1.9rem);
+  color: var(--paper);
+}
+
+.index {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+
+.line {
+  font-size: 0.9rem;
+  color: rgba(244, 240, 233, 0.72);
+}
+
+@include hover {
+  .card:hover .scrim {
+    opacity: 1;
+  }
+}

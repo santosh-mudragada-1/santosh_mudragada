@@ -1,0 +1,163 @@
+@use 'mixins' as *;
+
+.section {
+  // breathing room before the full-screen paint section
+  padding-block: var(--space-lg) clamp(140px, 18vh, 240px);
+  overflow: clip;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-width: 40rem;
+  margin: 0 var(--gutter) var(--space-lg);
+}
+
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.lead {
+  font-size: var(--fs-3);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.viewport {
+  overflow: hidden;
+  padding-inline: var(--gutter);
+
+  &[data-touch] {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+}
+
+.track {
+  display: flex;
+  gap: clamp(1rem, 0.6rem + 1.6vw, 2rem);
+  width: max-content;
+  will-change: transform;
+}
+
+.card {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  width: clamp(300px, 30vw, 460px);
+  color: var(--fg);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--carbon);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-quart-in-out);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+    pointer-events: none;
+    z-index: 3;
+  }
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(8, 7, 6, 0.78) 0%,
+    rgba(8, 7, 6, 0.34) 30%,
+    rgba(8, 7, 6, 0) 58%
+  );
+}
+
+.status {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  z-index: 2;
+  padding: 0.25em 0.7em;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  background: var(--paper);
+  color: var(--ink);
+
+  &[data-status='Live'] {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  &[data-status='Archived'] {
+    background: var(--smoke-300);
+  }
+}
+
+// content sits inside the card, over the image
+.body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  padding: clamp(1rem, 0.7rem + 1.2vw, 1.6rem);
+  color: var(--paper);
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--fs-2);
+  letter-spacing: -0.02em;
+}
+
+.arrow {
+  font-size: 0.7em;
+  color: rgba(244, 240, 233, 0.7);
+  transition: transform 0.4s var(--ease-quart-in-out);
+}
+
+.blurb {
+  font-size: 0.92rem;
+  color: rgba(244, 240, 233, 0.74);
+  line-height: 1.45;
+}
+
+@include hover {
+  .card:hover {
+    .media img {
+      transform: scale(1.04);
+    }
+    .arrow {
+      transform: translate(3px, -3px);
+      color: var(--accent);
+    }
+  }
+}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#12100c"/>
+  <rect x="105" y="37" width="860" height="519" fill="#f4f0e9" opacity="0.85"/>
+  <circle cx="943" cy="1007" r="216" fill="#ff4d1a"/>
+  <rect x="0" y="793" width="1200" height="88" fill="#8a857c" opacity="0.5"/>
+  <rect x="96" y="145" width="349" height="14" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="96" y="252" width="520" height="14" fill="#f4f0e9" opacity="0.9"/>
+  <rect x="96" y="316" width="288" height="14" fill="#f4f0e9" opacity="0.9"/>
+  <text x="60" y="1140" font-family="Georgia, 'Times New Roman', serif" font-size="72" fill="#f4f0e9" opacity="0.85">Field Notes</text>
+  <text x="60" y="108" font-family="ui-monospace, Menlo, monospace" font-size="36" fill="#ff4d1a" letter-spacing="2">PLACEHOLDER</text>
+</svg>

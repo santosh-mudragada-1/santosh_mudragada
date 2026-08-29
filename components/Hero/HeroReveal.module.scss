@@ -1,0 +1,40 @@
+@use 'mixins' as *;
+
+.stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 1187 / 1326; // == the portrait assets, so both layers align 1:1
+  isolation: isolate; // keep the reveal compositing off the rest of the hero
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+// clean cutout — the stable base, never transformed
+.clean {
+  z-index: 1;
+}
+
+// pixel/dither portrait — touch only, opacity scrubbed on scroll by GSAP
+.pixel {
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+}
+
+// desktop reveal surface — <svg> holding the pixel portrait behind a gooey
+// liquid mask; transparent everywhere else so the clean layer shows through
+.reveal {
+  z-index: 2;
+  pointer-events: none;
+  overflow: visible;
+}

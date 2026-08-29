@@ -1,0 +1,131 @@
+@use 'mixins' as *;
+
+.section {
+  position: relative;
+  padding-block: clamp(300px, 40vh, 520px) clamp(380px, 46vh, 600px);
+  background: #f2e9db;
+  overflow: clip;
+}
+
+.head {
+  position: relative;
+  z-index: 2;
+  margin-inline: var(--gutter);
+  margin-bottom: 3vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  overflow: visible; // the scroll parallax sweeps the lines sideways
+}
+
+// both lines share the heading type; only colour + horizontal placement differ
+.kicker,
+.title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 0.6rem + 9vw, 8.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.kicker {
+  font-weight: 400; // regular — lighter than the FEATURED WORK line
+  color: var(--ink);
+}
+
+.kickerArrow {
+  color: var(--accent); // only the ↓ keeps the orange
+}
+
+.title {
+  color: var(--ink);
+  margin-right: 6vw; // rests a little left of the years line
+}
+
+// --- three cards, balanced-asymmetric --------------------------------
+// `a` = a narrower banner, pushed left of centre.
+// `b` = tall portrait, bottom-left.  `c` = shorter card that fills the space
+// to its right (its height stays put). Generous gaps a<->row and b<->c. The
+// canvas is an aspect-ratio box, so the composition is viewport-independent.
+.canvas {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  margin-inline: var(--gutter);
+  aspect-ratio: 100 / 111;
+}
+
+.slot {
+  position: absolute;
+
+  &[data-slot='a'] {
+    top: 0;
+    left: 6%;
+    width: 83%; // right margin 11%
+  }
+  &[data-slot='b'] {
+    top: 53%;
+    left: 2.5%;
+    width: 36.3%; // was 33%, +10%
+  }
+  &[data-slot='c'] {
+    top: 51%;
+    left: 41.8%; // b right edge (38.8%) + 3% channel
+    right: 2.5%;
+  }
+}
+
+// --- tablet & down: clean full-width vertical stack --------------------
+@include mq-max('lg') {
+  .section {
+    padding-block: clamp(120px, 20vh, 300px) clamp(140px, 22vh, 340px);
+  }
+
+  .head {
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: var(--space-md);
+    overflow: visible;
+  }
+  .kicker,
+  .title {
+    font-size: clamp(2rem, 1rem + 6vw, 4.75rem);
+    white-space: normal;
+  }
+  .title {
+    margin-right: 0;
+  }
+
+  .canvas {
+    aspect-ratio: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: clamp(2rem, 6vw, 4.5rem);
+    margin-block: 2vh;
+  }
+
+  .slot,
+  .slot[data-slot='a'],
+  .slot[data-slot='b'],
+  .slot[data-slot='c'] {
+    position: relative;
+    inset: auto;
+    width: 100%;
+  }
+}
+
+@include mq-max('sm') {
+  .kicker,
+  .title {
+    font-size: clamp(1.9rem, 1.1rem + 4.6vw, 3rem);
+  }
+  .canvas {
+    gap: clamp(1.5rem, 8vw, 3rem);
+  }
+}

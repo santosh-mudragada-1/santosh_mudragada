@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f4f0e9"/>
+  <rect x="76" y="17" width="948" height="489" fill="#12100c" opacity="0.85"/>
+  <circle cx="441" cy="252" r="132" fill="#ff4d1a"/>
+  <rect x="0" y="763" width="1200" height="61" fill="#8a857c" opacity="0.5"/>
+  <rect x="96" y="109" width="298" height="11" fill="#12100c" opacity="0.9"/>
+  <rect x="96" y="189" width="451" height="11" fill="#12100c" opacity="0.9"/>
+  <rect x="96" y="249" width="328" height="11" fill="#12100c" opacity="0.9"/>
+  <text x="60" y="855" font-family="Georgia, 'Times New Roman', serif" font-size="54" fill="#12100c" opacity="0.85">Pocket Atlas</text>
+  <text x="60" y="81" font-family="ui-monospace, Menlo, monospace" font-size="27" fill="#ff4d1a" letter-spacing="2">PLACEHOLDER</text>
+</svg>

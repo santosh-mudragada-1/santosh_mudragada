@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import {
   Bricolage_Grotesque,
+  Erica_One,
   Noto_Sans,
   Noto_Sans_Devanagari,
   Noto_Sans_Kannada,
@@ -14,6 +15,10 @@ import '@/styles/globals.scss';
 import { Providers } from '@/lib/providers';
 import { Preloader } from '@/components/Preloader';
 import { ScrollProgress } from '@/components/ScrollProgress';
+import { Navigation } from '@/components/Navigation';
+import { Menu } from '@/components/Menu';
+import { Cursor } from '@/components/Cursor';
+import { PageTransition } from '@/components/PageTransition';
 import { SITE } from '@/lib/constants/site';
 
 // --- Type system -----------------------------------------------------------
@@ -23,6 +28,14 @@ const display = Bricolage_Grotesque({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-display',
+});
+
+// accent face — used only to highlight words in the About/paint section
+const erica = Erica_One({
+  subsets: ['latin'],
+  weight: '400',
+  display: 'swap',
+  variable: '--font-erica',
 });
 
 const sans = Noto_Sans({
@@ -75,6 +88,7 @@ const notoMalayalam = Noto_Sans_Malayalam({
 
 const fontVars = [
   display,
+  erica,
   sans,
   notoTelugu,
   notoDevanagari,
@@ -145,7 +159,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <Preloader fontFamilies={greetingFontFamilies} />
           <ScrollProgress />
-          {children}
+          <Navigation />
+          <Menu />
+          <Cursor />
+          <PageTransition>{children}</PageTransition>
         </Providers>
       </body>
     </html>

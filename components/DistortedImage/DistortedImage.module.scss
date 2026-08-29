@@ -1,0 +1,36 @@
+@use 'mixins' as *;
+
+.wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--carbon);
+  isolation: isolate;
+}
+
+.img,
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.img {
+  object-fit: cover;
+  transition: opacity 0.5s var(--ease-quart-in-out);
+
+  &[data-dimmed] {
+    opacity: 0;
+  }
+}
+
+.canvas {
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-quart-in-out);
+
+  &[data-ready] {
+    opacity: 1;
+  }
+}

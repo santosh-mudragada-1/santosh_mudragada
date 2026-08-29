@@ -1,0 +1,22 @@
+.svg {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  // span the viewport end to end (110vw), natural proportions — not scaled to
+  // the section box. Height follows the viewBox ratio; vertical overflow is
+  // clipped by the section.
+  width: 110vw;
+  height: auto;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+// the big threading line only reads on the wide desktop composition; on the
+// stacked layout it just clutters the background
+@media (max-width: 1023.98px) {
+  .svg {
+    display: none;
+  }
+}

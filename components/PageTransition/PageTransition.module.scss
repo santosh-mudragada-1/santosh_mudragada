@@ -1,0 +1,44 @@
+@use 'mixins' as *;
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-transition);
+  pointer-events: none;
+
+  &[aria-hidden='true'] {
+    // parked; keep it out of the way but mounted
+  }
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  // matches curtainMorphPath's viewBox: viewport + 2 * MORPH_OVERSCAN (300)
+  height: calc(100dvh + 600px);
+  will-change: transform;
+}
+
+.label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.6rem);
+  letter-spacing: -0.01em;
+  color: var(--paper);
+  will-change: transform, opacity;
+}
+
+.dot {
+  width: 0.32em;
+  height: 0.32em;
+  border-radius: 50%;
+  background: var(--accent);
+}

@@ -1,0 +1,285 @@
+@use 'mixins' as *;
+
+.footer {
+  position: relative;
+  overflow-x: clip;
+  // a touch under the viewport so a sliver of the light section above still
+  // shows behind the fixed nav / burger at the very bottom of the page.
+  min-height: 90svh;
+  padding-top: clamp(80px, 11vh, 140px);
+  background: var(--carbon);
+  color: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+
+// curved light cap over the seam; `d` scrubs bulge -> flat. Height (and so the
+// belly) follows the viewport — the 16" look, scaled down on small screens.
+.curve {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: clamp(88px, 21vh, 270px);
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+
+  path {
+    fill: #f4f0e9; // == --paper, the surface above the seam
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+// --- headline (two lines) ------------------------------------------------
+.headline {
+  padding-inline: var(--gutter);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 0.5rem + 8vw, 9rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.lineMask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.02em;
+}
+
+.line {
+  display: block;
+  will-change: transform;
+}
+
+.square {
+  display: inline-block;
+  width: 0.16em;
+  height: 0.16em;
+  margin-left: 0.08em;
+  background: var(--accent);
+  vertical-align: baseline;
+}
+
+// --- full-bleed marquee band ----------------------------------------
+.band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-block: clamp(1rem, 0.5rem + 1.7vw, 2.4rem);
+  height: clamp(100px, 12vw, 200px);
+  background: var(--accent);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.bandMeta {
+  position: absolute;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(20, 17, 13, 0.62);
+  z-index: 1;
+
+  &[data-pos='tl'] {
+    top: 0.55rem;
+    left: var(--gutter);
+  }
+  &[data-pos='br'] {
+    bottom: 0.55rem;
+    right: var(--gutter);
+  }
+}
+
+.marquee {
+  display: flex;
+  flex: none;
+  white-space: nowrap;
+  will-change: transform;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 1rem + 3.4vw, 4.2rem);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+}
+
+.star {
+  margin: 0 0.55em;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+// --- direct block ------------------------------------------------------
+// `margin-top: auto` drops the contact block + the bottom row to the footer
+// floor, absorbing whatever slack the 90svh footer has at any size. The
+// headline + strip stay together at the top; socials and the bottom row stay
+// adjacent (no gap between them).
+.direct {
+  padding-inline: var(--gutter);
+  margin-top: auto;
+  padding-top: clamp(1.5rem, 0.5rem + 3vw, 3.5rem);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 0.15em var(--space-md);
+}
+
+.label {
+  grid-column: 1;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.email {
+  grid-column: 1;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 0.8rem + 1.9vw, 2.5rem);
+  letter-spacing: -0.02em;
+  color: var(--paper);
+  transition: color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      color: var(--accent);
+    }
+  }
+}
+
+.copy {
+  grid-column: 1;
+  justify-self: start;
+  margin-top: 0.35em;
+  font-size: 0.78rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  border-bottom: 1px solid rgba(244, 240, 233, 0.32);
+  padding-bottom: 2px;
+  transition: color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      color: var(--paper);
+    }
+  }
+}
+
+.socials {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: end;
+  display: flex;
+  gap: var(--space-md);
+}
+
+.social {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  transition: color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      color: var(--paper);
+    }
+  }
+}
+
+// --- bottom row — sits directly under the direct/socials block ----------
+.bottom {
+  padding: var(--space-md) var(--gutter) var(--space-md);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-sm) var(--space-md);
+}
+
+.bottomNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: 0.9rem;
+
+  a,
+  button {
+    color: var(--smoke-300);
+    transition: color 0.3s var(--ease-quart-in-out);
+
+    @include hover {
+      &:hover {
+        color: var(--paper);
+      }
+    }
+  }
+}
+
+.toTop {
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+}
+
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em var(--space-md);
+  font-size: 0.8rem;
+  color: var(--smoke-500);
+}
+
+@include mq-max('md') {
+  .direct {
+    grid-template-columns: 1fr;
+  }
+  .socials {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: var(--space-md);
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
+  }
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@include mq-max('sm') {
+  .footer {
+    padding-top: clamp(64px, 12vh, 100px);
+  }
+  .headline {
+    font-size: clamp(2.1rem, 1.1rem + 6.5vw, 3.4rem);
+  }
+  .band {
+    height: clamp(60px, 15vw, 92px);
+    margin-block: clamp(0.9rem, 0.5rem + 2vw, 1.6rem);
+  }
+  .marquee span {
+    font-size: clamp(1.35rem, 0.9rem + 2.6vw, 2rem);
+  }
+  .email {
+    font-size: clamp(1.15rem, 0.9rem + 2.4vw, 1.7rem);
+  }
+}

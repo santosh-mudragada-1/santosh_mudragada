@@ -1,0 +1,150 @@
+@use 'mixins' as *;
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cursor);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-quart-in-out);
+
+  &[data-visible] {
+    opacity: 1;
+  }
+}
+
+.follow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  // x / y motion values place this at the raw pointer coordinate.
+}
+
+.center {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+}
+
+.blob {
+  grid-area: 1 / 1;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+
+// Orange on every state — reads on both the cream surfaces and the dark
+// card/menu surfaces, and keeps the identity. States differ by size + label.
+.stretch {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.default .stretch {
+  box-shadow: 0 0 0 1px rgba(244, 240, 233, 0.35);
+}
+
+// "Say hi" (Contact strip) + "menu" + any reveal marked dark (the burger,
+// which turns orange on hover) — solid dark disc.
+.hi .stretch,
+.menu .stretch,
+.blob[data-dark] .stretch {
+  background: var(--ink);
+}
+
+.label {
+  grid-area: 1 / 1;
+  // The blob sets an inline transform (framer `scale`), which makes it a
+  // stacking context that would otherwise paint OVER this static sibling and
+  // hide the text. Lift the label into its own layer so it always reads.
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-accent);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-quart-in-out);
+
+  &[data-show] {
+    opacity: 1;
+  }
+}
+
+// "Say hi" sits on the black disc — flip the label to the light paper tone.
+.hi ~ .label {
+  color: var(--paper);
+}
+
+// blob state classes that just keep the orange disc (size differs via scale)
+.paint .stretch,
+.reveal .stretch,
+.link .stretch,
+.view .stretch,
+.drag .stretch {
+  background: var(--accent);
+}
+
+// --- reveal mask: the disc as a window onto the element's own text -------
+.mask {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.maskInk {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  color: var(--paper);
+  will-change: transform;
+}
+
+// the burger's own lines/X, shown THROUGH the cursor — positioned over the
+// real icon (via x/y motion values) so the disc reveals the part it covers.
+.maskBurger {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 9px;
+
+  span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: var(--paper);
+    border-radius: 2px;
+    transition: transform 0.34s var(--ease-quart-in-out);
+
+    &:first-child {
+      top: 0;
+    }
+    &:last-child {
+      bottom: 0;
+    }
+  }
+
+  &[data-open] span:first-child {
+    transform: translateY(3.75px) rotate(45deg);
+  }
+  &[data-open] span:last-child {
+    transform: translateY(-3.75px) rotate(-45deg);
+  }
+}
