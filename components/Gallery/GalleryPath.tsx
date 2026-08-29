@@ -14,10 +14,7 @@ const D =
 const ORANGE = '0 0 0 0 1 0 0 0 0 0.396078 0 0 0 0 0.12549';
 const ALPHA = '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0';
 
-// two SMALL orange inner-shadow passes (was the Figma export's 5). Safari
-// re-rasterises the whole filter chain as the mask wipes, and stacked
-// large-radius feGaussianBlur over this width is what froze it there — small
-// radii keep the soft-orange read at a fraction of the cost.
+// two SMALL orange inner-shadow passes (was the Figma export's 5)
 // — dy, stdDeviation (blur/2), alpha
 const SHADOWS: Array<[number, number, number]> = [
   [-30, 16, 0.5],
@@ -25,32 +22,31 @@ const SHADOWS: Array<[number, number, number]> = [
 ];
 
 // measured length of D (~3450) — the fallback when getTotalLength() reads 0
-// (it does, in production, when this layout effect runs before SVG layout)
 const D_LENGTH = 3550;
 
 /**
  * Soft orange line behind the archive rows — drops in from the top-left and
- * draws out through the right edge of the screen. The stroke is the section's
- * own paper colour, so only the stacked orange inner shadows read.
+ * draws out through the right edge of the screen.
  *
- * The draw-in is done with a MASK wipe, not by animating the filtered stroke:
- * the `<g filter>` (blurred inner-shadow passes) stays static, so the browser
- * rasterises that multi-pass filter once and just composites it each frame.
- * Only the mask — a plain thick stroke with a scrubbed `stroke-dashoffset` —
- * updates per frame, a cheap single-fill re-raster. Animating the filtered
- * path directly re-ran the whole blur chain on every scroll tick.
+ * DIAGNOSTIC (Safari / WebKit): the whole SVG-filter + mask pipeline is
+ * skipped. WebKit renders a single plain <path> — no <filter>, no <feGaussianBlur>,
+ * no <mask>, no <defs>, no animated stroke-dashoffset, nothing that forces an
+ * offscreen buffer. This is to test whether that pipeline is what freezes the
+ * Archive section on Safari.
  *
- * WebKit re-rasterises the filter anyway whenever the mask changes, which
- * freezes the section — there it renders fully drawn, no scrub.
+ * Chromium / Blink is completely untouched: the filtered + masked <g> with a
+ * scroll-scrubbed stroke-dashoffset mask wipe, exactly as before.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
   const reduced = usePrefersReducedMotion();
   const isWebKit = useIsWebKit();
-  const still = reduced || isWebKit;
 
   useGSAP(
     () => {
+      // Safari renders the static branch below — no tween, no ScrollTrigger.
+      if (isWebKit) return;
+
       const path = maskRef.current;
       if (!path) return;
       // derive the trigger from the live DOM so parent-ref timing can't skip us
@@ -71,9 +67,9 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
       // values by it, so `1` would read as 1px and the path would look solid.
       gsap.set(path, {
         strokeDasharray: len,
-        strokeDashoffset: still ? 0 : len,
+        strokeDashoffset: reduced ? 0 : len,
       });
-      if (still) return;
+      if (reduced) return;
 
       const tween = gsap.to(path, {
         strokeDashoffset: 0,
@@ -93,9 +89,33 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         tween.kill();
       };
     },
-    { dependencies: [still], scope },
+    { dependencies: [reduced, isWebKit], scope },
   );
 
+  // --- Safari / WebKit: DIAGNOSTIC static stroke ----------------------------
+  // Same path geometry only. Plain translucent-orange stroke (the Chromium
+  // stroke is the paper colour and only reads through the inner shadows, which
+  // are removed here). No filter, no mask, no dash, no offscreen compositing.
+  if (isWebKit) {
+    return (
+      <svg
+        className={styles.svg}
+        viewBox="0 0 2176 1408"
+        preserveAspectRatio="xMidYMid meet"
+        fill="none"
+        aria-hidden
+      >
+        <path
+          d={D}
+          stroke="rgba(255, 101, 32, 0.3)"
+          strokeWidth="110"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
+  // --- Chromium / Blink: UNCHANGED ----------------------------------------
   return (
     <svg
       className={styles.svg}
