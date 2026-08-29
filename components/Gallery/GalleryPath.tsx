@@ -24,14 +24,10 @@ const SHADOWS: Array<[number, number, number]> = [
 // measured length of D (~3450) — the fallback when getTotalLength() reads 0
 const D_LENGTH = 3550;
 
-// Safari fake-glow: concentric plain strokes (no filter) — [width, rgba alpha].
-// Wide + faint down to a defined core reads as a soft orange line without a
-// single feGaussianBlur.
-const WEBKIT_STROKES: Array<[number, number]> = [
-  [220, 0.06],
-  [130, 0.12],
-  [56, 0.34],
-];
+// Safari: ONE plain orange stroke, drawn in — no shadows, no blur, no mask.
+// (Stacked faint shades to fake a glow just read as banded stripes on WebKit.)
+// [width, rgba alpha].
+const WEBKIT_STROKES: Array<[number, number]> = [[92, 0.32]];
 
 /**
  * Soft orange line behind the archive rows — drops in from the top-left and
@@ -42,10 +38,10 @@ const WEBKIT_STROKES: Array<[number, number]> = [
  * stroke-dashoffset mask wipe.
  *
  * Safari / WebKit: that filter + mask pipeline froze the section, so this is a
- * cheaper equivalent with the same visual impression — three concentric plain
- * orange strokes (no <filter>, no <mask>, no offscreen buffer) that draw
- * themselves in ONCE via stroke-dashoffset when the section first enters view
- * (ScrollTrigger `once: true`), then hold. No per-frame work afterwards.
+ * cheaper equivalent — a single plain orange stroke (no <filter>, no <mask>,
+ * no shadows, no offscreen buffer) that draws itself in ONCE via
+ * stroke-dashoffset when the section first enters view (ScrollTrigger
+ * `once: true`), then holds. No per-frame work afterwards.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
