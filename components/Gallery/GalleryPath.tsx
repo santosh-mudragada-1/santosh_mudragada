@@ -36,16 +36,15 @@ const WEBKIT_GLOW_SRC = '/images/archive-line-safari.webp';
  * orange inner shadows (feGaussianBlur), revealed by a scroll-scrubbed
  * stroke-dashoffset mask wipe.
  *
- * Safari / WebKit: the feGaussianBlur + filtered-group mask froze the section;
- * an SVG <mask> reveal still cost an offscreen buffer every scroll frame. Same
- * look, cheaper still: the static pre-rendered glow bitmap as a plain <img>,
- * wiped in by a scroll-scrubbed `clip-path: inset()` on a promoted layer — a
- * compositor clip-rect update, no raster, no mask buffer. (The D path is
- * near-monotonic in x, so a left->right wipe tracks the draw closely.)
+ * Safari / WebKit: the feGaussianBlur + filtered-group mask froze the section.
+ * Same look, cheap: a static pre-rendered PNG of that glow, revealed by a
+ * <mask> whose content is ONE plain stroke with a scroll-scrubbed
+ * stroke-dashoffset. Per frame that's a single plain-stroke raster + one
+ * bitmap composite — no filter, no per-frame blur, no offscreen filter buffer.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
-  const webkitImgRef = useRef<HTMLImageElement>(null);
+  const webkitMaskRef = useRef<SVGPathElement>(null);
   const reduced = usePrefersReducedMotion();
   const isWebKit = useIsWebKit();
 
@@ -100,27 +99,36 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit: compositor-only clip-path wipe of the glow bitmap --
+  // --- Safari / WebKit: scrub the mask stroke that reveals the glow bitmap --
   useGSAP(
     () => {
       if (!isWebKit) return;
 
-      const img = webkitImgRef.current;
-      if (!img) return;
+      const path = webkitMaskRef.current;
+      if (!path) return;
 
-      gsap.set(img, {
-        clipPath: reduced ? 'inset(0% 0% 0% 0%)' : 'inset(0% 100% 0% 0%)',
+      let len = D_LENGTH;
+      try {
+        const m = path.getTotalLength();
+        if (m && Number.isFinite(m)) len = m;
+      } catch {
+        /* keep the fallback */
+      }
+
+      gsap.set(path, {
+        strokeDasharray: len,
+        strokeDashoffset: reduced ? 0 : len,
       });
       if (reduced) return;
 
-      const trigger = scope.current ?? img.closest('section') ?? undefined;
+      const trigger = scope.current ?? path.closest('section') ?? undefined;
       if (!trigger) return;
 
-      // reveal left -> right with scroll, same range/feel as Chromium. clip-path
-      // on a promoted layer is a compositor clip-rect update — no raster, no
-      // offscreen mask buffer. Inert while the section is off-screen.
-      const tween = gsap.to(img, {
-        clipPath: 'inset(0% 0% 0% 0%)',
+      // same range/feel as Chromium. Per frame this re-rasters ONE plain
+      // stroke (the mask) and composites the cached glow bitmap through it —
+      // no filter, no per-frame blur. Inert while the section is off-screen.
+      const tween = gsap.to(path, {
+        strokeDashoffset: 0,
         ease: 'none',
         scrollTrigger: {
           trigger,
@@ -139,19 +147,48 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   );
 
   // --- Safari / WebKit render -------------------------------------------
-  // Pre-rendered glow as a plain <img>, wiped in by a scrubbed clip-path
-  // (see the effect above). No SVG, no <mask>, no <filter>.
+  // Pre-rendered glow bitmap, revealed by a plain dash-animated stroke mask.
+  // No <filter> anywhere — the mask clips a cached image, not a filter buffer.
   if (isWebKit) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        ref={webkitImgRef}
-        src={WEBKIT_GLOW_SRC}
-        alt=""
+      <svg
+        className={styles.svg}
+        viewBox="0 0 2176 1408"
+        preserveAspectRatio="xMidYMid meet"
+        fill="none"
         aria-hidden
-        draggable={false}
-        className={styles.webkitGlow}
-      />
+      >
+        <defs>
+          <mask
+            id="gpWebkitReveal"
+            maskUnits="userSpaceOnUse"
+            x="-160"
+            y="-220"
+            width="2500"
+            height="1780"
+          >
+            <path
+              ref={webkitMaskRef}
+              d={D}
+              stroke="#fff"
+              strokeWidth="340"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </mask>
+        </defs>
+
+        <image
+          href={WEBKIT_GLOW_SRC}
+          x="0"
+          y="0"
+          width="2176"
+          height="1408"
+          preserveAspectRatio="xMidYMid meet"
+          mask="url(#gpWebkitReveal)"
+        />
+      </svg>
     );
   }
 
