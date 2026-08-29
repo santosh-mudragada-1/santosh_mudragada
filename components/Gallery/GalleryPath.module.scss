@@ -16,10 +16,27 @@
   overflow: visible;
 }
 
+// Safari only: the pre-rendered glow bitmap, positioned exactly like the SVG
+// box above. Revealed by a compositor-only clip-path wipe (GalleryPath scrubs
+// it) — no SVG <mask>, so no per-frame offscreen buffer.
+.webkitGlow {
+  position: absolute;
+  left: 14vw;
+  top: -13vh;
+  width: 98vw;
+  height: calc(98vw * 1408 / 2176);
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+  transform: translateZ(0); // promote the layer so the clip-path wipe is GPU-only
+  clip-path: inset(0% 100% 0% 0%); // starts hidden; the effect reveals / scrubs it
+}
+
 // the big sweeping line only reads on the wide desktop layout; on the
 // narrow stacked layout it just clutters the background
 @media (max-width: 1023.98px) {
-  .svg {
+  .svg,
+  .webkitGlow {
     display: none;
   }
 }
