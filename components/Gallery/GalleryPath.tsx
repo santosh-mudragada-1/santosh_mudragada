@@ -24,23 +24,22 @@ const SHADOWS: Array<[number, number, number]> = [
 // measured length of D (~3450) — the fallback when getTotalLength() reads 0
 const D_LENGTH = 3550;
 
-// pre-rendered glow (Figma export of the Chromium result), 2500x1617, ~same
-// ratio as the 2176x1408 viewBox
-const WEBKIT_GLOW_SRC = '/images/archive-line-safari.webp';
+// Safari: the single Figma inner shadow — X 0, Y -111, Blur 50, #FF6520 @ 50%.
+// SVG stdDeviation = Figma blur / 2. One pass vs the Chromium two.
+// — dy, stdDeviation, alpha
+const WEBKIT_SHADOWS: Array<[number, number, number]> = [[-111, 25, 0.5]];
 
 /**
  * Soft orange line behind the archive rows — drops in from the top-left and
  * draws out toward the right edge of the screen.
  *
- * Chromium / Blink: a paper-colour stroke that reads only through stacked
+ * Chromium / Blink: a paper-colour stroke that reads only through two stacked
  * orange inner shadows (feGaussianBlur), revealed by a scroll-scrubbed
  * stroke-dashoffset mask wipe.
  *
- * Safari / WebKit: the feGaussianBlur + filtered-group mask froze the section.
- * Same look, cheap: a static pre-rendered PNG of that glow, revealed by a
- * <mask> whose content is ONE plain stroke with a scroll-scrubbed
- * stroke-dashoffset. Per frame that's a single plain-stroke raster + one
- * bitmap composite — no filter, no per-frame blur, no offscreen filter buffer.
+ * Safari / WebKit: the same technique, trimmed — ONE inner-shadow pass and a
+ * tighter filter region, to cut the per-frame filter re-raster that the
+ * scrubbed mask forces. Everything else (mask wipe, scrub range) matches Blink.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
@@ -99,7 +98,7 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit: scrub the mask stroke that reveals the glow bitmap --
+  // --- Safari / WebKit: scrub the mask stroke that wipes the glow line in --
   useGSAP(
     () => {
       if (!isWebKit) return;
@@ -124,9 +123,8 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
       const trigger = scope.current ?? path.closest('section') ?? undefined;
       if (!trigger) return;
 
-      // same range/feel as Chromium. Per frame this re-rasters ONE plain
-      // stroke (the mask) and composites the cached glow bitmap through it —
-      // no filter, no per-frame blur. Inert while the section is off-screen.
+      // same range/feel as Chromium; the mask reveals a filtered stroke with
+      // a single inner shadow. Inert while the section is off-screen.
       const tween = gsap.to(path, {
         strokeDashoffset: 0,
         ease: 'none',
@@ -147,8 +145,9 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   );
 
   // --- Safari / WebKit render -------------------------------------------
-  // Pre-rendered glow bitmap, revealed by a plain dash-animated stroke mask.
-  // No <filter> anywhere — the mask clips a cached image, not a filter buffer.
+  // Same shape as the Blink branch below: a paper-colour stroke read through
+  // ONE orange inner shadow, wiped in by the dash-animated mask. One blur
+  // pass, tighter filter region.
   if (isWebKit) {
     return (
       <svg
@@ -159,35 +158,70 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         aria-hidden
       >
         <defs>
+          <filter
+            id="gpWebkitShadow"
+            x="-20"
+            y="-20"
+            width="2220"
+            height="1450"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              mode="normal"
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            {WEBKIT_SHADOWS.map(([dy, sd, a], i) => (
+              <Fragment key={i}>
+                <feColorMatrix
+                  in="SourceAlpha"
+                  type="matrix"
+                  values={ALPHA}
+                  result="hardAlpha"
+                />
+                <feOffset dy={dy} />
+                <feGaussianBlur stdDeviation={sd} />
+                <feComposite
+                  in2="hardAlpha"
+                  operator="arithmetic"
+                  k2="-1"
+                  k3="1"
+                />
+                <feColorMatrix type="matrix" values={`${ORANGE} 0 0 0 ${a} 0`} />
+                <feBlend
+                  mode="normal"
+                  in2={i === 0 ? 'shape' : `effect${i}`}
+                  result={`effect${i + 1}`}
+                />
+              </Fragment>
+            ))}
+          </filter>
+
           <mask
             id="gpWebkitReveal"
             maskUnits="userSpaceOnUse"
-            x="-160"
-            y="-220"
-            width="2500"
-            height="1780"
+            x="-60"
+            y="-200"
+            width="2300"
+            height="1720"
           >
             <path
               ref={webkitMaskRef}
               d={D}
               stroke="#fff"
-              strokeWidth="340"
+              strokeWidth="176"
               strokeLinecap="round"
               strokeLinejoin="round"
-              fill="none"
             />
           </mask>
         </defs>
 
-        <image
-          href={WEBKIT_GLOW_SRC}
-          x="0"
-          y="0"
-          width="2176"
-          height="1408"
-          preserveAspectRatio="xMidYMid meet"
-          mask="url(#gpWebkitReveal)"
-        />
+        <g filter="url(#gpWebkitShadow)" mask="url(#gpWebkitReveal)">
+          <path d={D} stroke="#F2E9DB" strokeWidth="166" strokeLinecap="round" />
+        </g>
       </svg>
     );
   }
