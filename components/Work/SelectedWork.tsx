@@ -6,16 +6,14 @@ import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { revealUp } from '@/lib/motion/reveal';
 import { WORK } from '@/lib/content/work';
-import { WorkPath } from './WorkPath';
 import { WorkCard } from './WorkCard';
 import styles from './SelectedWork.module.scss';
 
 const DEPTH: Record<'a' | 'b' | 'c', number> = { a: 0.45, b: 0.55, c: 0.5 };
 
 /**
- * Three projects placed like objects in a large field (not a grid), a
- * scroll-drawn SVG path threading the composition, whole-card scroll-pull
- * deformation, hover + custom-cursor states.
+ * Three projects placed like objects in a large field (not a grid),
+ * whole-card scroll-pull deformation, hover + custom-cursor states.
  */
 export function SelectedWork() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -93,8 +91,6 @@ export function SelectedWork() {
         </span>
         <h2 className={styles.title}>Featured work</h2>
       </div>
-
-      <WorkPath scope={sectionRef} />
 
       <div className={styles.canvas}>
         {WORK.map((project) => (

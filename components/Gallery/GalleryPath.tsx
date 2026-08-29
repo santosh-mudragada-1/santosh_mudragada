@@ -3,7 +3,7 @@
 import { Fragment, useRef, type RefObject } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
-import styles from './WorkPath.module.scss';
+import styles from './GalleryPath.module.scss';
 
 const D =
   'M-284 121.074C-284 121.074 142.824 38.4108 313.5 200.519C505.41 382.796 87.7441 647.042 275.5 759.02C470 875.02 538.896 330.449 790.5 363.02C997 389.751 404.783 1156.94 740 1258.52C1070 1358.52 1053.5 329.02 1574.5 538.019C2095.5 747.019 1066 1362.52 1397 1451.52C1997.18 1612.9 2011.5 1103.02 2011.5 1103.02';
@@ -24,9 +24,8 @@ const SHADOWS: Array<[number, number, number]> = [
 const D_LENGTH = 6300;
 
 /**
- * Background line threading the work composition. The stroke is the section's
- * own cream, so only the stacked orange inner shadows read — a soft orange
- * gradient in the shape of the path.
+ * Soft orange line sweeping behind the archive rows. The stroke is the
+ * section's own paper colour, so only the stacked orange inner shadows read.
  *
  * The draw-in is done with a MASK wipe, not by animating the filtered stroke:
  * the `<g filter>` (two blurred inner-shadow passes) stays static, so the
@@ -36,7 +35,7 @@ const D_LENGTH = 6300;
  * re-raster. Animating the filtered path directly re-ran the whole blur chain
  * on every scroll tick.
  */
-export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
+export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
   const reduced = usePrefersReducedMotion();
 
@@ -71,10 +70,10 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
         ease: 'none',
         scrollTrigger: {
           trigger,
-          start: 'top 75%',
+          start: 'top 80%',
           // finish the draw-in around mid-section, then hold — no per-frame
           // mask work while you scroll the rest of the section
-          end: 'center 40%',
+          end: 'center 45%',
           scrub: true,
           invalidateOnRefresh: true,
         },
@@ -97,7 +96,7 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
     >
       <defs>
         <filter
-          id="wpInnerShadows"
+          id="gpInnerShadows"
           x="-384.016"
           y="-163"
           width="2495.52"
@@ -141,7 +140,7 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
         {/* reveal wipe — plain wide stroke, well clear of the 120px visible
             stroke so its edges never fringe it; only its dashoffset animates */}
         <mask
-          id="wpReveal"
+          id="gpReveal"
           maskUnits="userSpaceOnUse"
           x="-384.016"
           y="-163"
@@ -158,7 +157,7 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
         </mask>
       </defs>
 
-      <g filter="url(#wpInnerShadows)" mask="url(#wpReveal)">
+      <g filter="url(#gpInnerShadows)" mask="url(#gpReveal)">
         <path d={D} stroke="#F2E9DB" strokeWidth="120" strokeLinecap="round" />
       </g>
     </svg>

@@ -1,6 +1,6 @@
 .svg {
   position: absolute;
-  top: 30%;
+  top: 50%;
   left: 50%;
   // span the viewport end to end (110vw) at the viewBox's own aspect ratio.
   // Explicit height (not `auto`) — Safari doesn't derive an intrinsic ratio
@@ -15,8 +15,8 @@
   overflow: visible;
 }
 
-// the big threading line only reads on the wide desktop composition; on the
-// stacked layout it just clutters the background
+// the big sweeping line only reads on the wide desktop layout; on the
+// narrow stacked layout it just clutters the background
 @media (max-width: 1023.98px) {
   .svg {
     display: none;

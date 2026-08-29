@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { GALLERY } from '@/lib/content/gallery';
+import { GalleryPath } from './GalleryPath';
 import styles from './Gallery.module.scss';
 
 const ROWS = [0, 1] as const;
@@ -52,6 +53,8 @@ export function Gallery() {
 
   return (
     <section ref={sectionRef} className={styles.section} aria-label="Archive">
+      <GalleryPath scope={sectionRef} />
+
       <div className={styles.rows}>
         {ROWS.map((r) => (
           <div

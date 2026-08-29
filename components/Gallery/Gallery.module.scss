@@ -2,12 +2,15 @@
 
 .section {
   // sits right after the full-screen paint section, ahead of the footer curve
+  position: relative; // anchors the absolutely-placed background line
   padding-block: clamp(180px, 24vh, 320px);
   background: var(--bg); // == --paper, matches the footer curve fill
   overflow: clip;
 }
 
 .rows {
+  position: relative;
+  z-index: 1; // above the background line (.svg is z-index: 0)
   display: flex;
   flex-direction: column;
   gap: clamp(1rem, 0.6rem + 2vw, 2.5rem);
