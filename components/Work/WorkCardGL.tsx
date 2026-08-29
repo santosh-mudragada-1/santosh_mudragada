@@ -259,7 +259,7 @@ export function WorkCardGL({
       let idle = 0;
       const STIFF = 0.07;
       const DAMP = 0.84; // higher -> the jelly rings longer after you stop
-      const MAX = 0.015; // NDC — bow amplitude (~1.5% of the card)
+      const MAX = 0.034; // NDC — bow amplitude
 
       const update = () => {
         const lenis = getLenisInstance() as { velocity?: number } | null;

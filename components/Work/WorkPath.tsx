@@ -35,26 +35,42 @@ export function WorkPath({ scope }: { scope: RefObject<HTMLElement> }) {
       const trigger = scope.current;
       if (!path || !trigger) return;
 
-      const length = path.getTotalLength();
-      gsap.set(path, {
-        strokeDasharray: length,
-        strokeDashoffset: reduced ? 0 : length,
-      });
-      if (reduced) return;
+      let tween: gsap.core.Tween | undefined;
+      let raf = 0;
+      let tries = 0;
 
-      const tween = gsap.to(path, {
-        strokeDashoffset: 0,
-        ease: 'none',
-        scrollTrigger: {
-          trigger,
-          start: 'top 75%',
-          end: 'bottom 25%',
-          scrub: true,
-        },
-      });
+      // In production getTotalLength() can read 0 for a beat (path not yet
+      // measurable). Retry a few frames, then fall back so it always animates.
+      const build = () => {
+        const measured = path.getTotalLength();
+        if (!measured && tries++ < 30) {
+          raf = requestAnimationFrame(build);
+          return;
+        }
+        const length = measured || 9000; // over-estimate: still hides then draws
+        gsap.set(path, {
+          strokeDasharray: length,
+          strokeDashoffset: reduced ? 0 : length,
+        });
+        if (reduced) return;
+        tween = gsap.to(path, {
+          strokeDashoffset: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger,
+            start: 'top 75%',
+            end: 'bottom 25%',
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+      };
+      build();
+
       return () => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
+        cancelAnimationFrame(raf);
+        tween?.scrollTrigger?.kill();
+        tween?.kill();
       };
     },
     { dependencies: [reduced], scope },

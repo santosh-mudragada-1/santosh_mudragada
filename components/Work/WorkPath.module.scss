@@ -2,11 +2,13 @@
   position: absolute;
   top: 30%;
   left: 50%;
-  // span the viewport end to end (110vw), natural proportions — not scaled to
-  // the section box. Height follows the viewBox ratio; vertical overflow is
-  // clipped by the section.
+  // span the viewport end to end (110vw) at the viewBox's own aspect ratio.
+  // Explicit height (not `auto`) — Safari doesn't derive an intrinsic ratio
+  // from viewBox alone on an absolutely-positioned <svg>, so `height: auto`
+  // there collapses to 150px and the path all but vanishes.
   width: 110vw;
-  height: auto;
+  height: calc(110vw * 1584 / 1728);
+  aspect-ratio: 1728 / 1584;
   transform: translate(-50%, -50%);
   z-index: 0;
   pointer-events: none;
