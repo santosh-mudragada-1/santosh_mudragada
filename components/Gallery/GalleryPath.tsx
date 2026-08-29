@@ -72,10 +72,10 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         ease: 'none',
         scrollTrigger: {
           trigger,
-          start: 'top 80%',
-          // finish the sweep around mid-section, then hold — no per-frame mask
-          // work while you scroll the rest of the section
-          end: 'center 40%',
+          // draw across almost the whole time the section is on screen, so it
+          // finishes as you're leaving rather than early
+          start: 'top 85%',
+          end: 'bottom 15%',
           scrub: true,
           invalidateOnRefresh: true,
         },
@@ -139,22 +139,25 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
           ))}
         </filter>
 
-        {/* reveal wipe — plain wide stroke, well clear of the 166px visible
-            stroke so its edges never fringe it; only its dashoffset animates */}
+        {/* reveal wipe — just wider than the 166px visible stroke (which is
+            the same colour as the background, so its own edge is invisible;
+            only the inset shadows read, well clear of the mask edge). Round
+            cap so the growing leading edge draws in as a rounded nib. */}
         <mask
           id="gpReveal"
           maskUnits="userSpaceOnUse"
-          x="-140"
-          y="-220"
-          width="2460"
-          height="1760"
+          x="-60"
+          y="-200"
+          width="2300"
+          height="1720"
         >
           <path
             ref={maskRef}
             d={D}
             stroke="#fff"
-            strokeWidth="260"
+            strokeWidth="176"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </mask>
       </defs>
