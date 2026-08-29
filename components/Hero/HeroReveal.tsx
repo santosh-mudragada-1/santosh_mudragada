@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from '@/lib/gsap/gsap';
 import { useIsTouch } from '@/lib/hooks/useIsTouch';
+import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './HeroReveal.module.scss';
 
@@ -47,6 +48,7 @@ const BLOBS = [
 
 export function HeroReveal({ cleanSrc, pixelSrc, alt }: Props) {
   const isTouch = useIsTouch();
+  const isWebKit = useIsWebKit();
   const reduced = usePrefersReducedMotion();
   const [mounted, setMounted] = useState(false);
 
@@ -153,15 +155,34 @@ export function HeroReveal({ cleanSrc, pixelSrc, alt }: Props) {
     stage.addEventListener('pointermove', onMove, { passive: true });
     stage.addEventListener('pointerleave', onLeave);
 
+    // Safari: the idle drift tweens loop forever from mount. Pause them while
+    // the Hero is scrolled out of view (the satellites are r=0 then anyway),
+    // resume on the way back — the drift phase is preserved.
+    let driftIO: IntersectionObserver | null = null;
+    if (isWebKit) {
+      driftIO = new IntersectionObserver(
+        ([entry]) => {
+          drifts.forEach((t) => {
+            if (!t) return;
+            if (entry.isIntersecting) t.resume();
+            else t.pause();
+          });
+        },
+        { rootMargin: '200px 0px' },
+      );
+      driftIO.observe(stage);
+    }
+
     return () => {
       stage.removeEventListener('pointerenter', onEnter);
       stage.removeEventListener('pointermove', onMove);
       stage.removeEventListener('pointerleave', onLeave);
+      driftIO?.disconnect();
       gsap.killTweensOf(dots);
       gsap.killTweensOf(groups);
       drifts.forEach((t) => t?.kill());
     };
-  }, [useReveal]);
+  }, [useReveal, isWebKit]);
 
   // --- touch: pixel layer fades in on scroll -----------------------------
   useEffect(() => {

@@ -21,6 +21,12 @@
   gap: clamp(0.8rem, 0.5rem + 1.4vw, 2rem);
   width: max-content;
   will-change: transform;
+
+  // Safari: these rows are very wide (7 media each); let GSAP promote them
+  // for the scrub only rather than keeping two full-width layers resident.
+  :global(html.is-webkit) & {
+    will-change: auto;
+  }
 }
 
 .item {

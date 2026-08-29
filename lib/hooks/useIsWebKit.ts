@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 
 /**
+ * `true` on Safari / any WebKit browser (all iOS browsers included). Safe to
+ * call outside React; returns `false` where there is no `navigator` (SSR).
+ */
+export function detectWebKit(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  return /AppleWebKit/.test(ua) && !/Chrome|Chromium|Android/.test(ua);
+}
+
+/**
  * `true` on Safari / any WebKit browser (all iOS browsers included). Returns
  * `false` on the server and first client render, then updates after mount —
  * gate rendered output on a mounted flag if it changes markup.
@@ -12,8 +22,7 @@ export function useIsWebKit(): boolean {
   const [webkit, setWebkit] = useState(false);
 
   useEffect(() => {
-    const ua = navigator.userAgent;
-    setWebkit(/AppleWebKit/.test(ua) && !/Chrome|Chromium|Android/.test(ua));
+    setWebkit(detectWebKit());
   }, []);
 
   return webkit;

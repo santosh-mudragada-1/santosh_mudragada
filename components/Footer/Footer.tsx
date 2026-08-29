@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
+import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
 import { Magnetic } from '@/components/Magnetic';
@@ -26,6 +27,7 @@ const MARQUEE = 'Start a project';
 export function Footer() {
   const { scrollTo } = useSmoothScroll();
   const reduced = usePrefersReducedMotion();
+  const isWebKit = useIsWebKit();
   const rootRef = useRef<HTMLElement>(null);
   const curveRef = useRef<SVGPathElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -99,12 +101,29 @@ export function Footer() {
       });
       marqueeTween.current = marquee;
 
+      // Safari: an infinite tween running from mount keeps the compositor busy
+      // for the whole session. Pause it while the footer is off-screen; the
+      // animation is identical once it resumes.
+      let marqueeIO: IntersectionObserver | null = null;
+      if (isWebKit && rootRef.current) {
+        marquee.pause();
+        marqueeIO = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) marquee.play();
+            else marquee.pause();
+          },
+          { rootMargin: '200px 0px' },
+        );
+        marqueeIO.observe(rootRef.current);
+      }
+
       return () => {
+        marqueeIO?.disconnect();
         marquee.kill();
         marqueeTween.current = null;
       };
     },
-    { scope: rootRef, dependencies: [reduced] },
+    { scope: rootRef, dependencies: [reduced, isWebKit] },
   );
 
   const rampMarquee = (to: number) => {

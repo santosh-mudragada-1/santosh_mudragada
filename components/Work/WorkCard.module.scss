@@ -10,6 +10,12 @@
 
 .parallax {
   will-change: transform;
+
+  // Safari: promoted only while the scroll parallax is active, not for the
+  // whole session (three card-sized layers add up on WebKit's compositor).
+  :global(html.is-webkit) & {
+    will-change: auto;
+  }
 }
 
 // outer: no background, no clip — the WebGL bow spills past it. Sets the box.

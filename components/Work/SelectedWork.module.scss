@@ -30,6 +30,12 @@
   text-transform: uppercase;
   white-space: nowrap;
   will-change: transform;
+
+  // Safari: GSAP promotes these for the duration of the scrub anyway; don't
+  // pin these very wide text layers in GPU memory the rest of the session.
+  :global(html.is-webkit) & {
+    will-change: auto;
+  }
 }
 
 .kicker {
