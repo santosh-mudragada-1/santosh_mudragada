@@ -98,7 +98,7 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit: scrub the mask stroke that wipes the glow line in --
+  // --- Safari / WebKit: one-shot mask wipe of the filtered stroke ----------
   useGSAP(
     () => {
       if (!isWebKit) return;
@@ -123,18 +123,15 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
       const trigger = scope.current ?? path.closest('section') ?? undefined;
       if (!trigger) return;
 
-      // same range/feel as Chromium; the mask reveals a filtered stroke with
-      // a single inner shadow. Inert while the section is off-screen.
+      // one-shot: draws in over ~1.8s when the section first enters view, then
+      // the ScrollTrigger destroys itself (`once`). The single inner-shadow
+      // filter re-rasters only during that draw-in — zero per-frame cost while
+      // scrolling the section afterwards.
       const tween = gsap.to(path, {
         strokeDashoffset: 0,
-        ease: 'none',
-        scrollTrigger: {
-          trigger,
-          start: 'top 85%',
-          end: 'bottom 15%',
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
+        duration: 1.8,
+        ease: 'power1.inOut',
+        scrollTrigger: { trigger, start: 'top 78%', once: true },
       });
       return () => {
         tween.scrollTrigger?.kill();
