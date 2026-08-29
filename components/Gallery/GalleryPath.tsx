@@ -24,10 +24,9 @@ const SHADOWS: Array<[number, number, number]> = [
 // measured length of D (~3450) — the fallback when getTotalLength() reads 0
 const D_LENGTH = 3550;
 
-// Safari: ONE plain orange stroke, drawn in — no shadows, no blur, no mask.
-// (Stacked faint shades to fake a glow just read as banded stripes on WebKit.)
-// [width, rgba alpha].
-const WEBKIT_STROKES: Array<[number, number]> = [[92, 0.32]];
+// pre-rendered glow (Figma export of the Chromium result), 2500x1617, ~same
+// ratio as the 2176x1408 viewBox
+const WEBKIT_GLOW_SRC = '/images/archive-line-safari.webp';
 
 /**
  * Soft orange line behind the archive rows — drops in from the top-left and
@@ -37,15 +36,15 @@ const WEBKIT_STROKES: Array<[number, number]> = [[92, 0.32]];
  * orange inner shadows (feGaussianBlur), revealed by a scroll-scrubbed
  * stroke-dashoffset mask wipe.
  *
- * Safari / WebKit: that filter + mask pipeline froze the section, so this is a
- * cheaper equivalent — a single plain orange stroke (no <filter>, no <mask>,
- * no shadows, no offscreen buffer) whose stroke-dashoffset is scrubbed to
- * scroll while the section is on screen, same feel as Chromium. Rasterising
- * one plain stroke per frame is far cheaper than the filtered+masked path.
+ * Safari / WebKit: the feGaussianBlur + filtered-group mask froze the section.
+ * Same look, cheap: a static pre-rendered PNG of that glow, revealed by a
+ * <mask> whose content is ONE plain stroke with a scroll-scrubbed
+ * stroke-dashoffset. Per frame that's a single plain-stroke raster + one
+ * bitmap composite — no filter, no per-frame blur, no offscreen filter buffer.
  */
 export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
   const maskRef = useRef<SVGPathElement>(null);
-  const webkitRef = useRef<SVGGElement>(null);
+  const webkitMaskRef = useRef<SVGPathElement>(null);
   const reduced = usePrefersReducedMotion();
   const isWebKit = useIsWebKit();
 
@@ -100,37 +99,35 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit: scroll-scrubbed stroke draw-in, no filter/mask -----
+  // --- Safari / WebKit: scrub the mask stroke that reveals the glow bitmap --
   useGSAP(
     () => {
       if (!isWebKit) return;
 
-      const g = webkitRef.current;
-      if (!g) return;
-      const paths = Array.from(g.querySelectorAll('path'));
-      if (!paths.length) return;
+      const path = webkitMaskRef.current;
+      if (!path) return;
 
       let len = D_LENGTH;
       try {
-        const m = paths[0].getTotalLength();
+        const m = path.getTotalLength();
         if (m && Number.isFinite(m)) len = m;
       } catch {
         /* keep the fallback */
       }
 
-      gsap.set(paths, {
+      gsap.set(path, {
         strokeDasharray: len,
         strokeDashoffset: reduced ? 0 : len,
       });
       if (reduced) return;
 
-      const trigger = scope.current ?? g.closest('section') ?? undefined;
+      const trigger = scope.current ?? path.closest('section') ?? undefined;
       if (!trigger) return;
 
-      // scrub the dashoffset with scroll — same range/feel as the Chromium
-      // version, but on ONE plain stroke (no filter, no mask, no offscreen
-      // buffer). The tween is inert whenever the section is off-screen.
-      const tween = gsap.to(paths, {
+      // same range/feel as Chromium. Per frame this re-rasters ONE plain
+      // stroke (the mask) and composites the cached glow bitmap through it —
+      // no filter, no per-frame blur. Inert while the section is off-screen.
+      const tween = gsap.to(path, {
         strokeDashoffset: 0,
         ease: 'none',
         scrollTrigger: {
@@ -149,7 +146,9 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
     { dependencies: [reduced, isWebKit], scope },
   );
 
-  // --- Safari / WebKit render ---------------------------------------------
+  // --- Safari / WebKit render -------------------------------------------
+  // Pre-rendered glow bitmap, revealed by a plain dash-animated stroke mask.
+  // No <filter> anywhere — the mask clips a cached image, not a filter buffer.
   if (isWebKit) {
     return (
       <svg
@@ -159,18 +158,36 @@ export function GalleryPath({ scope }: { scope: RefObject<HTMLElement> }) {
         fill="none"
         aria-hidden
       >
-        <g ref={webkitRef}>
-          {WEBKIT_STROKES.map(([w, a], i) => (
+        <defs>
+          <mask
+            id="gpWebkitReveal"
+            maskUnits="userSpaceOnUse"
+            x="-160"
+            y="-220"
+            width="2500"
+            height="1780"
+          >
             <path
-              key={i}
+              ref={webkitMaskRef}
               d={D}
-              fill="none"
-              stroke={`rgba(255, 101, 32, ${a})`}
-              strokeWidth={w}
+              stroke="#fff"
+              strokeWidth="340"
               strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
             />
-          ))}
-        </g>
+          </mask>
+        </defs>
+
+        <image
+          href={WEBKIT_GLOW_SRC}
+          x="0"
+          y="0"
+          width="2176"
+          height="1408"
+          preserveAspectRatio="xMidYMid meet"
+          mask="url(#gpWebkitReveal)"
+        />
       </svg>
     );
   }
