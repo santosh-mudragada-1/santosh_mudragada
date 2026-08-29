@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
@@ -101,30 +101,41 @@ export function Footer() {
       });
       marqueeTween.current = marquee;
 
-      // Safari: an infinite tween running from mount keeps the compositor busy
-      // for the whole session. Pause it while the footer is off-screen; the
-      // animation is identical once it resumes.
-      let marqueeIO: IntersectionObserver | null = null;
-      if (isWebKit && rootRef.current) {
-        marquee.pause();
-        marqueeIO = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) marquee.play();
-            else marquee.pause();
-          },
-          { rootMargin: '200px 0px' },
-        );
-        marqueeIO.observe(rootRef.current);
-      }
-
       return () => {
-        marqueeIO?.disconnect();
         marquee.kill();
         marqueeTween.current = null;
       };
     },
-    { scope: rootRef, dependencies: [reduced, isWebKit] },
+    { scope: rootRef, dependencies: [reduced] },
   );
+
+  // Safari only: an infinite tween running from mount keeps the compositor busy
+  // for the whole session. Pause it while the footer is off-screen — identical
+  // once it resumes. Kept OUT of the useGSAP above so it can't force that block
+  // (and the one-shot headline reveal's ScrollTrigger) to revert + recreate.
+  useEffect(() => {
+    if (!isWebKit) return;
+    const root = rootRef.current;
+    const tween = marqueeTween.current;
+    if (!root || !tween) return;
+
+    tween.pause();
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) tween.play();
+        else tween.pause();
+      },
+      { rootMargin: '200px 0px' },
+    );
+    io.observe(root);
+
+    return () => {
+      io.disconnect();
+      // un-park it if this effect (not the component) is tearing down; skip if
+      // useGSAP already replaced/killed the tween
+      if (marqueeTween.current === tween) tween.play();
+    };
+  }, [isWebKit, reduced]);
 
   const rampMarquee = (to: number) => {
     if (marqueeTween.current) {
