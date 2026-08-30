@@ -68,19 +68,6 @@ const SCATTER = {
   toY2: 604,
 };
 
-// tablet / mobile: the composition is cropped to a centred vertical column
-// (slice). Keep both copy blocks inside that always-visible column — "from
-// problems!" up near the top, "to possibilities." mid-lower, clear of the
-// face and the marquee arc. Positions are a starting point; tune on device.
-const SCATTER_NARROW = {
-  fromX: 610,
-  fromY1: 214,
-  fromY2: 300,
-  toX: 610,
-  toY1: 648,
-  toY2: 734,
-};
-
 // don't let the reveal circle ride up under the fixed header
 const HEADER_ZONE = 96;
 
@@ -89,21 +76,31 @@ export function HeroReveal({ play }: Props) {
   const isWebKit = useIsWebKit();
   const reduced = usePrefersReducedMotion();
   const wide = useMediaQuery('(min-width: 1024px)');
+  const mobile = useMediaQuery('(max-width: 639.98px)');
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // tablet / mobile use the compressed scattered layout + a smaller arrow
-  const scat = wide ? SCATTER : SCATTER_NARROW;
-  const arrowScale = wide ? ARROW_SCALE : 1.4;
-  const arrowDX = wide ? 96 : 74;
-  const arrowDY = wide ? 58 : 44;
+  // Scattered copy keeps the desktop left/right placement on tablet, just
+  // smaller (font via [data-narrow]) with a scaled-down arrow. Mobile drops
+  // it entirely.
+  const scat = SCATTER;
+  const arrowScale = wide ? ARROW_SCALE : 1.35;
+  const arrowDX = wide ? 96 : 82;
+  const arrowDY = wide ? 58 : 50;
+  // rendered on SSR + desktop/tablet (so the entrance still tags it); only
+  // mobile — resolved after mount — drops it
+  const showScatter = !mobile;
 
   // WebKit chokes on the per-frame feGaussianBlur + SVG <mask> of the liquid
   // reveal. It gets the same idea a different way: a compositor-only CSS
   // radial-gradient mask that rides the cursor (see the WebKit branch below).
   const useReveal = mounted && !isTouch && !reduced && !isWebKit;
   const useWkReveal = mounted && !isTouch && !reduced && isWebKit;
-  const useTouchFade = mounted && isTouch && !reduced;
+  // mobile has no hero reveal at all (no cursor, no scroll-fade)
+  const useTouchFade = mounted && isTouch && !reduced && !mobile;
+  // when no reveal is running the whole canvas is inert so taps reach the
+  // burger / anything behind it
+  const inert = mounted && !useReveal && !useWkReveal;
 
   const svgRef = useRef<SVGSVGElement>(null);
   const groupRefs = useRef<Array<SVGGElement | null>>([]);
@@ -139,6 +136,7 @@ export function HeroReveal({ play }: Props) {
             {marqueeText}
           </textPath>
         </text>
+        {showScatter && (
         <g fill={bFill}>
           <text
             className={`${styles.scatter}${io}`}
@@ -179,6 +177,7 @@ export function HeroReveal({ play }: Props) {
             possibilities<tspan fill={aFill}>.</tspan>
           </text>
         </g>
+        )}
       </>
     );
   };
@@ -516,6 +515,7 @@ export function HeroReveal({ play }: Props) {
         ref={hostRef}
         className={styles.canvas}
         data-narrow={!wide || undefined}
+        data-inert={inert || undefined}
       >
         {/* layer 4 — base cutout */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -615,6 +615,7 @@ export function HeroReveal({ play }: Props) {
       ref={svgRef}
       className={styles.canvas}
       data-narrow={!wide || undefined}
+      data-inert={inert || undefined}
       viewBox={`0 0 ${VBW} ${VBH}`}
       preserveAspectRatio="xMidYMid slice"
       role="img"
@@ -716,6 +717,7 @@ export function HeroReveal({ play }: Props) {
               {marqueeText}
             </textPath>
           </text>
+          {showScatter && (
           <g fill="#3a1b0e">
             <text
               className={`${styles.scatter} ${styles.inItem}`}
@@ -761,6 +763,7 @@ export function HeroReveal({ play }: Props) {
               <tspan fill="#ff4d1a">.</tspan>
             </text>
           </g>
+          )}
         </g>
 
         {/* layer 2b — same text, light, shown ONLY through the blob (negative) */}

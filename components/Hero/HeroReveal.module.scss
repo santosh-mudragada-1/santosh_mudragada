@@ -1,8 +1,8 @@
 @use 'mixins' as *;
 
 // one full-bleed SVG — authored in a 1728 x 1052 viewBox, always `slice`
-// (cover, centred). On tablet / mobile `[data-narrow]` shrinks the type and
-// the scattered copy sits in the always-visible centre column (see the JS).
+// (cover, centred). `[data-narrow]` shrinks the type on tablet; mobile drops
+// the scattered copy in the JS.
 .canvas {
   position: absolute;
   inset: 0;
@@ -10,6 +10,13 @@
   height: 100%;
   isolation: isolate; // keep the mask compositing off the rest of the page
   overflow: visible; // the gooey blur bleeds past the blobs
+}
+
+// no reveal running (mobile / reduced motion) — the decorative canvas is
+// click-through so the burger and anything behind it stays tappable
+.canvas[data-inert],
+.canvas[data-inert] * {
+  pointer-events: none;
 }
 
 // --- curved marquee text ------------------------------------------------
@@ -22,8 +29,8 @@
   white-space: pre; // keep the trailing gap between repeats
 
   [data-narrow] & {
-    font-size: 104px;
-    letter-spacing: -3px;
+    font-size: 84px;
+    letter-spacing: -2.4px;
   }
 }
 
