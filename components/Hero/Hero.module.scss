@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   padding: var(--header-h) var(--gutter) var(--space-xl);
-  overflow: clip; // the portrait is sized to crop against this edge
+  overflow: clip; // clips the halo blur + the figure's edge bleed
 }
 
 .grid {
@@ -81,18 +81,18 @@
 }
 
 // --- right: portrait composition ------------------------------------------
-// Big enough that, pinned near the top of the hero, the figure runs off the
-// bottom edge around knee height. `overflow: clip` on .hero does the crop.
-// `margin-bottom` is negative only to stop the tall figure from stretching the
-// hero taller than the viewport (which would reveal the whole body + add scroll).
+// Full viewport height, flush to the screen's right edge. The negative
+// margin-block cancels the hero's own vertical padding for the figure only, so
+// it spans 100svh while the section itself stays exactly one viewport tall.
 .figure {
   position: relative;
-  align-self: start;
+  align-self: center;
   justify-self: end;
-  width: min(50vw, 800px);
-  margin-top: clamp(1rem, 4vw, 5rem);
-  margin-right: clamp(-3.5rem, -2.5vw, -1rem); // bleeds toward the viewport edge
-  margin-bottom: clamp(-15rem, -19vw, -5rem);
+  height: 100svh;
+  aspect-ratio: 938 / 1052;
+  width: auto;
+  margin-block: calc(-1 * var(--header-h)) calc(-1 * var(--space-xl));
+  margin-right: clamp(-16rem, -13vw, -3rem); // bleed to the viewport edge
 }
 
 .halo {
@@ -173,8 +173,10 @@
   }
 
   .figure {
+    align-self: start;
     justify-self: start;
     width: min(70vw, 460px);
+    height: auto;
     margin: var(--space-sm) 0 0;
   }
 
@@ -200,6 +202,7 @@
   .figure {
     justify-self: center;
     width: min(82vw, 360px);
+    height: auto;
   }
   .halo {
     inset: -6% auto auto 50%;
