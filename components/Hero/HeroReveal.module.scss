@@ -1,40 +1,60 @@
 @use 'mixins' as *;
 
-.stage {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  aspect-ratio: 938 / 1052; // == the portrait assets, so both layers align 1:1
-  isolation: isolate; // keep the reveal compositing off the rest of the hero
-}
-
-.layer {
+// one full-bleed SVG — authored in a 1728 x 1052 viewBox, `slice` on desktop
+// (cover) and `meet` on smaller screens (fit) via a JS-set preserveAspectRatio
+.canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-  user-select: none;
-  -webkit-user-drag: none;
+  isolation: isolate; // keep the mask compositing off the rest of the page
+  overflow: visible; // the gooey blur bleeds past the blobs
 }
 
-// clean cutout — the stable base, never transformed
-.clean {
-  z-index: 1;
+// --- curved marquee text --------------------------------------------------
+.marquee {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 150px; // viewBox units
+  letter-spacing: -0.01em;
+  white-space: pre; // keep the trailing space between repeats
 }
 
-// with-background portrait — touch only, opacity scrubbed on scroll by GSAP
-.pixel {
-  z-index: 2;
-  opacity: 0;
+// --- scattered copy -----------------------------------------------------
+.scatter {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 92px; // viewBox units
+  letter-spacing: -0.02em;
+}
+
+// the two text stacks; colour comes from fill= on the elements
+.textDark {
+  will-change: transform;
+}
+.textLight {
   pointer-events: none;
 }
 
-// desktop reveal surface — <svg> holding the with-background portrait behind a
-// gooey liquid mask; transparent everywhere else so the cutout shows through
-.reveal {
-  z-index: 2;
-  pointer-events: none;
-  overflow: visible;
+// --- with-background layer --------------------------------------------
+.bg {
+  // desktop reveal: fully opaque, clipped to the blob mask
+  // touch: starts hidden, GSAP scrubs opacity on scroll
+  &[data-scrub] {
+    opacity: 0;
+  }
+}
+
+// entrance items — GSAP sets autoAlpha / y; hint the compositor
+.inItem {
+  will-change: transform, opacity;
+}
+
+@include reduced-motion {
+  .textDark {
+    will-change: auto;
+  }
+  .inItem {
+    will-change: auto;
+  }
 }
