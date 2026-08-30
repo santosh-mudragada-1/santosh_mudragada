@@ -21,16 +21,25 @@ const CUTOUT = '/images/hero-cutout.png';
 const BG = '/images/hero-bg.png';
 const DEPTH = '/images/hero-depth.png';
 
-// curved marquee — repeated so there's always text across the visible arc
+// curved marquee — repeated so there's always text across the visible arc.
+// Trailing NBSPs give the loop a clean gap and never collapse.
 const MARQUEE =
-  'Santosh Mudragada — Product Designer + Builder — UI/UX Designer — ';
+  'Santosh Mudragada — Product Designer + Builder — UI/UX Designer —' +
+  '    ';
 const MARQUEE_REPEAT = 5;
-const MARQUEE_PXPS = 90; // scroll speed, viewBox units / second
+const MARQUEE_PXPS = 88; // scroll speed, viewBox units / second
 
-// the arc the marquee rides — runs well past both edges so it never runs dry
-const CURVE = `M -520 ${Math.round(VBH * 0.82)} Q ${VBW / 2} ${Math.round(
-  VBH * 1.04,
-)} ${VBW + 520} ${Math.round(VBH * 0.82)}`;
+// the arc the marquee rides — crests UPWARD through the middle; runs well past
+// both edges so it never runs dry
+const CURVE = `M -520 ${Math.round(VBH * 0.86)} Q ${VBW / 2} ${Math.round(
+  VBH * 0.62,
+)} ${VBW + 520} ${Math.round(VBH * 0.86)}`;
+
+// the provided ↘ arrow (public/arrow.svg), inlined so it can be recoloured and
+// masked for the negative copy. Source is 34x34, weight-5 baked into the fill.
+const ARROW_D =
+  'M4.26777 0.732233C3.29146 -0.244078 1.70854 -0.244078 0.732233 0.732233C-0.244078 1.70854 -0.244078 3.29146 0.732233 4.26777L2.5 2.5L4.26777 0.732233ZM31.5 34C32.8807 34 34 32.8807 34 31.5L34 9C34 7.61929 32.8807 6.5 31.5 6.5C30.1193 6.5 29 7.61929 29 9V29H9C7.61929 29 6.5 30.1193 6.5 31.5C6.5 32.8807 7.61929 34 9 34L31.5 34ZM2.5 2.5L0.732233 4.26777L29.7322 33.2678L31.5 31.5L33.2678 29.7322L4.26777 0.732233L2.5 2.5Z';
+const ARROW_SCALE = 1.9;
 
 // gooey blobs — lead is large & near-instant, trail lags and shrinks
 const BLOBS = [
@@ -40,14 +49,14 @@ const BLOBS = [
   { r: 94, d: 0.52 },
 ];
 
-// scattered copy positions (viewBox units)
+// scattered copy positions (viewBox units, matched to the 1728x1052 spec)
 const SCATTER = {
-  fromX: 150,
-  fromY1: 322,
-  fromY2: 430,
-  toX: 1232,
-  toY1: 566,
-  toY2: 690,
+  fromX: 140,
+  fromY1: 300,
+  fromY2: 392,
+  toX: 1218,
+  toY1: 506,
+  toY2: 604,
 };
 
 export function HeroReveal({ play }: Props) {
@@ -64,7 +73,6 @@ export function HeroReveal({ play }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const groupRefs = useRef<Array<SVGGElement | null>>([]);
   const dotRefs = useRef<Array<SVGCircleElement | null>>([]);
-  const measureRef = useRef<SVGTextElement>(null);
   const tp1Ref = useRef<SVGTextPathElement>(null);
   const tp2Ref = useRef<SVGTextPathElement>(null);
   const bgRef = useRef<SVGImageElement>(null);
@@ -188,41 +196,57 @@ export function HeroReveal({ play }: Props) {
 
   // --- curved marquee (dark + negative copies move together) -------------
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || !mounted) return;
     const a = tp1Ref.current;
     const b = tp2Ref.current;
-    const m = measureRef.current;
-    if (!a || !m) return;
+    if (!a) return;
 
-    let one = 0;
-    try {
-      one = m.getComputedTextLength() / MARQUEE_REPEAT;
-    } catch {
-      /* keep 0 -> effect bails */
-    }
-    if (!one) return;
-
-    const targets = b ? [a, b] : [a];
-    gsap.set(targets, { attr: { startOffset: 0 } });
-    // right -> left: startOffset decreases by exactly one repeat, then loops
-    const tw = gsap.to(targets, {
-      attr: { startOffset: -one },
-      duration: one / MARQUEE_PXPS,
-      ease: 'none',
-      repeat: -1,
-    });
-
+    let cancelled = false;
+    let tw: gsap.core.Tween | null = null;
     let io: IntersectionObserver | null = null;
-    if (isWebKit && svgRef.current) {
-      io = new IntersectionObserver(
-        ([e]) => (e.isIntersecting ? tw.resume() : tw.pause()),
-        { rootMargin: '200px 0px' },
-      );
-      io.observe(svgRef.current);
+
+    const start = () => {
+      if (cancelled || !a) return;
+      // one repeat's advance along the path — the exact seamless loop distance
+      let one = 0;
+      try {
+        one = a.getComputedTextLength() / MARQUEE_REPEAT;
+      } catch {
+        /* ignore */
+      }
+      if (!one) return;
+
+      const targets = b ? [a, b] : [a];
+      gsap.set(targets, { attr: { startOffset: 0 } });
+      // right -> left: startOffset drops by one repeat, then loops
+      tw = gsap.to(targets, {
+        attr: { startOffset: -one },
+        duration: one / MARQUEE_PXPS,
+        ease: 'none',
+        repeat: -1,
+      });
+
+      if (isWebKit && svgRef.current) {
+        io = new IntersectionObserver(
+          ([e]) => (e.isIntersecting ? tw?.resume() : tw?.pause()),
+          { rootMargin: '200px 0px' },
+        );
+        io.observe(svgRef.current);
+      }
+    };
+
+    // measure only after the display font is ready — the fallback font has a
+    // different advance width, which is what made the loop jitter
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      document.fonts.ready.then(start).catch(start);
+    } else {
+      start();
     }
+
     return () => {
+      cancelled = true;
       io?.disconnect();
-      tw.kill();
+      tw?.kill();
     };
   }, [reduced, isWebKit, mounted]);
 
@@ -335,36 +359,7 @@ export function HeroReveal({ play }: Props) {
           </g>
         </mask>
         <path id="heroCurve" d={CURVE} fill="none" />
-        <marker
-          id="heroArrow"
-          viewBox="0 0 12 12"
-          refX="9"
-          refY="6"
-          markerWidth="6"
-          markerHeight="6"
-          orient="auto-start-reverse"
-        >
-          <path
-            d="M1.5 1.5 L 10 6 L 1.5 10.5"
-            fill="none"
-            stroke="#ff4d1a"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </marker>
       </defs>
-
-      {/* hidden — one marquee repeat, measured for a seamless loop */}
-      <text
-        ref={measureRef}
-        className={styles.marquee}
-        x="-99999"
-        y="-99999"
-        aria-hidden
-      >
-        {MARQUEE}
-      </text>
 
       {/* layer 4 — base cutout (always visible) */}
       <image
@@ -422,15 +417,14 @@ export function HeroReveal({ play }: Props) {
             >
               to
             </text>
-            <path
+            <g
               className={styles.inItem}
-              d={`M ${SCATTER.toX + 72} ${SCATTER.toY1 - 34} l 46 46`}
-              fill="none"
-              stroke="#ff4d1a"
-              strokeWidth="5"
-              strokeLinecap="round"
-              markerEnd="url(#heroArrow)"
-            />
+              transform={`translate(${SCATTER.toX + 96} ${
+                SCATTER.toY1 - 58
+              }) scale(${ARROW_SCALE})`}
+            >
+              <path d={ARROW_D} fill="#ff4d1a" />
+            </g>
             <text
               className={`${styles.scatter} ${styles.inItem}`}
               x={SCATTER.toX}
@@ -464,6 +458,13 @@ export function HeroReveal({ play }: Props) {
             <text className={styles.scatter} x={SCATTER.toX} y={SCATTER.toY1}>
               to
             </text>
+            <g
+              transform={`translate(${SCATTER.toX + 96} ${
+                SCATTER.toY1 - 58
+              }) scale(${ARROW_SCALE})`}
+            >
+              <path d={ARROW_D} />
+            </g>
             <text className={styles.scatter} x={SCATTER.toX} y={SCATTER.toY2}>
               possibilities.
             </text>
