@@ -38,10 +38,10 @@ const SQUASH = 0.012; // scaleY delta at full scroll tilt
 
 // pointer reaction (both browsers) — impulse-driven, decays to rest
 const P_STIFF = 0.14;
-const P_DAMP = 0.76; // lower = more wobble
-const P_IMPULSE = 0.75; // kick into the poke velocity on enter/leave
-const P_MAX_T = 5; // px translate at amp 1
-const P_MAX_S = 0.02; // scale delta at |amp| 1
+const P_DAMP = 0.79; // lower = fewer, faster wobbles
+const P_IMPULSE = 0.85; // kick into the poke velocity on enter/leave
+const P_MAX_T = 7; // px directional lurch at amp 1
+const P_MAX_SQ = 0.032; // squash/stretch (scaleX/Y delta) at amp 1
 
 const REST = 0.0016;
 
@@ -79,19 +79,22 @@ function tick() {
       continue;
     }
 
-    const tx = (s.pxAmp * P_MAX_T).toFixed(1);
-    const ty = (s.pyAmp * P_MAX_T).toFixed(1);
-    const psc = (
-      1 +
-      Math.min(1, Math.hypot(s.pxAmp, s.pyAmp)) * P_MAX_S
-    ).toFixed(4);
+    const ax = s.pxAmp;
+    const ay = s.pyAmp;
+    // directional lurch toward the poked edge, wobbling back through 0
+    const tx = (ax * P_MAX_T).toFixed(1);
+    const ty = (ay * P_MAX_T).toFixed(1);
+    // signed squash: the poked axis compresses, the other stretches — both
+    // swing with the spring, so it reads as one wobble (not a rectified pulse)
+    const scx = 1 + ax * P_MAX_SQ - ay * P_MAX_SQ * 0.6;
+    let scy = 1 + ay * P_MAX_SQ - ax * P_MAX_SQ * 0.6;
+    if (s.maxSkew) scy *= 1 + s.sAmp * SQUASH; // + faint scroll squash (WebKit)
 
-    let t = `translate3d(${tx}px, ${ty}px, 0) scale(${psc})`;
-    if (s.maxSkew) {
-      t +=
-        ` skewY(${(s.sAmp * s.maxSkew).toFixed(2)}deg)` +
-        ` scaleY(${(1 + s.sAmp * SQUASH).toFixed(4)})`;
-    }
+    let t =
+      `translate3d(${tx}px, ${ty}px, 0)` +
+      ` scaleX(${scx.toFixed(4)}) scaleY(${scy.toFixed(4)})`;
+    if (s.maxSkew) t += ` skewY(${(s.sAmp * s.maxSkew).toFixed(2)}deg)`;
+
     if (t !== s.last) {
       s.last = t;
       s.el.style.transform = t;
