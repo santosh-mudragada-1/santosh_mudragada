@@ -46,16 +46,16 @@ const ARROW_SCALE = 1.9;
 // `r` is the resting radius (viewBox units); `d` is the follow-tween duration,
 // i.e. how far this blob lags the cursor.
 const BLOBS = [
-  { r: 205, d: 0.04 },
-  { r: 184, d: 0.11 },
-  { r: 164, d: 0.2 },
-  { r: 143, d: 0.31 },
-  { r: 122, d: 0.44 },
-  { r: 101, d: 0.59 },
-  { r: 81, d: 0.76 },
-  { r: 62, d: 0.95 },
-  { r: 44, d: 1.16 },
-  { r: 27, d: 1.4 },
+  { r: 205, d: 0.05 },
+  { r: 184, d: 0.14 },
+  { r: 164, d: 0.26 },
+  { r: 143, d: 0.41 },
+  { r: 122, d: 0.59 },
+  { r: 101, d: 0.8 },
+  { r: 81, d: 1.04 },
+  { r: 62, d: 1.31 },
+  { r: 44, d: 1.61 },
+  { r: 27, d: 1.95 },
 ];
 
 // scattered copy positions (viewBox units, matched to the 1728x1052 spec)
