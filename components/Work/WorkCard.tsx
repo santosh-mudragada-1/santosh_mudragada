@@ -29,10 +29,11 @@ type WorkCardProps = {
  *             is the at-rest card, the WebGL-fail fallback, and the dark ground
  *             a bowed edge lifts off.
  *   <WorkCardGL> — a canvas sibling of .inner that overscans the box; its bow
- *             spills past the card because .outer doesn't clip. Chromium only.
+ *             spills past the card because .outer doesn't clip.
  *
- * WebKit gets none of the WebGL — instead a cheap scroll-velocity `skewY` on
- * .outer (see cardSkew), one shared ticker callback, GPU transform only.
+ * Every browser now tries the WebGL bow. If it can't run (WebKit trouble,
+ * context fail), the card falls back to a cheap scroll-velocity `skewY` on
+ * .outer (see cardSkew) — one shared ticker callback, GPU transform only.
  */
 export function WorkCard({
   index,
@@ -55,11 +56,10 @@ export function WorkCard({
   useEffect(() => setMounted(true), []);
   const onGlFail = useCallback(() => setGlFailed(true), []);
 
-  // WebKit freezes with multiple concurrent WebGL card contexts — it falls
-  // back to the static .inner card there (same as touch / reduced-motion)
-  const useGL = mounted && !isTouch && !isWebKit && !reduced && !glFailed;
-  // ...and gets the cheap scroll-velocity skew instead
-  const useSkew = mounted && isWebKit && !isTouch && !reduced;
+  // every browser tries the WebGL bow now
+  const useGL = mounted && !isTouch && !reduced && !glFailed;
+  // WebKit fallback if the GL bow can't run there
+  const useSkew = mounted && isWebKit && !isTouch && !reduced && !useGL;
 
   useGSAP(
     () => {
