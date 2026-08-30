@@ -7,7 +7,7 @@ import { useIsTouch } from '@/lib/hooks/useIsTouch';
 import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { WorkCardGL } from './WorkCardGL';
-import { addCardJelly, type CardJelly } from './cardJelly';
+import { addCardSkew } from './cardSkew';
 import styles from './WorkCard.module.scss';
 
 type WorkCardProps = {
@@ -31,11 +31,8 @@ type WorkCardProps = {
  *   <WorkCardGL> — a canvas sibling of .inner that overscans the box; its bow
  *             spills past the card because .outer doesn't clip. Chromium only.
  *
- * Jelly (see cardJelly, one shared ticker spring on .outer):
- *   - pointer entering/leaving an edge -> a directional translate+scale bulge
- *     that wobbles back. Both browsers.
- *   - scroll velocity -> skewY + faint squash. WebKit only (Chromium's scroll
- *     deformation is WorkCardGL).
+ * WebKit gets none of the WebGL — instead a cheap scroll-velocity `skewY` on
+ * .outer (see cardSkew), one shared ticker callback, GPU transform only.
  */
 export function WorkCard({
   index,
@@ -61,8 +58,8 @@ export function WorkCard({
   // WebKit freezes with multiple concurrent WebGL card contexts — it falls
   // back to the static .inner card there (same as touch / reduced-motion)
   const useGL = mounted && !isTouch && !isWebKit && !reduced && !glFailed;
-  // both browsers: the pointer-poke jelly (+ scroll skew on WebKit)
-  const useJelly = mounted && !isTouch && !reduced;
+  // ...and gets the cheap scroll-velocity skew instead
+  const useSkew = mounted && isWebKit && !isTouch && !reduced;
 
   useGSAP(
     () => {
@@ -90,47 +87,22 @@ export function WorkCard({
     { scope: parallaxRef, dependencies: [reduced, depth] },
   );
 
-  // Jelly: wire the card box into the shared spring while it's near the
-  // viewport; feed it the pointer's entry / exit edge. cardJelly owns the loop.
+  // Safari deformation stand-in: wire the card box into the shared skew ticker
+  // while it's near the viewport, unwire it when it leaves. No per-frame work
+  // here — cardSkew owns the one loop.
   useEffect(() => {
-    if (!useJelly || depth === 0) return;
+    if (!useSkew || depth === 0) return;
     const el = outerRef.current;
     if (!el) return;
 
-    let jelly: CardJelly | null = null;
-    let rect: DOMRect | null = null;
-
-    // which edge the pointer crossed -> a unit direction (dominant axis)
-    const edgeDir = (e: PointerEvent): [number, number] => {
-      const r = rect ?? el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      return Math.abs(x) >= Math.abs(y)
-        ? [x >= 0 ? 1 : -1, 0]
-        : [0, y >= 0 ? 1 : -1];
-    };
-    const onEnter = (e: PointerEvent) => {
-      rect = el.getBoundingClientRect();
-      const [dx, dy] = edgeDir(e);
-      jelly?.poke(dx, dy);
-    };
-    const onLeave = (e: PointerEvent) => {
-      const [dx, dy] = edgeDir(e);
-      jelly?.poke(dx * 0.8, dy * 0.8);
-      rect = null;
-    };
-
+    let detach: (() => void) | null = null;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !jelly) {
-          jelly = addCardJelly(el, { maxSkew: isWebKit ? 7 * depth : 0 });
-          el.addEventListener('pointerenter', onEnter);
-          el.addEventListener('pointerleave', onLeave);
-        } else if (!entry.isIntersecting && jelly) {
-          el.removeEventListener('pointerenter', onEnter);
-          el.removeEventListener('pointerleave', onLeave);
-          jelly.detach();
-          jelly = null;
+        if (entry.isIntersecting && !detach) {
+          detach = addCardSkew(el, 7 * depth);
+        } else if (!entry.isIntersecting && detach) {
+          detach();
+          detach = null;
         }
       },
       { rootMargin: '200px 0px' },
@@ -139,11 +111,9 @@ export function WorkCard({
 
     return () => {
       io.disconnect();
-      el.removeEventListener('pointerenter', onEnter);
-      el.removeEventListener('pointerleave', onLeave);
-      jelly?.detach();
+      detach?.();
     };
-  }, [useJelly, isWebKit, depth]);
+  }, [useSkew, depth]);
 
   return (
     <Link
