@@ -127,6 +127,40 @@ a {
 }
 
 // ===========================================================================
+// Scrollbar — a thin brand pill in place of the OS default. The accent reads
+// on both the cream sections and the dark footer.
+// ===========================================================================
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 77, 26, 0.5) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 77, 26, 0.45);
+  border-radius: 999px;
+  border: 3px solid transparent; // insets the pill so it sits ~4px wide
+  background-clip: padding-box;
+
+  &:hover {
+    background: rgba(255, 77, 26, 0.75);
+    background-clip: padding-box;
+  }
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+// ===========================================================================
 // Lenis smooth scroll (recommended stylesheet, inlined)
 // https://github.com/darkroomengineering/lenis#considerations
 // ===========================================================================

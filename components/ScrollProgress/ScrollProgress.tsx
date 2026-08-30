@@ -35,6 +35,10 @@ export function ScrollProgress() {
             start: 0,
             end: 'max',
             scrub: true,
+            // recompute `max` on every refresh — otherwise a page that grows
+            // after this trigger is built (fonts, images, late sections) leaves
+            // `max` stale and the bar fills within the first screen
+            invalidateOnRefresh: true,
           },
         },
       );
