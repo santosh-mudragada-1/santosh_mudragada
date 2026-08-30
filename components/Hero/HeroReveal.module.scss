@@ -4,7 +4,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  aspect-ratio: 1187 / 1326; // == the portrait assets, so both layers align 1:1
+  aspect-ratio: 938 / 1052; // == the portrait assets, so both layers align 1:1
   isolation: isolate; // keep the reveal compositing off the rest of the hero
 }
 
@@ -24,15 +24,15 @@
   z-index: 1;
 }
 
-// pixel/dither portrait — touch only, opacity scrubbed on scroll by GSAP
+// with-background portrait — touch only, opacity scrubbed on scroll by GSAP
 .pixel {
   z-index: 2;
   opacity: 0;
   pointer-events: none;
 }
 
-// desktop reveal surface — <svg> holding the pixel portrait behind a gooey
-// liquid mask; transparent everywhere else so the clean layer shows through
+// desktop reveal surface — <svg> holding the with-background portrait behind a
+// gooey liquid mask; transparent everywhere else so the cutout shows through
 .reveal {
   z-index: 2;
   pointer-events: none;

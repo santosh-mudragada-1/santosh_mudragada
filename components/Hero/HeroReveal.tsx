@@ -16,9 +16,9 @@ type Props = {
 /**
  * Portrait composition with a cursor-driven reveal.
  *
- * The clean cutout is the stable base `<img>` (never transformed). The
- * pixelated portrait sits above it in an `<svg>`, shown only through a gooey
- * liquid mask:
+ * The background-removed cutout is the stable base `<img>` (never
+ * transformed). The full portrait (with its background) sits above it in an
+ * `<svg>`, shown only through a gooey liquid mask:
  *
  *   - four white circles, each in a `<g>` wrapper that chases the pointer on
  *     its own `gsap.quickTo` duration. The lead is near-instant and large; the
@@ -31,12 +31,12 @@ type Props = {
  *   - radius grows in on enter, collapses on leave.
  *
  * Pointer coords never touch React state; GSAP owns every animated property.
- * Touch: no pointer reveal — the static pixel layer fades in on a scrubbed
- * ScrollTrigger. Reduced-motion / SSR: the clean portrait alone.
+ * Touch: no pointer reveal — the with-background portrait fades in on a
+ * scrubbed ScrollTrigger. Reduced-motion / SSR: the cutout alone.
  */
 
 const VBW = 1000;
-const VBH = 1118; // ≈ 1187 : 1326 (the portrait assets)
+const VBH = 1122; // ≈ 938 : 1052 (the portrait assets)
 
 // r = rest radius (viewBox units) · d = follow duration (s); bigger d = more lag
 const BLOBS = [

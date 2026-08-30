@@ -115,8 +115,8 @@ export function Hero() {
         >
           <span className={styles.halo} aria-hidden />
           <HeroReveal
-            cleanSrc="/images/portrait-clean.png"
-            pixelSrc="/images/portrait-pixel.png"
+            cleanSrc="/images/image_without_bg.png"
+            pixelSrc="/images/image_with_bg.png"
             alt="Santosh Mudragada"
           />
         </motion.div>
