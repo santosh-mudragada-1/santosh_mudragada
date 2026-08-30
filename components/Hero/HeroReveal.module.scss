@@ -47,6 +47,51 @@
   }
 }
 
+// ===========================================================================
+// WebKit reveal — Safari re-rasterises the gooey feGaussianBlur + SVG <mask>
+// every frame and the section locks up. There the composition is split into
+// plain layers and the reveal is a CSS radial-gradient mask riding the cursor:
+// compositor-only, no offscreen buffer. Chromium renders none of this.
+// ===========================================================================
+.wkImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  // object-fit is set inline to mirror the SVG's slice (cover) / meet (contain)
+}
+
+.wkText {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+// the two layers the cursor circle reveals — the with-bg photo and the cream
+// negative text. JS writes -webkit-mask-image / mask-image (the full gradient
+// string) + opacity every frame; Safari won't update a var()-based mask.
+.wkReveal {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0; // JS raises it with the circle
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  transform: translateZ(0); // own compositing layer → mask stays GPU-side
+}
+
+// iOS: no pointer — the photo just scrub-fades in on scroll (GSAP sets opacity)
+.wkBg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
 // entrance items — GSAP sets autoAlpha / y; hint the compositor
 .inItem {
   will-change: transform, opacity;

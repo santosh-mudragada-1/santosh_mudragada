@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { gsap } from '@/lib/gsap/gsap';
 import { useIsTouch } from '@/lib/hooks/useIsTouch';
 import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
@@ -17,9 +17,9 @@ type Props = {
 const VBW = 1728;
 const VBH = 1052;
 
-const CUTOUT = '/images/hero-cutout.png';
-const BG = '/images/hero-bg.png';
-const DEPTH = '/images/hero-depth.png';
+const CUTOUT = '/images/hero-cutout.webp';
+const BG = '/images/hero-bg.webp';
+const DEPTH = '/images/hero-depth.webp';
 
 // curved marquee — repeated so there's always text across the visible arc.
 // Ends with "— " so the same separator joins every repeat.
@@ -70,9 +70,11 @@ export function HeroReveal({ play }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // WebKit chokes on the per-frame feGaussianBlur + mask of the liquid reveal
-  // — it just gets the static cutout there (no reveal, no negative text).
+  // WebKit chokes on the per-frame feGaussianBlur + SVG <mask> of the liquid
+  // reveal. It gets the same idea a different way: a compositor-only CSS
+  // radial-gradient mask that rides the cursor (see the WebKit branch below).
   const useReveal = mounted && !isTouch && !reduced && !isWebKit;
+  const useWkReveal = mounted && !isTouch && !reduced && isWebKit;
   const useTouchFade = mounted && isTouch && !reduced;
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -83,8 +85,75 @@ export function HeroReveal({ play }: Props) {
   const measureRef = useRef<SVGTextElement>(null);
   const bgRef = useRef<SVGImageElement>(null);
   const inGroupRef = useRef<SVGGElement>(null); // everything that eases in
+  const hostRef = useRef<HTMLDivElement>(null); // WebKit: the layer stack
+  const wkBgRef = useRef<HTMLDivElement>(null); // WebKit: with-bg photo wrapper
+  const wkNegRef = useRef<HTMLDivElement>(null); // WebKit: cream negative text
 
   const marqueeText = MARQUEE.repeat(MARQUEE_REPEAT);
+
+  // WebKit renders the marquee + scattered copy twice — dark (rest state) and a
+  // cream "negative" copy shown only inside the reveal circle. Same geometry as
+  // the Chromium <g> pair; factored here so the two WebKit <svg>s don't repeat
+  // it. Only the dark copy carries the `.inItem` entrance hooks.
+  const wkTextContent = (
+    light: boolean,
+    tpRef: RefObject<SVGTextPathElement>,
+    curveId: string,
+  ) => {
+    const io = light ? '' : ` ${styles.inItem}`;
+    const mFill = light ? '#f4f0e9' : '#141210';
+    const bFill = light ? '#f4f0e9' : '#3a1b0e';
+    const aFill = light ? '#f4f0e9' : '#ff4d1a';
+    return (
+      <>
+        <text className={`${styles.marquee}${io}`} fill={mFill}>
+          <textPath ref={tpRef} href={`#${curveId}`} startOffset="0">
+            {marqueeText}
+          </textPath>
+        </text>
+        <g fill={bFill}>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={SCATTER.fromX}
+            y={SCATTER.fromY1}
+          >
+            from
+          </text>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={SCATTER.fromX}
+            y={SCATTER.fromY2}
+          >
+            problems<tspan fill={aFill}>!</tspan>
+          </text>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={SCATTER.toX}
+            y={SCATTER.toY1}
+          >
+            to
+          </text>
+          {/* outer <g> holds the position; GSAP animates the inner .inItem */}
+          <g transform={`translate(${SCATTER.toX + 96} ${SCATTER.toY1 - 58})`}>
+            <g className={light ? undefined : styles.inItem}>
+              <path
+                d={ARROW_D}
+                transform={`scale(${ARROW_SCALE})`}
+                fill={aFill}
+              />
+            </g>
+          </g>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={SCATTER.toX}
+            y={SCATTER.toY2}
+          >
+            possibilities<tspan fill={aFill}>.</tspan>
+          </text>
+        </g>
+      </>
+    );
+  };
 
   // --- cursor liquid-mask reveal ------------------------------------------
   useEffect(() => {
@@ -299,9 +368,9 @@ export function HeroReveal({ play }: Props) {
   // --- touch: bg fades in on scroll ------------------------------------
   useEffect(() => {
     if (!useTouchFade) return;
-    const el = bgRef.current;
-    const svg = svgRef.current;
-    if (!el || !svg) return;
+    const el = isWebKit ? wkBgRef.current : bgRef.current;
+    const trig = isWebKit ? hostRef.current : svgRef.current;
+    if (!el || !trig) return;
     const tween = gsap.fromTo(
       el,
       { autoAlpha: 0 },
@@ -309,7 +378,7 @@ export function HeroReveal({ play }: Props) {
         autoAlpha: 0.5,
         ease: 'none',
         scrollTrigger: {
-          trigger: svg,
+          trigger: trig,
           start: 'center 85%',
           end: 'bottom top',
           scrub: true,
@@ -320,7 +389,189 @@ export function HeroReveal({ play }: Props) {
       tween.scrollTrigger?.kill();
       tween.kill();
     };
-  }, [useTouchFade]);
+  }, [useTouchFade, isWebKit]);
+
+  // --- WebKit reveal: a CSS radial-gradient mask that rides the cursor ---
+  // No feGaussianBlur, no SVG <mask>. Safari won't re-evaluate a mask-image
+  // that references a CSS var when the var changes, so GSAP tweens a plain
+  // state object and writes the whole gradient string to both layers (the
+  // with-bg photo + the cream negative text) each frame — still compositor-only.
+  useEffect(() => {
+    if (!useWkReveal) return;
+    const host = hostRef.current;
+    const bg = wkBgRef.current;
+    const neg = wkNegRef.current;
+    if (!host || !bg || !neg) return;
+
+    const st = { x: 0, y: 0, r: 0, o: 0 };
+    const maxR = () => Math.max(180, Math.min(window.innerWidth * 0.2, 300));
+
+    const paint = () => {
+      const r = st.r < 1 ? 1 : st.r;
+      const m = `radial-gradient(circle ${r}px at ${st.x}px ${st.y}px, #000 ${
+        r * 0.52
+      }px, rgba(0,0,0,0) ${r}px)`;
+      for (const el of [bg, neg] as HTMLElement[]) {
+        el.style.webkitMaskImage = m;
+        el.style.maskImage = m;
+        el.style.opacity = `${st.o}`;
+      }
+    };
+    paint();
+
+    const xTo = gsap.quickTo(st, 'x', { duration: 0.3, ease: 'power3', onUpdate: paint });
+    const yTo = gsap.quickTo(st, 'y', { duration: 0.3, ease: 'power3', onUpdate: paint });
+
+    let inside = false;
+    const reveal = () =>
+      gsap.to(st, {
+        r: maxR(),
+        o: 1,
+        duration: 0.5,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        onUpdate: paint,
+      });
+    const conceal = () => {
+      inside = false;
+      gsap.to(st, {
+        r: 0,
+        o: 0,
+        duration: 0.4,
+        ease: 'power2.in',
+        overwrite: 'auto',
+        onUpdate: paint,
+      });
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const rect = host.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      if (!inside) {
+        inside = true;
+        st.x = x;
+        st.y = y;
+        paint();
+        reveal();
+      } else {
+        xTo(x);
+        yTo(y);
+      }
+    };
+
+    host.addEventListener('pointermove', onMove, { passive: true });
+    host.addEventListener('pointerleave', conceal);
+    host.addEventListener('pointercancel', conceal);
+
+    return () => {
+      host.removeEventListener('pointermove', onMove);
+      host.removeEventListener('pointerleave', conceal);
+      host.removeEventListener('pointercancel', conceal);
+      gsap.killTweensOf(st);
+    };
+  }, [useWkReveal, wide]);
+
+  // ---- WebKit: stacked layers + a CSS radial-gradient mask reveal --------
+  // Same visual composition as the Chromium SVG, but split into separate
+  // layers so the reveal can be a plain CSS mask on plain elements (no
+  // feGaussianBlur, no SVG <mask> — both freeze the section in Safari).
+  if (mounted && isWebKit) {
+    const fit: 'cover' | 'contain' = wide ? 'cover' : 'contain';
+    return (
+      <div ref={hostRef} className={styles.canvas}>
+        {/* layer 4 — base cutout */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.wkImg}
+          style={{ objectFit: fit }}
+          src={CUTOUT}
+          alt=""
+          aria-hidden
+          draggable={false}
+          decoding="async"
+        />
+
+        {/* layer 3 — with-background photo: revealed by the cursor circle,
+            or scroll-faded in on touch. The mask sits on the wrapper <div>
+            (Safari is unreliable masking a replaced <img> directly). */}
+        {(useWkReveal || useTouchFade) && (
+          <div
+            ref={wkBgRef}
+            className={useWkReveal ? styles.wkReveal : styles.wkBg}
+            aria-hidden
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className={styles.wkImg}
+              style={{ objectFit: fit }}
+              src={BG}
+              alt=""
+              draggable={false}
+              decoding="async"
+            />
+          </div>
+        )}
+
+        {/* layer 2 — text, dark (rest state) */}
+        <svg
+          ref={svgRef}
+          className={styles.wkText}
+          viewBox={`0 0 ${VBW} ${VBH}`}
+          preserveAspectRatio={wide ? 'xMidYMid slice' : 'xMidYMid meet'}
+          role="img"
+          aria-label="Santosh Mudragada — Product Designer + Builder, UI/UX Designer"
+        >
+          <defs>
+            <path id="heroCurve" d={CURVE} fill="none" />
+          </defs>
+          <text
+            ref={measureRef}
+            className={styles.marquee}
+            x="-99999"
+            y="-99999"
+            aria-hidden
+          >
+            {MARQUEE}
+          </text>
+          <g ref={inGroupRef}>
+            <g className={styles.textDark}>
+              {wkTextContent(false, tp1Ref, 'heroCurve')}
+            </g>
+          </g>
+        </svg>
+
+        {/* layer 2b — same copy, cream, shown only inside the reveal circle */}
+        {useWkReveal && (
+          <div ref={wkNegRef} className={styles.wkReveal} aria-hidden>
+            <svg
+              className={styles.wkText}
+              viewBox={`0 0 ${VBW} ${VBH}`}
+              preserveAspectRatio={wide ? 'xMidYMid slice' : 'xMidYMid meet'}
+              aria-hidden
+            >
+              <defs>
+                <path id="heroCurveNeg" d={CURVE} fill="none" />
+              </defs>
+              {wkTextContent(true, tp2Ref, 'heroCurveNeg')}
+            </svg>
+          </div>
+        )}
+
+        {/* layer 1 — foreground depth crop, over the curved text */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.wkImg}
+          style={{ objectFit: fit }}
+          src={DEPTH}
+          alt=""
+          aria-hidden
+          draggable={false}
+          decoding="async"
+        />
+      </div>
+    );
+  }
 
   return (
     <svg
