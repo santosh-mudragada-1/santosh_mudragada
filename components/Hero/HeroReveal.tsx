@@ -41,12 +41,15 @@ const ARROW_D =
   'M4.26777 0.732233C3.29146 -0.244078 1.70854 -0.244078 0.732233 0.732233C-0.244078 1.70854 -0.244078 3.29146 0.732233 4.26777L2.5 2.5L4.26777 0.732233ZM31.5 34C32.8807 34 34 32.8807 34 31.5L34 9C34 7.61929 32.8807 6.5 31.5 6.5C30.1193 6.5 29 7.61929 29 9V29H9C7.61929 29 6.5 30.1193 6.5 31.5C6.5 32.8807 7.61929 34 9 34L31.5 34ZM2.5 2.5L0.732233 4.26777L29.7322 33.2678L31.5 31.5L33.2678 29.7322L4.26777 0.732233L2.5 2.5Z';
 const ARROW_SCALE = 1.9;
 
-// gooey blobs — lead is large & near-instant, trail lags and shrinks
+// gooey blobs — lead is large & near-instant, trail lags and shrinks. More
+// of them + a wider lag spread = a longer liquid streak on a fast move.
 const BLOBS = [
-  { r: 262, d: 0.05 },
-  { r: 214, d: 0.16 },
-  { r: 150, d: 0.31 },
-  { r: 94, d: 0.52 },
+  { r: 278, d: 0.04 },
+  { r: 224, d: 0.13 },
+  { r: 166, d: 0.27 },
+  { r: 116, d: 0.45 },
+  { r: 74, d: 0.68 },
+  { r: 42, d: 0.98 },
 ];
 
 // scattered copy positions (viewBox units, matched to the 1728x1052 spec)
@@ -99,11 +102,11 @@ export function HeroReveal({ play }: Props) {
 
     const drifts = dots.map((c, i) => {
       if (i === 0) return null;
-      const a = 10 + i * 5;
+      const a = 14 + i * 7;
       return gsap.to(c, {
         x: i % 2 ? a : -a,
         y: i % 2 ? -a * 0.8 : a * 0.9,
-        duration: 1.9 + i * 0.5,
+        duration: 1.7 + i * 0.45,
         ease: 'sine.inOut',
         repeat: -1,
         yoyo: true,
@@ -325,7 +328,6 @@ export function HeroReveal({ play }: Props) {
       className={styles.canvas}
       viewBox={`0 0 ${VBW} ${VBH}`}
       preserveAspectRatio={wide ? 'xMidYMid slice' : 'xMidYMid meet'}
-      data-cursor={useReveal ? 'view' : undefined}
       role="img"
       aria-label="Santosh Mudragada — Product Designer + Builder, UI/UX Designer"
     >
@@ -334,21 +336,21 @@ export function HeroReveal({ play }: Props) {
           <>
             <filter
               id="heroGoo"
-              x="-40%"
-              y="-40%"
-              width="180%"
-              height="180%"
+              x="-70%"
+              y="-70%"
+              width="240%"
+              height="240%"
               colorInterpolationFilters="sRGB"
             >
               <feGaussianBlur
                 in="SourceGraphic"
-                stdDeviation="34"
+                stdDeviation="46"
                 result="b"
               />
               <feColorMatrix
                 in="b"
                 type="matrix"
-                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -11"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 34 -14"
               />
             </filter>
             <mask id="heroBlob">
