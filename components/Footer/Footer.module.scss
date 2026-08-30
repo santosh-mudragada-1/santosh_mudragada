@@ -2,11 +2,11 @@
 
 .footer {
   position: relative;
-  overflow-x: clip;
-  // desktop: at least 90svh (grows if the big type needs it). Tablet / mobile
-  // pin it to exactly 90svh and size the content to fit (see those blocks).
-  min-height: 90svh;
-  padding-top: clamp(80px, 11vh, 140px);
+  overflow: hidden;
+  // pinned to 90svh on every screen — the box height is fixed and the content
+  // is sized to fit within it (see the responsive blocks below).
+  height: 90svh;
+  padding-top: clamp(72px, 10vh, 132px);
   background: var(--carbon);
   color: var(--paper);
   display: flex;
@@ -42,12 +42,12 @@
   will-change: transform;
 }
 
-// --- headline (two lines) ------------------------------------------------
+// --- headline — 3 spans; desktop puts the first two on one line ----------
 .headline {
   padding-inline: var(--gutter);
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(2.6rem, 0.5rem + 8vw, 9rem);
+  font-size: clamp(2.4rem, 0.5rem + 6.6vw, 7.5rem);
   line-height: 0.9;
   letter-spacing: -0.04em;
   text-transform: uppercase;
@@ -57,6 +57,18 @@
   display: block;
   overflow: hidden;
   padding-block: 0.02em;
+}
+
+// desktop: "Let's" + "make" share a line, "something" drops below (2 lines)
+@include mq('lg') {
+  .lineMask:nth-of-type(1),
+  .lineMask:nth-of-type(2) {
+    display: inline-block;
+    vertical-align: top;
+  }
+  .lineMask:nth-of-type(1) {
+    margin-inline-end: 0.24em;
+  }
 }
 
 .line {
@@ -254,17 +266,20 @@
   color: var(--smoke-500);
 }
 
-// --- tablet & down: footer stays 90svh, content is sized to fit inside it.
-// strip corner labels drop, page nav drops, socials become a row under the
-// email + copy, everything scaled so it never spills the fixed box ---------
+// --- tablet & down: headline goes to 3 bigger lines, the strip grows, and
+// the blocks are spread through the fixed 90svh box so there's no dead gap.
+// Page nav + strip corner labels are dropped; socials sit in a row under the
+// email + copy. -----------------------------------------------------------
 @include mq-max('lg') {
   .footer {
-    height: 90svh; // pinned — no longer grows with content
-    overflow: hidden; // anything over the box is clipped, not grown into
-    padding-top: clamp(52px, 8vh, 92px);
+    padding-top: clamp(48px, 7vh, 88px);
   }
   .curve {
     height: clamp(56px, 11vh, 130px); // a slimmer cap on small screens
+  }
+  // spread headline · strip · contact · bottom through the whole box
+  .inner {
+    justify-content: space-between;
   }
 
   .bandMeta {
@@ -272,66 +287,86 @@
   }
 
   .headline {
-    font-size: clamp(2.4rem, 1rem + 8vw, 5rem);
+    // scales with width AND height so it fills tall tablet viewports
+    font-size: clamp(3rem, 2vw + 4.4vh, 6.5rem);
   }
   .band {
-    height: clamp(92px, 16vw, 180px);
-    margin-block: clamp(0.8rem, 0.5rem + 1.6vw, 1.8rem);
+    height: clamp(120px, 9vw + 9vh, 260px);
+    margin-block: clamp(0.8rem, 2vw, 2.2rem);
   }
   .marquee span {
-    font-size: clamp(1.9rem, 1rem + 4.4vw, 3.6rem);
+    font-size: clamp(2.4rem, 1rem + 6vw, 5rem);
   }
 
   .direct {
     grid-template-columns: 1fr;
-    padding-top: clamp(0.9rem, 0.4rem + 2vw, 2rem);
+    margin-top: 0; // the flex spread handles placement now
+    padding-top: clamp(1rem, 0.4rem + 2vw, 2.2rem);
+  }
+  .label {
+    font-size: 0.82rem;
   }
   .email {
-    font-size: clamp(1.3rem, 0.9rem + 2.2vw, 2rem);
+    font-size: clamp(1.7rem, 0.8rem + 4vw, 3rem);
+  }
+  .copy {
+    font-size: 0.9rem;
+    margin-top: 0.6em;
   }
   .socials {
     grid-column: 1;
     grid-row: auto;
-    margin-top: var(--space-sm);
+    margin-top: var(--space-md);
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
-    gap: var(--space-xs) var(--space-md);
+    gap: var(--space-sm) var(--space-lg);
+  }
+  .social {
+    font-size: clamp(0.9rem, 0.6rem + 0.9vw, 1.2rem);
   }
   // drop Home / Work / About / Contact — Back to top stays.
   // !important beats the inline `display: inline-flex` the Magnetic span sets.
   .navPage {
     display: none !important;
   }
+  // Back to top -> bottom-right, © / role -> bottom-left
   .bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2xs);
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-2xs) var(--space-md);
     padding-block: var(--space-sm);
   }
 }
 
 @include mq-max('sm') {
   .footer {
-    padding-top: clamp(36px, 6vh, 64px);
+    padding-top: clamp(32px, 5vh, 60px);
   }
   .headline {
-    font-size: clamp(1.95rem, 1.1rem + 6vw, 3rem);
+    font-size: clamp(2rem, 1rem + 6.5vw, 3.6rem);
   }
   .band {
-    height: clamp(70px, 19vw, 116px);
+    height: clamp(88px, 12vw + 6vh, 160px);
   }
   .marquee span {
-    font-size: clamp(1.3rem, 0.8rem + 3.4vw, 2rem);
+    font-size: clamp(1.5rem, 0.8rem + 4vw, 2.6rem);
   }
   .email {
-    font-size: clamp(1.02rem, 0.72rem + 2vw, 1.45rem);
-  }
-  .socials {
-    flex-direction: column;
-    gap: var(--space-2xs);
+    font-size: clamp(1.05rem, 0.6rem + 3vw, 1.8rem);
   }
   .legal {
     display: none; // no © / role line on mobile
+  }
+  // socials stay a horizontal row under email + copy — just a tighter gap
+  .socials {
+    margin-top: var(--space-sm);
+    gap: var(--space-xs) var(--space-md);
+  }
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

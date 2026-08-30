@@ -80,16 +80,13 @@ export function HeroReveal({ play }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // Scattered copy keeps the desktop left/right placement on tablet, just
-  // smaller (font via [data-narrow]) with a scaled-down arrow. Mobile drops
-  // it entirely.
+  // Scattered copy is desktop-only now. Rendered on SSR / pre-mount too so the
+  // entrance still tags it; tablet + mobile drop it once `wide` resolves.
   const scat = SCATTER;
-  const arrowScale = wide ? ARROW_SCALE : 1.35;
-  const arrowDX = wide ? 96 : 82;
-  const arrowDY = wide ? 58 : 50;
-  // rendered on SSR + desktop/tablet (so the entrance still tags it); only
-  // mobile — resolved after mount — drops it
-  const showScatter = !mobile;
+  const arrowScale = ARROW_SCALE;
+  const arrowDX = 96;
+  const arrowDY = 58;
+  const showScatter = !mounted || wide;
 
   // WebKit chokes on the per-frame feGaussianBlur + SVG <mask> of the liquid
   // reveal. It gets the same idea a different way: a compositor-only CSS

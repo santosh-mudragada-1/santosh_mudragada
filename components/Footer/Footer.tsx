@@ -15,7 +15,9 @@ const CTRL = 320; // control-point depth at full bulge — a gentle cap, not a b
 const curvePath = (d: number) =>
   `M0 -80 L ${CW} -80 L ${CW} 0 Q ${CW / 2} ${d * CTRL} 0 0 Z`;
 
-const LINES = ["Let's make", 'something'];
+// three spans always. Desktop sets the first two side-by-side ("Let's make" /
+// "something"); tablet + mobile stack all three, filling the pinned 90svh box.
+const LINES = ["Let's", 'make', 'something'];
 const MARQUEE = 'Start a project';
 
 /**

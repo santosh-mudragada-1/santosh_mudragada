@@ -34,17 +34,13 @@
   }
 }
 
-// --- scattered copy -----------------------------------------------------
+// --- scattered copy (desktop only) ------------------------------------
 // Bricolage Grotesque · Medium · 78 · line-height 100% · tracking 0 (per spec)
 .scatter {
   font-family: var(--font-heading);
   font-weight: 500;
   font-size: 78px; // viewBox units
   letter-spacing: 0;
-
-  [data-narrow] & {
-    font-size: 58px;
-  }
 }
 
 // the two text stacks; colour comes from fill= on the elements
