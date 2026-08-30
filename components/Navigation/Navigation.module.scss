@@ -77,6 +77,13 @@
   right: clamp(14px, 1.6vw, 26px);
   pointer-events: auto;
   z-index: 1;
+
+  // compact: the burger is the ONLY nav and is always up. Force it hittable no
+  // matter what — `!important` beats any stale inline pointer-events GSAP may
+  // leave from a non-compact first render.
+  @include mq-max('lg') {
+    pointer-events: auto !important;
+  }
 }
 
 .circle {

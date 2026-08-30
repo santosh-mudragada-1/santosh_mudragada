@@ -16,6 +16,13 @@
   :global(html.is-webkit) & {
     will-change: auto;
   }
+
+  // tablet & mobile: don't pin these card layers in the compositor either —
+  // GSAP forces the transform anyway, and a stack of promoted scrolled layers
+  // is a mobile perf + rendering-glitch risk.
+  @include mq-max('lg') {
+    will-change: auto;
+  }
 }
 
 // outer: no background, no clip — the WebGL bow spills past it. Sets the box.

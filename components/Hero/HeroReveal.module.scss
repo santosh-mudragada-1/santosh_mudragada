@@ -22,10 +22,20 @@
 // tablet & mobile: the canvas is never interactive here, and it covers the
 // fixed burger's corner. Force it (and every layer/SVG inside) click-through
 // unconditionally — the [data-inert] rule above depends on JS state resolving.
+// Also drop the stacking context + layer-promotion hints: on iOS a promoted
+// layer inside scrolled content can float over `position: fixed` after a
+// scroll and eat its taps, which is exactly the burger's symptom.
 @include mq-max('lg') {
+  .canvas {
+    isolation: auto;
+  }
   .canvas,
   .canvas * {
     pointer-events: none;
+  }
+  .textDark,
+  .inItem {
+    will-change: auto;
   }
 }
 
