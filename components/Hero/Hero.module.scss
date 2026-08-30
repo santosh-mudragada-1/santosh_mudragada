@@ -81,9 +81,9 @@
 }
 
 // --- right: portrait composition ------------------------------------------
-// Full viewport height, flush to the screen's right edge. The negative
-// margin-block cancels the hero's own vertical padding for the figure only, so
-// it spans 100svh while the section itself stays exactly one viewport tall.
+// Full viewport height; the right edge sits exactly on the screen edge. The
+// negative margin-block cancels the hero's own vertical padding for the figure
+// only, so it spans 100svh while the section stays one viewport tall.
 .figure {
   position: relative;
   align-self: center;
@@ -92,7 +92,7 @@
   aspect-ratio: 938 / 1052;
   width: auto;
   margin-block: calc(-1 * var(--header-h)) calc(-1 * var(--space-xl));
-  margin-right: clamp(-16rem, -13vw, -3rem); // bleed to the viewport edge
+  margin-right: calc(-1 * var(--gutter)); // cancel the hero's right padding
 }
 
 .halo {
