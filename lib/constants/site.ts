@@ -16,7 +16,7 @@ export const NAV_LINKS = [
 ] as const;
 
 export const SOCIALS = [
-  { label: 'LinkedIn', href: '#' },
-  { label: 'Instagram', href: '#' },
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/santosh-mudragada' },
+  { label: 'Instagram', href: 'https://instagram.com/santosh_mudragada' },
   { label: 'Read.cv', href: '#' },
 ] as const;

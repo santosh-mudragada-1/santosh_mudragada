@@ -104,20 +104,24 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     // Don't let GSAP fabricate catch-up frames after a stall.
     gsap.ticker.lagSmoothing(0);
 
-    // 3. Recalculate trigger positions once layout / fonts have settled, and
-    //    again when the preloader lifts (document height changes as the
-    //    scroll-lock is released).
+    // 3. Recalculate trigger positions once layout / fonts have settled, when
+    //    the preloader lifts (document height changes as the scroll-lock is
+    //    released), and after every page transition (the new route almost
+    //    always has a different height — Lenis's scroll limit must re-measure
+    //    or scrolling on the new page snaps).
     const refresh = () => {
       lenisInstance.resize();
       ScrollTrigger.refresh();
     };
     window.addEventListener('load', refresh);
     window.addEventListener('preloader:done', refresh);
+    window.addEventListener('transition:complete', refresh);
     ScrollTrigger.refresh();
 
     return () => {
       window.removeEventListener('load', refresh);
       window.removeEventListener('preloader:done', refresh);
+      window.removeEventListener('transition:complete', refresh);
       gsap.ticker.remove(onTick);
       lenisInstance.off('scroll', ScrollTrigger.update);
       lenisInstance.destroy();

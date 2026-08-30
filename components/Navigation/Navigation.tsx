@@ -30,12 +30,6 @@ export function Navigation() {
       const circle = circleRef.current;
       if (!links || !circle) return;
 
-      // compact: no inline links, burger always present — skip the scroll swap
-      if (compact) {
-        gsap.set(links, { autoAlpha: 0 }); // burger shown via CSS (!important)
-        return;
-      }
-
       // the Magnetic wrapper around the burger is position:fixed and keeps its
       // full box even while the button is scaled to 0 at the top of the page —
       // that invisible box overlaps the right edge of "Contact" and swallows
@@ -44,6 +38,15 @@ export function Navigation() {
       const setCircleHit = (on: boolean) => {
         if (circleWrap) circleWrap.style.pointerEvents = on ? 'auto' : 'none';
       };
+
+      // compact: no inline links, burger always present — skip the scroll swap.
+      // Force the wrapper hittable (a prior non-compact run may have parked it
+      // at `none` while the burger was scaled to 0).
+      if (compact) {
+        gsap.set(links, { autoAlpha: 0 }); // burger shown via CSS (!important)
+        setCircleHit(true);
+        return;
+      }
 
       const d = reduced ? 0.001 : undefined;
       const show = () => {

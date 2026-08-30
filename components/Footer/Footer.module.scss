@@ -76,6 +76,14 @@
   }
 }
 
+// 16"-class screens and up: blow the headline up so "SOMETHING." spans ~60%
+// of the viewport. 14" and everything smaller keep the clamp() above.
+@media (min-width: 1600px) {
+  .headline {
+    font-size: 10.1vw;
+  }
+}
+
 .line {
   display: block;
   // Kept on WebKit too: the one-shot `gsap.from` completes and GSAP drops the

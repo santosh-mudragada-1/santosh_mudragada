@@ -19,6 +19,7 @@
   // matches curtainMorphPath's viewBox: viewport + 2 * MORPH_OVERSCAN (300)
   height: calc(100dvh + 600px);
   will-change: transform;
+  pointer-events: none; // never a tap target, even when parked at z-index 100
 }
 
 .label {
@@ -34,6 +35,7 @@
   letter-spacing: -0.01em;
   color: var(--paper);
   will-change: transform, opacity;
+  pointer-events: none; // full-viewport + z-index 100 — must never catch taps
 }
 
 .dot {
