@@ -99,7 +99,7 @@ export function WorkCard({
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !detach) {
-          detach = addCardSkew(el, 5 * depth);
+          detach = addCardSkew(el, 7 * depth);
         } else if (!entry.isIntersecting && detach) {
           detach();
           detach = null;
