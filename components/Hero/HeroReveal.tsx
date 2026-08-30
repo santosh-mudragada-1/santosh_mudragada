@@ -22,10 +22,9 @@ const BG = '/images/hero-bg.png';
 const DEPTH = '/images/hero-depth.png';
 
 // curved marquee — repeated so there's always text across the visible arc.
-// Trailing NBSPs give the loop a clean gap and never collapse.
+// Ends with "— " so the same separator joins every repeat.
 const MARQUEE =
-  'Santosh Mudragada — Product Designer + Builder — UI/UX Designer —' +
-  '    ';
+  'Santosh Mudragada — Product Designer + Builder — UI/UX Designer — ';
 const MARQUEE_REPEAT = 5;
 const MARQUEE_PXPS = 88; // scroll speed, viewBox units / second
 
@@ -78,6 +77,7 @@ export function HeroReveal({ play }: Props) {
   const dotRefs = useRef<Array<SVGCircleElement | null>>([]);
   const tp1Ref = useRef<SVGTextPathElement>(null);
   const tp2Ref = useRef<SVGTextPathElement>(null);
+  const measureRef = useRef<SVGTextElement>(null);
   const bgRef = useRef<SVGImageElement>(null);
   const inGroupRef = useRef<SVGGElement>(null); // everything that eases in
 
@@ -210,10 +210,16 @@ export function HeroReveal({ play }: Props) {
 
     const start = () => {
       if (cancelled || !a) return;
-      // one repeat's advance along the path — the exact seamless loop distance
+      // one repeat's flat advance — measured off a plain <text>, not the
+      // <textPath> (Safari's getComputedTextLength on textPath is unreliable,
+      // which broke the loop distance there). This is still the exact seamless
+      // scroll distance: startOffset moves the text along the path by user
+      // units, and the string is periodic with this advance.
       let one = 0;
       try {
-        one = a.getComputedTextLength() / MARQUEE_REPEAT;
+        one =
+          measureRef.current?.getComputedTextLength() ??
+          a.getComputedTextLength() / MARQUEE_REPEAT;
       } catch {
         /* ignore */
       }
@@ -371,6 +377,17 @@ export function HeroReveal({ play }: Props) {
         )}
         <path id="heroCurve" d={CURVE} fill="none" />
       </defs>
+
+      {/* off-screen — one marquee repeat, measured for a seamless loop */}
+      <text
+        ref={measureRef}
+        className={styles.marquee}
+        x="-99999"
+        y="-99999"
+        aria-hidden
+      >
+        {MARQUEE}
+      </text>
 
       {/* layer 4 — base cutout (always visible) */}
       <image
