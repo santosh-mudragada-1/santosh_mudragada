@@ -27,15 +27,22 @@ export function curtainPath(w: number, h: number): string {
 // headroom above/below the viewport.
 export const MORPH_OVERSCAN = 300;
 
+/**
+ * `bulge` is the ONLY per-viewport knob — how far the control point dips past
+ * the flat bottom edge (the visible belly). It defaults to MORPH_OVERSCAN, so
+ * a 3-arg call reproduces the original path exactly. The flat part of the edge
+ * always reaches `h + o` at belly 1, so — after the sheet is translated up by
+ * `o` — it covers to the viewport bottom no matter the `bulge`.
+ */
 export function curtainMorphPath(
   w: number,
   h: number,
   belly: number,
-  depth = MORPH_OVERSCAN,
+  bulge = MORPH_OVERSCAN,
 ): string {
   const o = MORPH_OVERSCAN;
-  const botEdge = h + belly * depth; // flat: h · bellied: h + depth
-  const botCtrl = h + belly * depth * 2; // flat: h · bellied: h + 2·depth
+  const botEdge = h + belly * o; // flat: h · bellied: h + o  (coverage)
+  const botCtrl = h + belly * (o + bulge); // flat: h · bellied: h + o + bulge
   return [
     `M0 ${o}`,
     `Q${w / 2} 0 ${w} ${o}`,

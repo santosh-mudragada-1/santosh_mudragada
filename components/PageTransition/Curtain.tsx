@@ -43,9 +43,14 @@ export function Curtain({ phase, label, onCovered, onRevealed }: CurtainProps) {
   // translate (px): parked below -> covering / held -> lifted past the top
   const y = covering ? -o : phase === 'reveal' ? -(height + 2 * o) : height;
 
-  // bottom edge: deep downward belly while covering / held, flat while lifting
-  const d = curtainMorphPath(width, height, covering ? 1 : 0);
-  const flat = curtainMorphPath(width, height, 0);
+  // tablet / mobile get a shallower belly; desktop keeps the full curve. Only
+  // the control point moves — the flat part of the edge is unchanged, so the
+  // sheet covers the viewport identically at every size.
+  const bulge = width <= 1024 ? 110 : o;
+
+  // bottom edge: downward belly while covering / held, flat while lifting
+  const d = curtainMorphPath(width, height, covering ? 1 : 0, bulge);
+  const flat = curtainMorphPath(width, height, 0, bulge);
 
   const transition =
     phase === 'idle' || phase === 'hold'
