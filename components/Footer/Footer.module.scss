@@ -6,7 +6,7 @@
   // pinned to 90svh on every screen — the box height is fixed and the content
   // is sized to fit within it (see the responsive blocks below).
   height: 90svh;
-  padding-top: clamp(72px, 10vh, 132px);
+  padding-top: clamp(56px, 8vh, 116px);
   background: var(--carbon);
   color: var(--paper);
   display: flex;
@@ -42,12 +42,16 @@
   will-change: transform;
 }
 
-// --- headline — 3 spans; desktop puts the first two on one line ----------
+// --- headline — LET'S / MAKE / SOMETHING. -------------------------------
+// One fluid size, no breakpoint font-size overrides: the vw term sizes
+// "SOMETHING." to ~the full content width, capped at the desktop max and
+// floored at the smallest-mobile min. (The mq('lg') rule below is layout only
+// — it puts the first two words on one line on desktop, unchanged.)
 .headline {
   padding-inline: var(--gutter);
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(2.4rem, 0.5rem + 6.6vw, 7.5rem);
+  font-size: clamp(2rem, 14vw, 7.5rem);
   line-height: 0.9;
   letter-spacing: -0.04em;
   text-transform: uppercase;
@@ -59,7 +63,8 @@
   padding-block: 0.02em;
 }
 
-// desktop: "Let's" + "make" share a line, "something" drops below (2 lines)
+// desktop: "LET'S" + "MAKE" share a line, "SOMETHING." drops below (2 lines).
+// Tablet + mobile keep all three stacked.
 @include mq('lg') {
   .lineMask:nth-of-type(1),
   .lineMask:nth-of-type(2) {
@@ -93,7 +98,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  margin-block: clamp(1rem, 0.5rem + 1.7vw, 2.4rem);
+  margin-block: clamp(0.75rem, 0.4rem + 1.4vw, 2rem);
   height: clamp(100px, 12vw, 200px);
   background: var(--accent);
   color: var(--ink);
@@ -286,10 +291,7 @@
     display: none; // no "reply within…" / email inside the strip
   }
 
-  .headline {
-    // scales with width AND height so it fills tall tablet viewports
-    font-size: clamp(3rem, 2vw + 4.4vh, 6.5rem);
-  }
+  // .headline font-size is the single fluid clamp() above — no override here
   .band {
     height: clamp(120px, 9vw + 9vh, 260px);
     margin-block: clamp(0.8rem, 2vw, 2.2rem);
@@ -345,9 +347,7 @@
   .footer {
     padding-top: clamp(32px, 5vh, 60px);
   }
-  .headline {
-    font-size: clamp(2rem, 1rem + 6.5vw, 3.6rem);
-  }
+  // .headline font-size is the single fluid clamp() above — no override here
   .band {
     height: clamp(88px, 12vw + 6vh, 160px);
   }
@@ -360,10 +360,12 @@
   .legal {
     display: none; // no © / role line on mobile
   }
-  // socials stay a horizontal row under email + copy — just a tighter gap
+  // socials stay a horizontal row under email + copy; wrap to a second line
+  // rather than overflow the screen on the narrowest phones
   .socials {
     margin-top: var(--space-sm);
-    gap: var(--space-xs) var(--space-md);
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-sm);
   }
   .bottom {
     flex-direction: column;
