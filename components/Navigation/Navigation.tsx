@@ -36,6 +36,15 @@ export function Navigation() {
         return;
       }
 
+      // the Magnetic wrapper around the burger is position:fixed and keeps its
+      // full box even while the button is scaled to 0 at the top of the page —
+      // that invisible box overlaps the right edge of "Contact" and swallows
+      // its hover. Gate the wrapper's hit-testing on whether the burger is up.
+      const circleWrap = circle.parentElement as HTMLElement | null;
+      const setCircleHit = (on: boolean) => {
+        if (circleWrap) circleWrap.style.pointerEvents = on ? 'auto' : 'none';
+      };
+
       const d = reduced ? 0.001 : undefined;
       const show = () => {
         gsap.to(links, { autoAlpha: 0, duration: d ?? 0.3, ease: 'power2.out' });
@@ -44,10 +53,12 @@ export function Navigation() {
           duration: d ?? 0.32,
           ease: 'back.out(1.7)',
         });
+        setCircleHit(true);
       };
       const hide = () => {
         gsap.to(links, { autoAlpha: 1, duration: d ?? 0.3, ease: 'power2.out' });
         gsap.to(circle, { scale: 0, duration: d ?? 0.24, ease: 'power2.in' });
+        setCircleHit(false);
       };
 
       const boundary =
@@ -73,6 +84,7 @@ export function Navigation() {
         const past = window.scrollY >= st.start - 1;
         gsap.set(links, { autoAlpha: past ? 0 : 1 });
         gsap.set(circle, { scale: past ? 1 : 0 });
+        setCircleHit(past);
       };
       applyResting();
 
@@ -87,6 +99,7 @@ export function Navigation() {
         st.kill();
         window.removeEventListener('transition:complete', onTransitionDone);
         gsap.set([links, circle], { clearProps: 'all' });
+        if (circleWrap) circleWrap.style.pointerEvents = '';
       };
     },
     { dependencies: [pathname, reduced, compact] },
