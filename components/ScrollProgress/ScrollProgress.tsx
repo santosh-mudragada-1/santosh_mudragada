@@ -1,55 +1,66 @@
 'use client';
 
-import { useRef } from 'react';
-import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap/gsap';
+import { useEffect, useRef } from 'react';
+import { gsap } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './ScrollProgress.module.scss';
 
 /**
  * Thin top-of-page progress bar.
  *
- * Doubles as the Stage 1 proof that Lenis and ScrollTrigger are in sync:
- * `scrub: true` ties the bar's scaleX directly to scroll progress with no
- * numeric smoothing, so if Lenis is driving ScrollTrigger correctly the bar
- * tracks the smooth-scroll position exactly — no lag, no stepping.
+ * Reads `scrollY / maxScroll` directly rather than driving a scrubbed
+ * ScrollTrigger tween — `end: "max"` was being cached while the document was
+ * still short (preloader up, images/fonts pending), so the bar filled within
+ * the first screen. `max` here is re-measured whenever the page height changes
+ * (ResizeObserver on <body>, plus load / fonts / preloader), and only `scrollY`
+ * is read per frame, on the shared gsap.ticker (no extra rAF loop).
  */
 export function ScrollProgress() {
   const barRef = useRef<HTMLDivElement>(null);
-  const prefersReduced = usePrefersReducedMotion();
+  const reduced = usePrefersReducedMotion();
 
-  useGSAP(
-    () => {
-      if (prefersReduced) {
-        gsap.set(barRef.current, { scaleX: 0 });
-        return;
-      }
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    if (reduced) {
+      gsap.set(bar, { scaleX: 0 });
+      return;
+    }
 
-      const tween = gsap.fromTo(
-        barRef.current,
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: document.documentElement,
-            start: 0,
-            end: 'max',
-            scrub: true,
-            // recompute `max` on every refresh — otherwise a page that grows
-            // after this trigger is built (fonts, images, late sections) leaves
-            // `max` stale and the bar fills within the first screen
-            invalidateOnRefresh: true,
-          },
-        },
+    let max = 1;
+    const measure = () => {
+      max = Math.max(
+        1,
+        document.documentElement.scrollHeight - window.innerHeight,
       );
+    };
+    measure();
 
-      return () => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
-      };
-    },
-    { dependencies: [prefersReduced] },
-  );
+    let last = -1;
+    const update = () => {
+      const p = Math.min(1, Math.max(0, window.scrollY / max));
+      if (Math.abs(p - last) > 0.0004) {
+        last = p;
+        gsap.set(bar, { scaleX: p });
+      }
+    };
+    gsap.ticker.add(update);
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(document.body);
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    window.addEventListener('preloader:done', measure);
+    document.fonts?.ready.then(measure).catch(() => {});
+
+    return () => {
+      gsap.ticker.remove(update);
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('load', measure);
+      window.removeEventListener('preloader:done', measure);
+    };
+  }, [reduced]);
 
   return (
     <div className={styles.track} aria-hidden>
