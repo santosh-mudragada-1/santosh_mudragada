@@ -9,11 +9,15 @@
 }
 
 // tablet & mobile: still a full-viewport hero — the composition covers it
-// (centred, full height), text is repositioned for the portrait crop
+// (centred, full height). Nothing in the hero is interactive here (no reveal,
+// no links), so make the whole section click-through: the fixed burger sits
+// over its top-right corner and must stay tappable. Desktop keeps pointer
+// events so the cursor reveal still works.
 @include mq-max('lg') {
   .hero {
     height: 100svh;
     min-height: 600px;
+    pointer-events: none;
   }
 }
 

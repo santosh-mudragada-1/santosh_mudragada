@@ -26,15 +26,12 @@ export function curtainPath(w: number, h: number): string {
 // reference's `initialPath`/`targetPath`. 300 is the reference's literal
 // headroom above/below the viewport.
 export const MORPH_OVERSCAN = 300;
-// how far the bottom edge bellies down at `belly` 1 — kept well under the
-// overscan so the wipe reads as a gentle curve, not a deep balloon.
-export const MORPH_DEPTH = 150;
 
 export function curtainMorphPath(
   w: number,
   h: number,
   belly: number,
-  depth = MORPH_DEPTH,
+  depth = MORPH_OVERSCAN,
 ): string {
   const o = MORPH_OVERSCAN;
   const botEdge = h + belly * depth; // flat: h · bellied: h + depth
