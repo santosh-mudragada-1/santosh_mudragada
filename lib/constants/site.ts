@@ -17,7 +17,6 @@ export const NAV_LINKS = [
 
 export const SOCIALS = [
   { label: 'LinkedIn', href: '#' },
-  { label: 'Dribbble', href: '#' },
   { label: 'Instagram', href: '#' },
   { label: 'Read.cv', href: '#' },
 ] as const;

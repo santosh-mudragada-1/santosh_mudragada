@@ -1,7 +1,8 @@
 @use 'mixins' as *;
 
-// one full-bleed SVG — authored in a 1728 x 1052 viewBox, `slice` on desktop
-// (cover) and `meet` on smaller screens (fit) via a JS-set preserveAspectRatio
+// one full-bleed SVG — authored in a 1728 x 1052 viewBox, always `slice`
+// (cover, centred). On tablet / mobile `[data-narrow]` shrinks the type and
+// the scattered copy sits in the always-visible centre column (see the JS).
 .canvas {
   position: absolute;
   inset: 0;
@@ -19,6 +20,11 @@
   font-size: 160px; // viewBox units
   letter-spacing: -5.08px;
   white-space: pre; // keep the trailing gap between repeats
+
+  [data-narrow] & {
+    font-size: 104px;
+    letter-spacing: -3px;
+  }
 }
 
 // --- scattered copy -----------------------------------------------------
@@ -28,6 +34,10 @@
   font-weight: 500;
   font-size: 78px; // viewBox units
   letter-spacing: 0;
+
+  [data-narrow] & {
+    font-size: 58px;
+  }
 }
 
 // the two text stacks; colour comes from fill= on the elements

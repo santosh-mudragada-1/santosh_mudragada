@@ -68,6 +68,22 @@ const SCATTER = {
   toY2: 604,
 };
 
+// tablet / mobile: the composition is cropped to a centred vertical column
+// (slice). Keep both copy blocks inside that always-visible column — "from
+// problems!" up near the top, "to possibilities." mid-lower, clear of the
+// face and the marquee arc. Positions are a starting point; tune on device.
+const SCATTER_NARROW = {
+  fromX: 610,
+  fromY1: 214,
+  fromY2: 300,
+  toX: 610,
+  toY1: 648,
+  toY2: 734,
+};
+
+// don't let the reveal circle ride up under the fixed header
+const HEADER_ZONE = 96;
+
 export function HeroReveal({ play }: Props) {
   const isTouch = useIsTouch();
   const isWebKit = useIsWebKit();
@@ -75,6 +91,12 @@ export function HeroReveal({ play }: Props) {
   const wide = useMediaQuery('(min-width: 1024px)');
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // tablet / mobile use the compressed scattered layout + a smaller arrow
+  const scat = wide ? SCATTER : SCATTER_NARROW;
+  const arrowScale = wide ? ARROW_SCALE : 1.4;
+  const arrowDX = wide ? 96 : 74;
+  const arrowDY = wide ? 58 : 44;
 
   // WebKit chokes on the per-frame feGaussianBlur + SVG <mask> of the liquid
   // reveal. It gets the same idea a different way: a compositor-only CSS
@@ -120,39 +142,39 @@ export function HeroReveal({ play }: Props) {
         <g fill={bFill}>
           <text
             className={`${styles.scatter}${io}`}
-            x={SCATTER.fromX}
-            y={SCATTER.fromY1}
+            x={scat.fromX}
+            y={scat.fromY1}
           >
             from
           </text>
           <text
             className={`${styles.scatter}${io}`}
-            x={SCATTER.fromX}
-            y={SCATTER.fromY2}
+            x={scat.fromX}
+            y={scat.fromY2}
           >
             problems<tspan fill={aFill}>!</tspan>
           </text>
           <text
             className={`${styles.scatter}${io}`}
-            x={SCATTER.toX}
-            y={SCATTER.toY1}
+            x={scat.toX}
+            y={scat.toY1}
           >
             to
           </text>
           {/* outer <g> holds the position; GSAP animates the inner .inItem */}
-          <g transform={`translate(${SCATTER.toX + 96} ${SCATTER.toY1 - 58})`}>
+          <g transform={`translate(${scat.toX + arrowDX} ${scat.toY1 - arrowDY})`}>
             <g className={light ? undefined : styles.inItem}>
               <path
                 d={ARROW_D}
-                transform={`scale(${ARROW_SCALE})`}
+                transform={`scale(${arrowScale})`}
                 fill={aFill}
               />
             </g>
           </g>
           <text
             className={`${styles.scatter}${io}`}
-            x={SCATTER.toX}
-            y={SCATTER.toY2}
+            x={scat.toX}
+            y={scat.toY2}
           >
             possibilities<tspan fill={aFill}>.</tspan>
           </text>
@@ -454,6 +476,11 @@ export function HeroReveal({ play }: Props) {
       const rect = host.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+      // keep the circle out of the fixed header strip at the top of the hero
+      if (e.clientY < HEADER_ZONE) {
+        if (inside) conceal();
+        return;
+      }
       if (!inside) {
         inside = true;
         st.x = x;
@@ -483,9 +510,13 @@ export function HeroReveal({ play }: Props) {
   // layers so the reveal can be a plain CSS mask on plain elements (no
   // feGaussianBlur, no SVG <mask> — both freeze the section in Safari).
   if (mounted && isWebKit) {
-    const fit: 'cover' | 'contain' = wide ? 'cover' : 'contain';
+    const fit = 'cover' as const; // full-bleed, centred — on every screen
     return (
-      <div ref={hostRef} className={styles.canvas}>
+      <div
+        ref={hostRef}
+        className={styles.canvas}
+        data-narrow={!wide || undefined}
+      >
         {/* layer 4 — base cutout */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -524,7 +555,7 @@ export function HeroReveal({ play }: Props) {
           ref={svgRef}
           className={styles.wkText}
           viewBox={`0 0 ${VBW} ${VBH}`}
-          preserveAspectRatio={wide ? 'xMidYMid slice' : 'xMidYMid meet'}
+          preserveAspectRatio="xMidYMid slice"
           role="img"
           aria-label="Santosh Mudragada — Product Designer + Builder, UI/UX Designer"
         >
@@ -553,7 +584,7 @@ export function HeroReveal({ play }: Props) {
             <svg
               className={styles.wkText}
               viewBox={`0 0 ${VBW} ${VBH}`}
-              preserveAspectRatio={wide ? 'xMidYMid slice' : 'xMidYMid meet'}
+              preserveAspectRatio="xMidYMid slice"
               aria-hidden
             >
               <defs>
@@ -583,8 +614,9 @@ export function HeroReveal({ play }: Props) {
     <svg
       ref={svgRef}
       className={styles.canvas}
+      data-narrow={!wide || undefined}
       viewBox={`0 0 ${VBW} ${VBH}`}
-      preserveAspectRatio={wide ? 'xMidYMid slice' : 'xMidYMid meet'}
+      preserveAspectRatio="xMidYMid slice"
       role="img"
       aria-label="Santosh Mudragada — Product Designer + Builder, UI/UX Designer"
     >
@@ -687,43 +719,43 @@ export function HeroReveal({ play }: Props) {
           <g fill="#3a1b0e">
             <text
               className={`${styles.scatter} ${styles.inItem}`}
-              x={SCATTER.fromX}
-              y={SCATTER.fromY1}
+              x={scat.fromX}
+              y={scat.fromY1}
             >
               from
             </text>
             <text
               className={`${styles.scatter} ${styles.inItem}`}
-              x={SCATTER.fromX}
-              y={SCATTER.fromY2}
+              x={scat.fromX}
+              y={scat.fromY2}
             >
               problems
               <tspan fill="#ff4d1a">!</tspan>
             </text>
             <text
               className={`${styles.scatter} ${styles.inItem}`}
-              x={SCATTER.toX}
-              y={SCATTER.toY1}
+              x={scat.toX}
+              y={scat.toY1}
             >
               to
             </text>
             {/* outer <g> keeps the position; GSAP animates the inner .inItem
                 (an untransformed <g>) so it can't clobber the translate */}
             <g
-              transform={`translate(${SCATTER.toX + 96} ${SCATTER.toY1 - 58})`}
+              transform={`translate(${scat.toX + arrowDX} ${scat.toY1 - arrowDY})`}
             >
               <g className={styles.inItem}>
                 <path
                   d={ARROW_D}
-                  transform={`scale(${ARROW_SCALE})`}
+                  transform={`scale(${arrowScale})`}
                   fill="#ff4d1a"
                 />
               </g>
             </g>
             <text
               className={`${styles.scatter} ${styles.inItem}`}
-              x={SCATTER.toX}
-              y={SCATTER.toY2}
+              x={scat.toX}
+              y={scat.toY2}
             >
               possibilities
               <tspan fill="#ff4d1a">.</tspan>
@@ -744,21 +776,21 @@ export function HeroReveal({ play }: Props) {
                 {marqueeText}
               </textPath>
             </text>
-            <text className={styles.scatter} x={SCATTER.fromX} y={SCATTER.fromY1}>
+            <text className={styles.scatter} x={scat.fromX} y={scat.fromY1}>
               from
             </text>
-            <text className={styles.scatter} x={SCATTER.fromX} y={SCATTER.fromY2}>
+            <text className={styles.scatter} x={scat.fromX} y={scat.fromY2}>
               problems!
             </text>
-            <text className={styles.scatter} x={SCATTER.toX} y={SCATTER.toY1}>
+            <text className={styles.scatter} x={scat.toX} y={scat.toY1}>
               to
             </text>
             <g
-              transform={`translate(${SCATTER.toX + 96} ${SCATTER.toY1 - 58})`}
+              transform={`translate(${scat.toX + arrowDX} ${scat.toY1 - arrowDY})`}
             >
-              <path d={ARROW_D} transform={`scale(${ARROW_SCALE})`} />
+              <path d={ARROW_D} transform={`scale(${arrowScale})`} />
             </g>
-            <text className={styles.scatter} x={SCATTER.toX} y={SCATTER.toY2}>
+            <text className={styles.scatter} x={scat.toX} y={scat.toY2}>
               possibilities.
             </text>
           </g>

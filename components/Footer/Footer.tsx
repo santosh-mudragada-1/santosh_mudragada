@@ -11,7 +11,7 @@ import { NAV_LINKS, SITE, SOCIALS } from '@/lib/constants/site';
 import styles from './Footer.module.scss';
 
 const CW = 1000;
-const CTRL = 640;
+const CTRL = 320; // control-point depth at full bulge — a gentle cap, not a balloon
 const curvePath = (d: number) =>
   `M0 -80 L ${CW} -80 L ${CW} 0 Q ${CW / 2} ${d * CTRL} 0 0 Z`;
 
@@ -240,13 +240,13 @@ export function Footer() {
 
         <div className={styles.bottom}>
           <nav className={styles.bottomNav} aria-label="Footer">
-            <Magnetic strength={0.15}>
+            <Magnetic strength={0.15} className={styles.navPage}>
               <Link href="/" data-cursor-reveal data-cursor-sticky>
                 Home
               </Link>
             </Magnetic>
             {NAV_LINKS.map((l) => (
-              <Magnetic key={l.href} strength={0.15}>
+              <Magnetic key={l.href} strength={0.15} className={styles.navPage}>
                 <Link href={l.href} data-cursor-reveal data-cursor-sticky>
                   {l.label}
                 </Link>

@@ -295,13 +295,15 @@ export function About() {
       if (disposed || hintDone || phase !== 'erasing') return;
       hintDone = true;
       const r = stage.getBoundingClientRect();
+      // wide side-to-side sweeps — teaches a horizontal scratch (vertical
+      // drags are left for the page scroll)
       const P: Array<[number, number]> = [
-        [r.width * 0.03, r.height * 0.07],
-        [r.width * 0.2, r.height * 0.14],
-        [r.width * 0.08, r.height * 0.24],
-        [r.width * 0.26, r.height * 0.33],
-        [r.width * 0.12, r.height * 0.44],
-        [r.width * 0.3, r.height * 0.52],
+        [r.width * 0.06, r.height * 0.16],
+        [r.width * 0.52, r.height * 0.12],
+        [r.width * 0.12, r.height * 0.26],
+        [r.width * 0.64, r.height * 0.22],
+        [r.width * 0.2, r.height * 0.36],
+        [r.width * 0.72, r.height * 0.3],
       ];
       prev = { x: P[0][0], y: P[0][1] };
       autoTween = gsap.to(
@@ -367,8 +369,41 @@ export function About() {
       );
     };
 
+    // touch gesture disambiguation: a finger drag either SCRATCHES this panel
+    // or SCROLLS the page — never both. The first ~12px of travel decides:
+    // mostly-horizontal => scratch, mostly-vertical => leave it to the scroll
+    // (touch-action: pan-y). A mouse still erases on any move (wheel scrolls
+    // independently, so there's nothing to fight).
+    let gDown = false;
+    let gDecided = false;
+    let gErase = false;
+    let gsx = 0;
+    let gsy = 0;
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (phase !== 'erasing' || e.pointerType === 'mouse') return;
+      gDown = true;
+      gDecided = false;
+      gErase = false;
+      gsx = e.clientX;
+      gsy = e.clientY;
+    };
+
     const onPointerMove = (e: PointerEvent) => {
       if (phase !== 'erasing') return;
+
+      if (e.pointerType !== 'mouse') {
+        if (!gDown) return;
+        if (!gDecided) {
+          const dx = e.clientX - gsx;
+          const dy = e.clientY - gsy;
+          if (Math.hypot(dx, dy) < 12) return;
+          gDecided = true;
+          gErase = Math.abs(dx) >= Math.abs(dy);
+        }
+        if (!gErase) return; // vertical swipe — that's a scroll, not a scratch
+      }
+
       hintDone = true; // the visitor is erasing — no zig-zag hint needed
       if (autoTween) {
         autoTween.kill();
@@ -379,6 +414,9 @@ export function About() {
     };
     const onPointerEnd = () => {
       prev = null;
+      gDown = false;
+      gDecided = false;
+      gErase = false;
     };
 
     const check = () => {
@@ -433,6 +471,7 @@ export function About() {
     // one handler for mouse and finger: a mouse erases on move, a finger
     // erases while dragging (scratch card). pan-y on .stage keeps the page
     // scrollable through it.
+    stage.addEventListener('pointerdown', onPointerDown, { passive: true });
     stage.addEventListener('pointermove', onPointerMove, { passive: true });
     stage.addEventListener('pointerleave', onPointerEnd, { passive: true });
     stage.addEventListener('pointerup', onPointerEnd, { passive: true });
@@ -445,6 +484,7 @@ export function About() {
       autoTween?.kill();
       ro.disconnect();
       io.disconnect();
+      stage.removeEventListener('pointerdown', onPointerDown);
       stage.removeEventListener('pointermove', onPointerMove);
       stage.removeEventListener('pointerleave', onPointerEnd);
       stage.removeEventListener('pointerup', onPointerEnd);

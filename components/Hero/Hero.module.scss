@@ -8,17 +8,17 @@
   overflow: clip; // the composition covers this box; the gooey blur bleeds
 }
 
-// tablet & down: give the fitted composition a little more room to breathe
+// tablet & mobile: still a full-viewport hero — the composition covers it
+// (centred, full height), text is repositioned for the portrait crop
 @include mq-max('lg') {
   .hero {
-    height: auto;
-    min-height: 78svh;
-    aspect-ratio: 1728 / 1052;
+    height: 100svh;
+    min-height: 600px;
   }
 }
 
 @include mq-max('sm') {
   .hero {
-    min-height: 68svh;
+    min-height: 520px;
   }
 }

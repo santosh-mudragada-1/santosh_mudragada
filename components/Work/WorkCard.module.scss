@@ -128,3 +128,11 @@
     opacity: 1;
   }
 }
+
+// tablet & mobile: every card the same size — square (overrides the inline
+// per-project aspect-ratio the stacked layout would otherwise keep)
+@include mq-max('lg') {
+  .outer {
+    aspect-ratio: 1 / 1 !important;
+  }
+}

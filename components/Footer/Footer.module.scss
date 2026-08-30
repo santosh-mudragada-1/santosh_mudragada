@@ -254,7 +254,9 @@
   color: var(--smoke-500);
 }
 
-@include mq-max('md') {
+// --- tablet & down: email + socials in one vertical column, no page nav,
+// the freed height poured back into the headline + strip -------------------
+@include mq-max('lg') {
   .direct {
     grid-template-columns: 1fr;
   }
@@ -262,30 +264,45 @@
     grid-column: 1;
     grid-row: auto;
     margin-top: var(--space-md);
-    flex-wrap: wrap;
-    gap: var(--space-sm) var(--space-md);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
   }
   .bottom {
     flex-direction: column;
     align-items: flex-start;
   }
+  // drop Home / Work / About / Contact — Back to top stays.
+  // !important beats the inline `display: inline-flex` the Magnetic span sets.
+  .navPage {
+    display: none !important;
+  }
+  .headline {
+    font-size: clamp(3.4rem, 1rem + 12vw, 7rem);
+  }
+  .band {
+    height: clamp(150px, 30vw, 300px);
+    margin-block: clamp(1.4rem, 0.8rem + 3vw, 3rem);
+  }
+  .marquee span {
+    font-size: clamp(2.6rem, 1.2rem + 7vw, 5.5rem);
+  }
+  .email {
+    font-size: clamp(1.6rem, 0.9rem + 3.6vw, 2.6rem);
+  }
 }
 
 @include mq-max('sm') {
   .footer {
-    padding-top: clamp(64px, 12vh, 100px);
+    padding-top: clamp(56px, 12vh, 92px);
   }
   .headline {
-    font-size: clamp(2.1rem, 1.1rem + 6.5vw, 3.4rem);
+    font-size: clamp(2.6rem, 1.2rem + 10vw, 4.2rem);
   }
   .band {
-    height: clamp(60px, 15vw, 92px);
-    margin-block: clamp(0.9rem, 0.5rem + 2vw, 1.6rem);
+    height: clamp(120px, 34vw, 210px);
   }
   .marquee span {
-    font-size: clamp(1.35rem, 0.9rem + 2.6vw, 2rem);
-  }
-  .email {
-    font-size: clamp(1.15rem, 0.9rem + 2.4vw, 1.7rem);
+    font-size: clamp(1.9rem, 1rem + 6vw, 3rem);
   }
 }

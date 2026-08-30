@@ -11,12 +11,7 @@ export function NavLinks() {
     <nav className={styles.navLinks} aria-label="Primary">
       {NAV_LINKS.map((link) => (
         <Magnetic key={link.href} strength={0.15}>
-          <Link
-            href={link.href}
-            className={styles.navLink}
-            data-cursor-reveal
-            data-cursor-sticky
-          >
+          <Link href={link.href} className={styles.navLink}>
             {link.label}
             <span className={styles.navDot} aria-hidden />
           </Link>

@@ -172,8 +172,8 @@ export function Preloader({ fontFamilies }: PreloaderProps) {
   }
 
   const { w, h } = dims;
-  // belly depth follows the viewport — the ~16" look, scaled down on small screens
-  const belly = Math.min(300, Math.max(140, h * 0.27));
+  // belly depth follows the viewport — a gentle bow, scaled down on small screens
+  const belly = Math.min(170, Math.max(80, h * 0.15));
   const bulged = `M0 0 L${w} 0 L${w} ${h} Q${w / 2} ${h + belly} 0 ${h} L0 0`;
   const flat = `M0 0 L${w} 0 L${w} ${h} Q${w / 2} ${h} 0 ${h} L0 0`;
 
