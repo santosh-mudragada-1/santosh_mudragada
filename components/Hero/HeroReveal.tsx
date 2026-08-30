@@ -29,12 +29,12 @@ const MARQUEE =
 const MARQUEE_REPEAT = 5;
 const MARQUEE_PXPS = 88; // scroll speed, viewBox units / second
 
-// the arc the marquee rides — a gentle upward bow low on the canvas, so the
-// text passes through the crossed hands (the depth crop occludes it there).
+// the arc the marquee rides — a gentle upward bow across the crossed hands
+// (the depth crop occludes it there), sitting fully inside the canvas.
 // Runs well past both edges so it never runs dry.
-const CURVE = `M -520 ${Math.round(VBH * 1.06)} Q ${VBW / 2} ${Math.round(
-  VBH * 0.86,
-)} ${VBW + 520} ${Math.round(VBH * 1.06)}`;
+const CURVE = `M -520 ${Math.round(VBH * 0.97)} Q ${VBW / 2} ${Math.round(
+  VBH * 0.83,
+)} ${VBW + 520} ${Math.round(VBH * 0.97)}`;
 
 // the provided ↘ arrow (public/arrow.svg), inlined so it can be recoloured and
 // masked for the negative copy. Source is 34x34, weight-5 baked into the fill.

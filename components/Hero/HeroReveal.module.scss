@@ -11,13 +11,14 @@
   overflow: visible; // the gooey blur bleeds past the blobs
 }
 
-// --- curved marquee text --------------------------------------------------
+// --- curved marquee text ------------------------------------------------
+// Bricolage Grotesque · Medium · 160 · tracking -5.08px (per spec)
 .marquee {
   font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 150px; // viewBox units
-  letter-spacing: -0.01em;
-  white-space: pre; // keep the trailing space between repeats
+  font-weight: 500;
+  font-size: 160px; // viewBox units
+  letter-spacing: -5.08px;
+  white-space: pre; // keep the trailing gap between repeats
 }
 
 // --- scattered copy -----------------------------------------------------
