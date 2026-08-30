@@ -158,6 +158,7 @@ export function WorkCard({
               year={year}
               src={src}
               onFail={onGlFail}
+              webkit={isWebKit}
             />
           )}
         </div>

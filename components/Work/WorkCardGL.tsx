@@ -13,6 +13,8 @@ type Props = {
   src: string;
   /** called if WebGL can't run — parent renders the DOM fallback instead */
   onFail: () => void;
+  /** WebKit runs 3 of these at once — render a touch lighter there */
+  webkit?: boolean;
 };
 
 /**
@@ -33,6 +35,7 @@ type Props = {
 
 const OVERSCAN = 1.35; // canvas height / card box height (room for the bow-out)
 const DPR_CAP = 1.5; // plenty for a baked photo + text; ~44% fewer pixels than 2
+const WEBKIT_DPR_CAP = 1.3; // WebKit does 3 contexts at once — trim it there
 
 const vertex = /* glsl */ `
   attribute vec2 uv;
@@ -72,7 +75,9 @@ export function WorkCardGL({
   year,
   src,
   onFail,
+  webkit = false,
 }: Props) {
+  const dprCap = webkit ? WEBKIT_DPR_CAP : DPR_CAP;
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
@@ -211,7 +216,7 @@ export function WorkCardGL({
         canvas,
         alpha: true, // overscan zones stay transparent until the bow reaches them
         antialias: true,
-        dpr: Math.min(window.devicePixelRatio || 1, DPR_CAP),
+        dpr: Math.min(window.devicePixelRatio || 1, dprCap),
       });
       const gl = renderer.gl;
       const loseCtx = () =>
@@ -224,8 +229,8 @@ export function WorkCardGL({
       const geometry = new Plane(gl, {
         width: 2,
         height: 2 / OVERSCAN,
-        widthSegments: 18,
-        heightSegments: 12,
+        widthSegments: webkit ? 14 : 18,
+        heightSegments: webkit ? 10 : 12,
       });
       const texture = new Texture(gl, {
         generateMipmaps: false,
@@ -240,7 +245,7 @@ export function WorkCardGL({
       });
       const mesh = new Mesh(gl, { geometry, program });
 
-      const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+      const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
       const resize = () => {
         const rect = wrap.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
@@ -320,7 +325,7 @@ export function WorkCardGL({
       disposed = true;
       cleanup();
     };
-  }, [src, index, title, discipline, year, onFail]);
+  }, [src, index, title, discipline, year, onFail, webkit, dprCap]);
 
   return (
     <div ref={wrapRef} className={styles.glWrap} aria-hidden>
