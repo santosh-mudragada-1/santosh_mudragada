@@ -68,7 +68,9 @@ export function HeroReveal({ play }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const useReveal = mounted && !isTouch && !reduced;
+  // WebKit chokes on the per-frame feGaussianBlur + mask of the liquid reveal
+  // — it just gets the static cutout there (no reveal, no negative text).
+  const useReveal = mounted && !isTouch && !reduced && !isWebKit;
   const useTouchFade = mounted && isTouch && !reduced;
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -317,48 +319,56 @@ export function HeroReveal({ play }: Props) {
       className={styles.canvas}
       viewBox={`0 0 ${VBW} ${VBH}`}
       preserveAspectRatio={wide ? 'xMidYMid slice' : 'xMidYMid meet'}
-      data-cursor="view"
+      data-cursor={useReveal ? 'view' : undefined}
       role="img"
       aria-label="Santosh Mudragada — Product Designer + Builder, UI/UX Designer"
     >
       <defs>
-        <filter
-          id="heroGoo"
-          x="-40%"
-          y="-40%"
-          width="180%"
-          height="180%"
-          colorInterpolationFilters="sRGB"
-        >
-          <feGaussianBlur in="SourceGraphic" stdDeviation="34" result="b" />
-          <feColorMatrix
-            in="b"
-            type="matrix"
-            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -11"
-          />
-        </filter>
-        <mask id="heroBlob">
-          <g filter="url(#heroGoo)">
-            {BLOBS.map((_, i) => (
-              <g
-                key={i}
-                ref={(el) => {
-                  groupRefs.current[i] = el;
-                }}
-              >
-                <circle
-                  ref={(el) => {
-                    dotRefs.current[i] = el;
-                  }}
-                  cx="0"
-                  cy="0"
-                  r="0"
-                  fill="#fff"
-                />
+        {useReveal && (
+          <>
+            <filter
+              id="heroGoo"
+              x="-40%"
+              y="-40%"
+              width="180%"
+              height="180%"
+              colorInterpolationFilters="sRGB"
+            >
+              <feGaussianBlur
+                in="SourceGraphic"
+                stdDeviation="34"
+                result="b"
+              />
+              <feColorMatrix
+                in="b"
+                type="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -11"
+              />
+            </filter>
+            <mask id="heroBlob">
+              <g filter="url(#heroGoo)">
+                {BLOBS.map((_, i) => (
+                  <g
+                    key={i}
+                    ref={(el) => {
+                      groupRefs.current[i] = el;
+                    }}
+                  >
+                    <circle
+                      ref={(el) => {
+                        dotRefs.current[i] = el;
+                      }}
+                      cx="0"
+                      cy="0"
+                      r="0"
+                      fill="#fff"
+                    />
+                  </g>
+                ))}
               </g>
-            ))}
-          </g>
-        </mask>
+            </mask>
+          </>
+        )}
         <path id="heroCurve" d={CURVE} fill="none" />
       </defs>
 
@@ -372,19 +382,22 @@ export function HeroReveal({ play }: Props) {
         preserveAspectRatio="xMidYMid slice"
       />
 
-      {/* layer 3 — with-background, revealed through the blob (or scroll-faded on touch) */}
-      <image
-        ref={bgRef}
-        className={styles.bg}
-        href={BG}
-        x="0"
-        y="0"
-        width={VBW}
-        height={VBH}
-        preserveAspectRatio="xMidYMid slice"
-        mask={useReveal ? 'url(#heroBlob)' : undefined}
-        data-scrub={useTouchFade || undefined}
-      />
+      {/* layer 3 — with-background, revealed through the blob (or scroll-faded
+          on touch). Not rendered at all on WebKit — no reveal there. */}
+      {(useReveal || useTouchFade) && (
+        <image
+          ref={bgRef}
+          className={styles.bg}
+          href={BG}
+          x="0"
+          y="0"
+          width={VBW}
+          height={VBH}
+          preserveAspectRatio="xMidYMid slice"
+          mask={useReveal ? 'url(#heroBlob)' : undefined}
+          data-scrub={useTouchFade || undefined}
+        />
+      )}
 
       {/* layers 2 + 1 ease in together */}
       <g ref={inGroupRef}>
