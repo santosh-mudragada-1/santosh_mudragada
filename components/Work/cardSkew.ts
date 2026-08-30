@@ -1,16 +1,17 @@
 import { gsap } from '@/lib/gsap/gsap';
-import { getLenisInstance } from '@/lib/smooth-scroll';
 
 /**
- * Safari-only, lightweight stand-in for the WebGL card deformation
- * (WorkCardGL, which is Chromium-only — three live WebGL contexts froze
- * WebKit). One shared `gsap.ticker` callback runs a single scroll-velocity
- * spring; every subscribed card box gets a `skewY` proportional to its `max`,
- * so the cards "feel the pull" of the scroll and settle back at rest.
+ * Lightweight stand-in for the WebGL card deformation (WorkCardGL, which is
+ * Chromium-desktop only). Used on Safari desktop as the GL fallback AND on
+ * every touch device (mobile / tablet), where the GL bow is too heavy. One
+ * shared `gsap.ticker` callback runs a single scroll-velocity spring; every
+ * subscribed card box gets a `skewY` proportional to its `max`, so the cards
+ * "feel the pull" of the scroll and settle back at rest.
  *
- * Deliberately cheap on WebKit:
+ * Deliberately cheap:
  *  - one ticker callback for ALL cards (no per-card rAF, no extra loops)
- *  - zero DOM reads / zero layout — velocity comes from the Lenis instance
+ *  - one DOM read/frame (`window.scrollY`) — works with or without Lenis, and
+ *    on native touch scroll where Lenis doesn't report a velocity
  *  - GPU-composited transform only (`translateZ(0) skewY()`), never layout props
  *  - the DOM is touched only when the angle changes enough to see
  *  - clamped velocity -> rendering work is constant no matter how hard you flick
@@ -25,17 +26,18 @@ let amp = 0;
 let vel = 0;
 let idle = 0;
 let running = false;
+let lastY = 0; // window.scrollY at the previous tick
 
-const VEL_DIV = 36; // Lenis velocity that maps to a full-tilt skew
+const VEL_DIV = 36; // px/frame of scroll that maps to a full-tilt skew
 const STIFF = 0.11;
 const DAMP = 0.8;
 const REST_EPS = 0.001; // |amp| & |vel| below this = settled
 const WRITE_EPS = 0.02; // deg — smallest change worth a style write
 
 function tick() {
-  const lenis = getLenisInstance() as { velocity?: number } | null;
-  const raw =
-    lenis && typeof lenis.velocity === 'number' ? lenis.velocity : 0;
+  const y = window.scrollY || 0;
+  const raw = y - lastY; // px scrolled since the last frame
+  lastY = y;
   const target = Math.max(-1, Math.min(1, raw / VEL_DIV));
 
   vel += (target - amp) * STIFF;
@@ -60,6 +62,7 @@ export function addCardSkew(el: HTMLElement, max: number): () => void {
   subs.add(sub);
   el.style.willChange = 'transform';
   if (!running) {
+    lastY = window.scrollY || 0; // avoid a spike from a stale delta
     gsap.ticker.add(tick);
     running = true;
   }

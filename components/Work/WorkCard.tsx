@@ -31,9 +31,10 @@ type WorkCardProps = {
  *   <WorkCardGL> — a canvas sibling of .inner that overscans the box; its bow
  *             spills past the card because .outer doesn't clip.
  *
- * Every browser now tries the WebGL bow. If it can't run (WebKit trouble,
- * context fail), the card falls back to a cheap scroll-velocity `skewY` on
- * .outer (see cardSkew) — one shared ticker callback, GPU transform only.
+ * Desktop tries the WebGL bow. If it can't run (WebKit trouble, context fail)
+ * — and on every touch device, where the bow is too heavy — the card falls
+ * back to a cheap scroll-velocity `skewY` on .outer (see cardSkew): one shared
+ * ticker callback, GPU transform only.
  */
 export function WorkCard({
   index,
@@ -56,10 +57,10 @@ export function WorkCard({
   useEffect(() => setMounted(true), []);
   const onGlFail = useCallback(() => setGlFailed(true), []);
 
-  // every browser tries the WebGL bow now
+  // WebGL bow: desktop only (never on touch — too heavy for 3 live contexts)
   const useGL = mounted && !isTouch && !reduced && !glFailed;
-  // WebKit fallback if the GL bow can't run there
-  const useSkew = mounted && isWebKit && !isTouch && !reduced && !useGL;
+  // scroll-velocity skew: the touch animation, and the desktop WebKit fallback
+  const useSkew = mounted && !reduced && !useGL && (isTouch || isWebKit);
 
   useGSAP(
     () => {
@@ -87,9 +88,9 @@ export function WorkCard({
     { scope: parallaxRef, dependencies: [reduced, depth] },
   );
 
-  // Safari deformation stand-in: wire the card box into the shared skew ticker
-  // while it's near the viewport, unwire it when it leaves. No per-frame work
-  // here — cardSkew owns the one loop.
+  // scroll-skew: wire the card box into the shared skew ticker while it's near
+  // the viewport, unwire it when it leaves. No per-frame work here — cardSkew
+  // owns the one loop. (Touch + the Safari GL fallback.)
   useEffect(() => {
     if (!useSkew || depth === 0) return;
     const el = outerRef.current;
