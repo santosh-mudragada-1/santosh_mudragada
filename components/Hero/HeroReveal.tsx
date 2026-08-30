@@ -29,11 +29,12 @@ const MARQUEE =
 const MARQUEE_REPEAT = 5;
 const MARQUEE_PXPS = 88; // scroll speed, viewBox units / second
 
-// the arc the marquee rides — crests UPWARD through the middle; runs well past
-// both edges so it never runs dry
-const CURVE = `M -520 ${Math.round(VBH * 0.86)} Q ${VBW / 2} ${Math.round(
-  VBH * 0.62,
-)} ${VBW + 520} ${Math.round(VBH * 0.86)}`;
+// the arc the marquee rides — a gentle upward bow low on the canvas, so the
+// text passes through the crossed hands (the depth crop occludes it there).
+// Runs well past both edges so it never runs dry.
+const CURVE = `M -520 ${Math.round(VBH * 1.06)} Q ${VBW / 2} ${Math.round(
+  VBH * 0.86,
+)} ${VBW + 520} ${Math.round(VBH * 1.06)}`;
 
 // the provided ↘ arrow (public/arrow.svg), inlined so it can be recoloured and
 // masked for the negative copy. Source is 34x34, weight-5 baked into the fill.
@@ -417,13 +418,18 @@ export function HeroReveal({ play }: Props) {
             >
               to
             </text>
+            {/* outer <g> keeps the position; GSAP animates the inner .inItem
+                (an untransformed <g>) so it can't clobber the translate */}
             <g
-              className={styles.inItem}
-              transform={`translate(${SCATTER.toX + 96} ${
-                SCATTER.toY1 - 58
-              }) scale(${ARROW_SCALE})`}
+              transform={`translate(${SCATTER.toX + 96} ${SCATTER.toY1 - 58})`}
             >
-              <path d={ARROW_D} fill="#ff4d1a" />
+              <g className={styles.inItem}>
+                <path
+                  d={ARROW_D}
+                  transform={`scale(${ARROW_SCALE})`}
+                  fill="#ff4d1a"
+                />
+              </g>
             </g>
             <text
               className={`${styles.scatter} ${styles.inItem}`}
@@ -459,11 +465,9 @@ export function HeroReveal({ play }: Props) {
               to
             </text>
             <g
-              transform={`translate(${SCATTER.toX + 96} ${
-                SCATTER.toY1 - 58
-              }) scale(${ARROW_SCALE})`}
+              transform={`translate(${SCATTER.toX + 96} ${SCATTER.toY1 - 58})`}
             >
-              <path d={ARROW_D} />
+              <path d={ARROW_D} transform={`scale(${ARROW_SCALE})`} />
             </g>
             <text className={styles.scatter} x={SCATTER.toX} y={SCATTER.toY2}>
               possibilities.
