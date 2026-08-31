@@ -102,7 +102,7 @@ export function SelectedWork() {
               year={project.year}
               ratio={project.ratio}
               src={project.src}
-              href={`/work`}
+              href={project.href}
               depth={DEPTH[project.slot]}
             />
           </div>

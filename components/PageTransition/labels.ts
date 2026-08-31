@@ -1,6 +1,7 @@
 const LABELS: Record<string, string> = {
   '/': 'Home',
   '/work': 'Selected Work',
+  '/work/chess-com': 'Chess.com',
   '/about': 'About',
   '/contact': 'Contact',
 };
