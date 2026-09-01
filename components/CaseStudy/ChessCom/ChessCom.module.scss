@@ -233,10 +233,10 @@
   flex: none;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.75rem;
 }
 
-.ctaPrimary,
 .ctaGhost {
   display: inline-flex;
   align-items: center;
@@ -250,29 +250,13 @@
     background 0.25s var(--ease-quart-in-out),
     color 0.25s var(--ease-quart-in-out),
     border-color 0.25s var(--ease-quart-in-out);
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--line);
 
   span {
     transition: transform 0.25s var(--ease-quart-in-out);
   }
-}
-
-.ctaPrimary {
-  background: var(--fg);
-  color: var(--bg);
-  border: 1px solid var(--fg);
-
-  @include hover {
-    &:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-  }
-}
-
-.ctaGhost {
-  background: transparent;
-  color: var(--fg);
-  border: 1px solid var(--line);
 
   @include hover {
     &:hover {
@@ -284,8 +268,95 @@
   }
 }
 
+// primary CTA styled as a live address-bar chip — label + pulsing dot on top,
+// the real prototype URL underneath
+.ctaProto {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.6em 1.15em;
+  border-radius: 14px;
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
+  transition:
+    background 0.25s var(--ease-quart-in-out),
+    border-color 0.25s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+
+      .ctaProtoGo {
+        transform: translate(2px, -2px);
+      }
+      .ctaProtoUrl {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+.ctaProtoTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ctaProtoDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38d16a;
+  animation: protoPulse 2.4s var(--ease-quart-in-out) infinite;
+}
+
+.ctaProtoGo {
+  transition: transform 0.25s var(--ease-quart-in-out);
+}
+
+.ctaProtoUrl {
+  font-size: clamp(0.7rem, 0.64rem + 0.25vw, 0.78rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.62;
+  white-space: nowrap;
+}
+
+@keyframes protoPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 209, 106, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(56, 209, 106, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 209, 106, 0);
+  }
+}
+
+.protoNote {
+  margin-top: clamp(1.25rem, 3vh, 1.75rem);
+  max-width: 48ch;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+
+  b {
+    font-weight: 600;
+    color: var(--fg);
+  }
+}
+
 .disc {
-  margin-top: clamp(1.75rem, 4vh, 3rem);
+  margin-top: clamp(1rem, 2.5vh, 1.6rem);
   max-width: 58ch;
   font-size: 0.78rem;
   line-height: 1.6;
@@ -877,6 +948,10 @@
   .loop li {
     padding: 0.7em 1.05em;
   }
+  .ctaProto {
+    width: 100%;
+    align-items: center;
+  }
 }
 
 @include reduced-motion {
@@ -886,5 +961,8 @@
   }
   .tl > span {
     will-change: auto;
+  }
+  .ctaProtoDot {
+    animation: none;
   }
 }

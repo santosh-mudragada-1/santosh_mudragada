@@ -170,14 +170,33 @@ export function ChessCom() {
               Your own blunders, handed back as puzzles. <b>The loop finally closes.</b>
             </p>
             <div className={styles.ctas}>
-              <a href="#journey" className={styles.ctaPrimary} data-cursor="link">
-                Solve three yourself
+              <a
+                href="https://game-based-puzzles.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.ctaProto}
+                data-cursor="link"
+              >
+                <span className={styles.ctaProtoTop}>
+                  <span className={styles.ctaProtoDot} aria-hidden />
+                  Test the live prototype
+                  <span className={styles.ctaProtoGo} aria-hidden>
+                    ↗
+                  </span>
+                </span>
+                <span className={styles.ctaProtoUrl}>game-based-puzzles.vercel.app</span>
               </a>
               <a href="#journey" className={styles.ctaGhost} data-cursor="link">
                 Watch the story <span aria-hidden>↓</span>
               </a>
             </div>
           </div>
+
+          <p className={styles.protoNote}>
+            I rebuilt it inside a replica of Chess.com &mdash; only the{' '}
+            <b>Game-Based Puzzles</b> feature runs end to end. The surrounding pages
+            are there for context.
+          </p>
 
           <p className={styles.disc}>
             Independent concept. Borrows Chess.com&rsquo;s design language; not
