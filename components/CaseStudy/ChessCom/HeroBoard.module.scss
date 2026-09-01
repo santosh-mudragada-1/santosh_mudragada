@@ -1,38 +1,56 @@
-// Playing chess board bleeding in from the hero's right edge, masked to an
-// organic blob whose edge is heavily feathered (a Gaussian-blurred alpha mask,
-// rasterised once — not a live filter) so the board dissolves into the paper
-// background instead of ending on a hard checker edge.
-
-// white blob path + feGaussianBlur, baked into the mask image so the blur is
-// computed a single time and never re-rasterised on scroll (Safari-safe).
-$blob-mask: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cfilter id='b' x='-35%25' y='-35%25' width='170%25' height='170%25' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='84'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23b)' d='M523 66C689 45 872 150 903 366C929 545 872 761 679 873C517 966 286 949 165 808C45 668 42 425 138 262C233 101 357 87 523 66Z'/%3E%3C/svg%3E";
+// Playing chess board tucked into the hero's TOP-RIGHT CORNER. It bleeds off
+// the top and right edges; the two edges that stay on-screen (left and bottom)
+// are feathered to nothing by the mask so the board dissolves into the paper
+// instead of ending on a hard checker edge. Pure gradient mask — no SVG
+// filter, nothing re-rasterises on scroll (Safari-safe).
 
 .wrap {
   position: absolute;
   z-index: 1;
   top: 0;
   right: 0;
-  bottom: 0;
-  width: min(56vw, 1120px);
+  width: min(60vw, 860px);
+  height: min(88vh, 820px);
   pointer-events: none;
 }
 
 .blob {
   position: absolute;
-  top: clamp(-240px, -12vh, -110px);
-  right: clamp(-200px, -6vw, -60px);
-  height: clamp(760px, 128vh, 1200px);
-  aspect-ratio: 1 / 1;
+  top: clamp(-190px, -16vh, -90px);
+  right: clamp(-140px, -9vw, -56px);
+  width: clamp(460px, 48vw, 720px);
+  height: clamp(460px, 48vw, 720px);
   opacity: 0.92;
 
-  -webkit-mask-image: url($blob-mask);
-  mask-image: url($blob-mask);
+  // main corner blob: opaque hugging the top-right, feathering in an arc
+  // toward the bottom-left
+  --m-blob: radial-gradient(
+    150% 150% at 92% 8%,
+    #000 0%,
+    #000 42%,
+    rgba(0, 0, 0, 0.5) 60%,
+    rgba(0, 0, 0, 0.12) 76%,
+    rgba(0, 0, 0, 0) 90%
+  );
+  // guarantees the bottom edge fully fades even directly under the corner
+  --m-fade: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 52%,
+    rgba(0, 0, 0, 0.14) 84%,
+    rgba(0, 0, 0, 0) 100%
+  );
+
+  -webkit-mask-image: var(--m-blob), var(--m-fade);
+  mask-image: var(--m-blob), var(--m-fade);
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
   -webkit-mask-position: center;
   mask-position: center;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 
   animation: blobBreathe 17s ease-in-out infinite;
 }
@@ -43,8 +61,8 @@ $blob-mask: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
   height: 100%;
 }
 
-// the board (and confetti layer) fill the blob; the feathered mask does all
-// the shaping, so no border-radius / shadow of their own
+// the board (and confetti layer) fill the box; the mask does all the shaping,
+// so no border-radius / shadow of their own
 .inner > div {
   width: 100%;
   height: 100%;
@@ -58,7 +76,7 @@ $blob-mask: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
     transform: scale(1);
   }
   50% {
-    transform: scale(1.03);
+    transform: scale(1.028);
   }
 }
 
@@ -68,26 +86,32 @@ $blob-mask: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBo
   }
 }
 
-// large desktop: a touch bigger, sitting further back
+// large desktop: a little bigger, still cornered
 @media (min-width: 1600px) {
+  .wrap {
+    width: min(52vw, 1040px);
+  }
+
   .blob {
-    height: clamp(900px, 122vh, 1320px);
-    opacity: 0.9;
+    width: clamp(620px, 42vw, 900px);
+    height: clamp(620px, 42vw, 900px);
+    opacity: 0.88;
   }
 }
 
-// tablet: smaller, pushed further off the edge so it stays a backdrop, not a
-// clash with the (now narrower) text column
+// tablet: smaller, tighter into the corner as a faint accent
 @media (max-width: 1023.98px) {
   .wrap {
-    width: min(70vw, 640px);
+    width: min(64vw, 520px);
+    height: min(70vh, 520px);
   }
 
   .blob {
-    top: clamp(-160px, -8vh, -80px);
-    right: clamp(-180px, -14vw, -50px);
-    height: clamp(560px, 82vh, 760px);
-    opacity: 0.82;
+    top: clamp(-130px, -11vh, -60px);
+    right: clamp(-100px, -8vw, -36px);
+    width: clamp(320px, 44vw, 480px);
+    height: clamp(320px, 44vw, 480px);
+    opacity: 0.78;
   }
 }
 
