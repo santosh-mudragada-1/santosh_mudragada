@@ -177,14 +177,11 @@ export function ChessCom() {
                 className={styles.ctaProto}
                 data-cursor="link"
               >
-                <span className={styles.ctaProtoTop}>
-                  <span className={styles.ctaProtoDot} aria-hidden />
-                  Test the live prototype
-                  <span className={styles.ctaProtoGo} aria-hidden>
-                    ↗
-                  </span>
+                <span className={styles.ctaProtoDot} aria-hidden />
+                Test the live prototype
+                <span className={styles.ctaProtoGo} aria-hidden>
+                  ↗
                 </span>
-                <span className={styles.ctaProtoUrl}>game-based-puzzles.vercel.app</span>
               </a>
               <a href="#journey" className={styles.ctaGhost} data-cursor="link">
                 Watch the story <span aria-hidden>↓</span>
@@ -193,15 +190,9 @@ export function ChessCom() {
           </div>
 
           <p className={styles.protoNote}>
-            I rebuilt it inside a replica of Chess.com &mdash; only the{' '}
-            <b>Game-Based Puzzles</b> feature runs end to end. The surrounding pages
-            are there for context.
-          </p>
-
-          <p className={styles.disc}>
-            Independent concept. Borrows Chess.com&rsquo;s design language; not
-            affiliated or endorsed. Games and figures are fabricated for the
-            prototype.
+            I rebuilt it inside a replica of Chess.com &mdash; only{' '}
+            <b>Game-Based&nbsp;Puzzles</b> runs end to end. The surrounding pages are
+            there for context.
           </p>
         </div>
       </header>

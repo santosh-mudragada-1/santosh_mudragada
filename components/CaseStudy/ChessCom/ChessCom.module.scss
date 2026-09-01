@@ -268,18 +268,20 @@
   }
 }
 
-// primary CTA styled as a live address-bar chip — label + pulsing dot on top,
-// the real prototype URL underneath
+// primary CTA — rounded pill linking out to the live prototype, with a small
+// pulsing "live" dot
 .ctaProto {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  padding: 0.6em 1.15em;
-  border-radius: 14px;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.9em 1.5em;
+  border-radius: 999px;
   background: var(--fg);
   color: var(--bg);
   border: 1px solid var(--fg);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
   transition:
     background 0.25s var(--ease-quart-in-out),
     border-color 0.25s var(--ease-quart-in-out);
@@ -292,24 +294,12 @@
       .ctaProtoGo {
         transform: translate(2px, -2px);
       }
-      .ctaProtoUrl {
-        opacity: 0.9;
-      }
     }
   }
 }
 
-.ctaProtoTop {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
 .ctaProtoDot {
+  flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -319,15 +309,6 @@
 
 .ctaProtoGo {
   transition: transform 0.25s var(--ease-quart-in-out);
-}
-
-.ctaProtoUrl {
-  font-size: clamp(0.7rem, 0.64rem + 0.25vw, 0.78rem);
-  line-height: 1;
-  letter-spacing: 0.01em;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.62;
-  white-space: nowrap;
 }
 
 @keyframes protoPulse {
@@ -343,8 +324,8 @@
 }
 
 .protoNote {
-  margin-top: clamp(1.25rem, 3vh, 1.75rem);
-  max-width: 48ch;
+  margin-top: clamp(1.5rem, 3.5vh, 2.25rem);
+  max-width: 52ch;
   font-size: 0.875rem;
   line-height: 1.55;
   color: var(--fg-muted);
@@ -353,14 +334,6 @@
     font-weight: 600;
     color: var(--fg);
   }
-}
-
-.disc {
-  margin-top: clamp(1rem, 2.5vh, 1.6rem);
-  max-width: 58ch;
-  font-size: 0.78rem;
-  line-height: 1.6;
-  color: var(--fg-muted);
 }
 
 // ---------------------------------------------------- loop (nodes)
@@ -947,10 +920,6 @@
   }
   .loop li {
     padding: 0.7em 1.05em;
-  }
-  .ctaProto {
-    width: 100%;
-    align-items: center;
   }
 }
 
