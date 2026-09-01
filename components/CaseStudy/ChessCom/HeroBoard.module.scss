@@ -1,43 +1,41 @@
-// Playing chess board filling the hero's right side, anchored to the top-right.
-// It bleeds a little off the top and right; the two edges that stay on-screen
-// (left, bottom) are dissolved into the paper by a two-layer gradient mask —
-// an organic radial that reaches zero before the left edge, intersected with a
-// bottom fade so the lower edge never shows a checker line. Gradients only:
-// no SVG filter, nothing re-rasterises on scroll (Safari-safe).
+// Playing chess board as a large, faint backdrop CENTERED behind the hero
+// content. It rides up under the header and feathers away on every side —
+// most strongly at the bottom, so it's gone before the rule. Two-layer
+// gradient mask (soft all-round vignette ∩ bottom fade); gradients only, no
+// SVG filter, nothing re-rasterises on scroll (Safari-safe).
 
 .wrap {
   position: absolute;
-  z-index: 1;
+  z-index: 0;
   top: 0;
-  right: 0;
-  width: min(64vw, 1220px);
-  height: min(96vh, 1160px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(94vw, 1200px);
   pointer-events: none;
 }
 
 .blob {
-  position: absolute;
-  top: clamp(-56px, -3vh, -18px);
-  right: clamp(-84px, -3.5vw, -24px);
-  width: clamp(620px, 60vw, 1160px);
-  height: clamp(620px, 60vw, 1160px);
-  opacity: 0.95;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-top: clamp(-160px, -10vh, -56px);
+  opacity: 0.7;
 
   --mask:
     radial-gradient(
-      135% 128% at 108% 6%,
+      60% 54% at 50% 37%,
       #000 0%,
-      #000 44%,
-      rgba(0, 0, 0, 0.5) 64%,
-      rgba(0, 0, 0, 0.12) 80%,
-      rgba(0, 0, 0, 0) 92%
+      #000 22%,
+      rgba(0, 0, 0, 0.34) 46%,
+      rgba(0, 0, 0, 0.1) 64%,
+      rgba(0, 0, 0, 0) 82%
     ),
     linear-gradient(
       to bottom,
       #000 0%,
-      #000 58%,
-      rgba(0, 0, 0, 0.35) 80%,
-      rgba(0, 0, 0, 0) 97%
+      #000 30%,
+      rgba(0, 0, 0, 0.22) 52%,
+      rgba(0, 0, 0, 0) 72%
     );
   -webkit-mask-image: var(--mask);
   mask-image: var(--mask);
@@ -45,12 +43,10 @@
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
-  -webkit-mask-position: center;
-  mask-position: center;
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
 
-  animation: blobBreathe 18s ease-in-out infinite;
+  animation: blobBreathe 20s ease-in-out infinite;
 }
 
 .inner {
@@ -74,7 +70,7 @@
     transform: scale(1);
   }
   50% {
-    transform: scale(1.024);
+    transform: scale(1.02);
   }
 }
 
@@ -84,32 +80,26 @@
   }
 }
 
-// large desktop: bigger, a touch further back
+// large desktop: a little wider, sitting further back
 @media (min-width: 1600px) {
   .wrap {
-    width: min(54vw, 1360px);
+    width: min(88vw, 1460px);
   }
 
   .blob {
-    width: clamp(880px, 52vw, 1320px);
-    height: clamp(880px, 52vw, 1320px);
-    opacity: 0.92;
+    opacity: 0.55;
   }
 }
 
-// tablet: smaller, still anchored top-right as a faint accent
+// tablet: narrower, fainter still
 @media (max-width: 1023.98px) {
   .wrap {
-    width: min(72vw, 600px);
-    height: min(70vh, 560px);
+    width: min(104vw, 900px);
   }
 
   .blob {
-    top: clamp(-40px, -2vh, -8px);
-    right: clamp(-70px, -6vw, -20px);
-    width: clamp(400px, 56vw, 580px);
-    height: clamp(400px, 56vw, 580px);
-    opacity: 0.8;
+    margin-top: clamp(-96px, -6vh, -36px);
+    opacity: 0.5;
   }
 }
 

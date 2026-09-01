@@ -169,31 +169,32 @@ export function ChessCom() {
             <p className={styles.heroSay}>
               Your own blunders, handed back as puzzles. <b>The loop finally closes.</b>
             </p>
-            <div className={styles.ctas}>
-              <a
-                href="https://game-based-puzzles.vercel.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.ctaProto}
-                data-cursor="link"
-              >
-                <span className={styles.ctaProtoDot} aria-hidden />
-                Test the live prototype
-                <span className={styles.ctaProtoGo} aria-hidden>
-                  ↗
-                </span>
-              </a>
-              <a href="#journey" className={styles.ctaGhost} data-cursor="link">
-                Watch the story <span aria-hidden>↓</span>
-              </a>
+            <div className={styles.ctaCol}>
+              <div className={styles.ctas}>
+                <a
+                  href="https://game-based-puzzles.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.ctaProto}
+                  data-cursor="link"
+                >
+                  <span className={styles.ctaProtoDot} aria-hidden />
+                  Test the live prototype
+                  <span className={styles.ctaProtoGo} aria-hidden>
+                    ↗
+                  </span>
+                </a>
+                <a href="#journey" className={styles.ctaGhost} data-cursor="link">
+                  Watch the story <span aria-hidden>↓</span>
+                </a>
+              </div>
+              <p className={styles.protoNote}>
+                I rebuilt it inside a replica of Chess.com &mdash; only{' '}
+                <b>Game-Based&nbsp;Puzzles</b> runs end to end. The surrounding pages
+                are there for context.
+              </p>
             </div>
           </div>
-
-          <p className={styles.protoNote}>
-            I rebuilt it inside a replica of Chess.com &mdash; only{' '}
-            <b>Game-Based&nbsp;Puzzles</b> runs end to end. The surrounding pages are
-            there for context.
-          </p>
         </div>
       </header>
 

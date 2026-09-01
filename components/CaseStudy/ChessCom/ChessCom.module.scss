@@ -134,7 +134,8 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 54rem; // left column — the playing board sits top-right
+  max-width: 62rem; // centered column — board is a backdrop behind it
+  margin-inline: auto;
 
   a {
     pointer-events: auto;
@@ -144,6 +145,7 @@
 .tags {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.5rem;
 
   li {
@@ -181,6 +183,7 @@
   font-size: clamp(2.75rem, 1rem + 9vw, 9rem);
   line-height: 0.88;
   letter-spacing: -0.045em;
+  text-align: center;
 }
 
 .tl {
@@ -189,7 +192,7 @@
   padding-block: 0.04em;
 
   > span {
-    display: block;
+    display: inline-block;
     will-change: transform;
   }
 }
@@ -210,14 +213,15 @@
   z-index: 2;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: clamp(1.25rem, 4vw, 3rem);
-  padding-top: clamp(1.25rem, 3vh, 2rem);
+  padding-top: clamp(1.5rem, 3.5vh, 2.5rem);
+  text-align: left;
 }
 
 .heroSay {
-  max-width: 38ch;
+  max-width: 32ch;
   font-size: clamp(1rem, 0.9rem + 0.8vw, 1.4rem);
   line-height: 1.4;
   letter-spacing: -0.02em;
@@ -227,6 +231,15 @@
     font-weight: 600;
     color: var(--accent);
   }
+}
+
+// right column of the foot: CTAs stacked over the scope note
+.ctaCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.85rem, 2vh, 1.15rem);
+  max-width: 40ch;
 }
 
 .ctas {
@@ -324,9 +337,8 @@
 }
 
 .protoNote {
-  margin-top: clamp(1.5rem, 3.5vh, 2.25rem);
-  max-width: 52ch;
-  font-size: 0.875rem;
+  max-width: 42ch;
+  font-size: 0.8125rem;
   line-height: 1.55;
   color: var(--fg-muted);
 
@@ -854,7 +866,7 @@
     --sect: clamp(9rem, 6rem + 10vh, 15rem);
   }
   .heroInner {
-    max-width: 60rem;
+    max-width: 70rem;
   }
 }
 
@@ -876,18 +888,21 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .heroInner {
-    max-width: 44rem; // the corner board is smaller here
+    max-width: 52rem;
   }
 }
 
 @include mq-max('md') {
   .heroInner {
-    max-width: none; // board + pieces hidden — text can use the width
+    max-width: none; // board hidden below this — text can use the width
   }
   .heroFoot {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1.5rem;
+    gap: 1.75rem;
+  }
+  .ctaCol {
+    max-width: none;
   }
   .carry {
     grid-template-columns: minmax(0, 1fr);
