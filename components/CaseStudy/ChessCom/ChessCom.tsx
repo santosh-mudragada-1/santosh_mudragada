@@ -6,13 +6,14 @@ import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/chess';
 import { pieceImage } from '@/components/CaseStudy/chess/fen';
+import { BlobReveal } from './BlobReveal';
 import styles from './ChessCom.module.scss';
 
 // The back-rank position the "journey" section plays out — White to find Rd8#.
 const FEN_BEFORE = '6k1/5ppp/8/8/8/8/5PPP/3R2K1';
 const FEN_AFTER = '3R2k1/5ppp/8/8/8/8/5PPP/6K1';
 
-const META = ['Product design · solo', '2 weeks · 2026', 'Engine-verified prototype'];
+const TAGS = ['UX', 'Game-based learning', 'Chess.com', 'Prototype'];
 
 const NET = [
   { band: 'Under 1000', n: 6, w: 24 },
@@ -171,35 +172,45 @@ export function ChessCom() {
           ))}
         </div>
 
-        <div className={styles.heroStage} aria-hidden>
-          <Board fen={FEN_BEFORE} orientation="white" hint={['d1']} showCoordinates={false} />
-        </div>
+        <BlobReveal />
 
         <div className={styles.heroInner}>
-          <p className={styles.eyebrow}>Chess.com — Case study</p>
-          <h1 className={styles.heroTitle} aria-label="Your own blunders, handed back as puzzles.">
-            {['Your own', 'blunders,', 'handed back', 'as puzzles.'].map((l) => (
-              <span key={l} className={styles.tl}>
-                <span>{l}</span>
-              </span>
+          <ul className={styles.tags}>
+            <li data-accent>
+              <i aria-hidden /> Product design concept
+            </li>
+            {TAGS.map((t) => (
+              <li key={t}>{t}</li>
             ))}
+          </ul>
+
+          <h1 className={styles.heroTitle} aria-label="Game-Based Puzzles">
+            <span className={styles.tl}>
+              <span>Game-Based</span>
+            </span>
+            <span className={styles.tl}>
+              <span className={styles.accent}>Puzzles</span>
+            </span>
           </h1>
+
+          <hr className={styles.rule} />
+
           <div className={styles.heroFoot}>
             <p className={styles.heroSay}>
-              The engine already finds your mistakes. This hands them back —{' '}
-              <b>fair, verified, and worth returning to.</b>
+              Your own blunders, handed back as puzzles.{' '}
+              <b>The loop finally closes.</b>
             </p>
-            <ul className={styles.pills}>
-              {META.map((m) => (
-                <li key={m}>{m}</li>
-              ))}
-            </ul>
+            <a href="#journey" className={styles.watch} data-cursor="link">
+              Watch the story <span aria-hidden>↓</span>
+            </a>
           </div>
+
+          <p className={styles.disc}>
+            Independent concept. Borrows Chess.com&rsquo;s design language; not
+            affiliated or endorsed. Games and figures are fabricated for the
+            prototype.
+          </p>
         </div>
-        <p className={styles.disc}>
-          Independent concept. Borrows Chess.com&rsquo;s design language; not affiliated or
-          endorsed. Games and figures are fabricated for the prototype.
-        </p>
       </header>
 
       {/* ========================================================= THE GAP */}

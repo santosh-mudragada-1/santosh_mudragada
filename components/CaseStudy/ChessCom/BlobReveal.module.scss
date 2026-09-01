@@ -1,0 +1,29 @@
+.host {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: auto; // catches pointermove for the reveal
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible; // the goo blur bleeds past the blobs
+}
+
+// Safari: a CSS checkerboard revealed by the JS-painted radial mask
+.wk {
+  position: absolute;
+  inset: 0;
+  opacity: 0; // JS raises it with the circle
+  --sq: clamp(52px, 6vw, 116px);
+  background-color: #eeeed2;
+  background-image:
+    repeating-conic-gradient(#769656 0% 25%, transparent 0% 50%);
+  background-size: var(--sq) var(--sq);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  transform: translateZ(0); // own layer → the mask stays GPU-side
+}
