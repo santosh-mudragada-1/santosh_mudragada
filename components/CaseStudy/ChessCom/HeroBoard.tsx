@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Board, Confetti } from '@/components/CaseStudy/chess';
+import { Board } from '@/components/CaseStudy/chess';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './HeroBoard.module.scss';
 
-// The back-rank line the journey section plays out — here it loops behind the
-// hero text, masked to a soft blurred blob so the board melts into the paper:
-// hold on "M1 available", the rook slides d1→d8#, a beat of confetti, reset.
+// The back-rank line the journey section plays out — here it loops in the
+// hero's top-right corner, masked so the board dissolves into the paper:
+// hold on "M1 available", the rook slides d1→d8#, the mated king pulses,
+// reset, repeat.
 const FEN_BEFORE = '6k1/5ppp/8/8/8/8/5PPP/3R2K1';
 const FEN_AFTER = '3R2k1/5ppp/8/8/8/8/5PPP/6K1';
 
@@ -49,7 +50,6 @@ export function HeroBoard() {
             lastMove={solved ? { from: 'd1', to: 'd8' } : null}
             showCoordinates={false}
           />
-          {solved && <Confetti run count={40} />}
         </div>
       </div>
     </div>
