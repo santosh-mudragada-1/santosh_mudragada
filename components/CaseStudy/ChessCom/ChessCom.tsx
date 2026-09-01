@@ -1,11 +1,16 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { revealUp } from '@/lib/motion/reveal';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/chess';
 import styles from './ChessCom.module.scss';
+
+// The back-rank position the "journey" section plays out — White to find Rd8#.
+const FEN_BEFORE = '6k1/5ppp/8/8/8/8/5PPP/3R2K1';
+const FEN_AFTER = '3R2k1/5ppp/8/8/8/8/5PPP/6K1';
 
 // ---------------------------------------------------------------------------
 // Content — adapted from the project's own case-study document.
@@ -112,23 +117,31 @@ const METRICS: Array<{ name: string; q: string; primary?: boolean }> = [
   },
 ];
 
-// Back-rank mate diagram — file a–h (0–7), rank 8→1 (row 0–7).
-type Piece = { sq: [number, number]; g: string; white: boolean };
-const BOARD: Piece[] = [
-  { sq: [6, 0], g: '♚', white: false }, // g8 black king
-  { sq: [5, 1], g: '♟', white: false }, // f7
-  { sq: [6, 1], g: '♟', white: false }, // g7
-  { sq: [7, 1], g: '♟', white: false }, // h7
-  { sq: [3, 0], g: '♜', white: false }, // d8 — the mating rook
-  { sq: [6, 7], g: '♔', white: true }, // g1 white king
-  { sq: [5, 6], g: '♙', white: true }, // f2
-  { sq: [6, 6], g: '♙', white: true }, // g2
-  { sq: [7, 6], g: '♙', white: true }, // h2
-];
-
 export function ChessCom() {
   const rootRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
+  // the journey board plays itself out once it scrolls into view
+  const journeyRef = useRef<HTMLDivElement>(null);
+  const [solved, setSolved] = useState(false);
+
+  useEffect(() => {
+    const el = journeyRef.current;
+    if (!el) return;
+    let t = 0;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        t = window.setTimeout(() => setSolved(true), reduced ? 400 : 1500);
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(t);
+    };
+  }, [reduced]);
 
   useGSAP(
     () => {
@@ -166,32 +179,6 @@ export function ChessCom() {
           start: 'top 84%',
         }),
       );
-
-      // eval-bar fills scrub in as the journey scrolls through
-      if (!reduced) {
-        const drop = root.querySelector<HTMLElement>(`.${styles.evalDrop}`);
-        const gain = root.querySelector<HTMLElement>(`.${styles.evalGain}`);
-        if (drop && gain) {
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: drop.closest(`.${styles.evalWrap}`),
-              start: 'top 78%',
-              toggleActions: 'play none none none',
-            },
-          });
-          tl.fromTo(
-            drop,
-            { scaleY: 0 },
-            { scaleY: 1, duration: 0.7, ease: 'power2.in' },
-          ).fromTo(
-            gain,
-            { scaleY: 0 },
-            { scaleY: 1, duration: 0.9, ease: 'power3.out' },
-            '+=0.25',
-          );
-          cleanups.push(() => tl.scrollTrigger?.kill());
-        }
-      }
 
       return () => cleanups.forEach((c) => c());
     },
@@ -385,51 +372,61 @@ export function ChessCom() {
             ))}
           </ol>
 
-          <div className={`${styles.diagram} ${styles.reveal}`}>
-            <div
-              className={styles.board}
-              role="img"
-              aria-label="Back-rank mate: the black king on g8 is boxed in by its own pawns; a rook on d8 delivers mate along the back rank."
-            >
-              {Array.from({ length: 64 }).map((_, i) => {
-                const file = i % 8;
-                const rank = Math.floor(i / 8);
-                const dark = (file + rank) % 2 === 1;
-                const piece = BOARD.find(
-                  (p) => p.sq[0] === file && p.sq[1] === rank,
-                );
-                return (
-                  <span
-                    key={i}
-                    className={styles.sq}
-                    data-dark={dark || undefined}
-                    data-mate={rank === 0 && file === 6 ? true : undefined}
-                  >
-                    {piece && (
-                      <span
-                        className={styles.piece}
-                        data-white={piece.white || undefined}
-                      >
-                        {piece.g}
-                      </span>
-                    )}
-                  </span>
-                );
-              })}
-            </div>
+          <div
+            ref={journeyRef}
+            className={`${styles.diagram} ${styles.reveal}`}
+          >
+            <div className={styles.frame}>
+              <div className={styles.boardRow}>
+                <Board
+                  fen={solved ? FEN_AFTER : FEN_BEFORE}
+                  orientation="white"
+                  hint={solved ? [] : ['d1']}
+                  highlight={solved ? ['d1', 'd8'] : []}
+                  danger={solved ? 'g8' : null}
+                  mated={solved}
+                  lastMove={solved ? { from: 'd1', to: 'd8' } : null}
+                />
+                <div className={styles.evalSlot}>
+                  {solved ? (
+                    <EvalBar
+                      cp={1200}
+                      label="1-0"
+                      peakMate={1}
+                      peakLabel="M1"
+                      decided
+                      isUserMove
+                      step="solved"
+                    />
+                  ) : (
+                    <EvalBar
+                      cp={-40}
+                      label="−0.4"
+                      peakMate={1}
+                      peakLabel="M1"
+                      loop
+                      step="unsolved"
+                    />
+                  )}
+                </div>
+                {solved && <Confetti run />}
+              </div>
 
-            <div className={styles.evalWrap}>
-              <div className={styles.evalBar}>
-                {/* red drop first, green recovery painted on top */}
-                <span className={styles.evalDrop} />
-                <span className={styles.evalGain} />
-              </div>
-              <div className={styles.evalCaption}>
-                <b>M1</b> was on the board.
-                <br />
-                The blunder left <b>−5.0</b> — the mate and the rook.
-                <br />A correct move sweeps the bar back green.
-              </div>
+              <CoachBubble
+                classification="best"
+                evalText={solved ? '1-0' : undefined}
+                text={
+                  solved
+                    ? '♜–d8# — checkmate on the weak back rank. The king never had a square.'
+                    : 'A forced mate is on the board. The rook can only be one move.'
+                }
+              />
+
+              <p className={styles.frameCap}>
+                {solved
+                  ? 'Correct move — green sweeps back up the eval bar.'
+                  : 'M1 was available. The blunder left −5.0: the mate and the rook.'}
+              </p>
             </div>
           </div>
         </div>
