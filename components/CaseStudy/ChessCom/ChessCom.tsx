@@ -6,7 +6,6 @@ import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/chess';
 import { HeroBoard } from './HeroBoard';
-import { HeroPieces } from './HeroPieces';
 import styles from './ChessCom.module.scss';
 
 // The back-rank position the "journey" section plays out — White to find Rd8#.
@@ -55,7 +54,6 @@ const METRICS = [
 
 export function ChessCom() {
   const rootRef = useRef<HTMLElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
   const journeyRef = useRef<HTMLDivElement>(null);
   const [solved, setSolved] = useState(false);
@@ -143,9 +141,8 @@ export function ChessCom() {
   return (
     <article ref={rootRef} className={styles.root}>
       {/* ============================================================ HERO */}
-      <header ref={heroRef} className={styles.hero}>
+      <header className={styles.hero}>
         <HeroBoard />
-        <HeroPieces hostRef={heroRef} />
 
         <div className={styles.heroInner}>
           <ul className={styles.tags}>
@@ -170,8 +167,7 @@ export function ChessCom() {
 
           <div className={styles.heroFoot}>
             <p className={styles.heroSay}>
-              Your own blunders, handed back as puzzles.{' '}
-              <b>The loop finally closes.</b>
+              Your own blunders, handed back as puzzles. <b>The loop finally closes.</b>
             </p>
             <div className={styles.ctas}>
               <a href="#journey" className={styles.ctaPrimary} data-cursor="link">

@@ -1,28 +1,40 @@
-// Playing chess board, tucked into the hero's top-right corner and masked to
-// an organic blob. Its own product palette (green/cream + charcoal eval).
+// Playing chess board bleeding in from the hero's right edge, masked to an
+// organic blob whose edge is heavily feathered (a Gaussian-blurred alpha mask,
+// rasterised once — not a live filter) so the board dissolves into the paper
+// background instead of ending on a hard checker edge.
+
+// white blob path + feGaussianBlur, baked into the mask image so the blur is
+// computed a single time and never re-rasterised on scroll (Safari-safe).
+$blob-mask: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Cfilter id='b' x='-35%25' y='-35%25' width='170%25' height='170%25' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='84'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23b)' d='M523 66C689 45 872 150 903 366C929 545 872 761 679 873C517 966 286 949 165 808C45 668 42 425 138 262C233 101 357 87 523 66Z'/%3E%3C/svg%3E";
+
 .wrap {
   position: absolute;
   z-index: 1;
-  top: clamp(-40px, -1vh, 28px);
-  right: clamp(-56px, -2vw, 12px);
-  width: clamp(240px, 30vw, 480px);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(56vw, 1120px);
   pointer-events: none;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 20px;
-  gap: 10px;
-  align-items: stretch;
-}
-
 .blob {
-  position: relative;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: 46% 54% 56% 44% / 54% 46% 55% 45%;
-  animation: blobMorph 16s ease-in-out infinite;
-  box-shadow: 0 28px 60px -30px rgba(50, 46, 43, 0.55);
+  position: absolute;
+  top: clamp(-240px, -12vh, -110px);
+  right: clamp(-200px, -6vw, -60px);
+  height: clamp(760px, 128vh, 1200px);
+  aspect-ratio: 1 / 1;
+  opacity: 0.92;
+
+  -webkit-mask-image: url($blob-mask);
+  mask-image: url($blob-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  animation: blobBreathe 17s ease-in-out infinite;
 }
 
 .inner {
@@ -31,28 +43,22 @@
   height: 100%;
 }
 
-// board fills the blob; the blob's rounded edges softly clip its corners
+// the board (and confetti layer) fill the blob; the feathered mask does all
+// the shaping, so no border-radius / shadow of their own
 .inner > div {
   width: 100%;
+  height: 100%;
   border-radius: 0;
   box-shadow: none;
 }
 
-.eval {
-  display: flex;
-  align-items: stretch;
-}
-
-@keyframes blobMorph {
+@keyframes blobBreathe {
   0%,
   100% {
-    border-radius: 46% 54% 56% 44% / 54% 46% 55% 45%;
+    transform: scale(1);
   }
-  33% {
-    border-radius: 58% 42% 44% 56% / 45% 58% 42% 55%;
-  }
-  66% {
-    border-radius: 43% 57% 52% 48% / 57% 44% 56% 43%;
+  50% {
+    transform: scale(1.03);
   }
 }
 
@@ -62,11 +68,26 @@
   }
 }
 
-// tablet: a touch smaller, still top-right
+// large desktop: a touch bigger, sitting further back
+@media (min-width: 1600px) {
+  .blob {
+    height: clamp(900px, 122vh, 1320px);
+    opacity: 0.9;
+  }
+}
+
+// tablet: smaller, pushed further off the edge so it stays a backdrop, not a
+// clash with the (now narrower) text column
 @media (max-width: 1023.98px) {
   .wrap {
-    width: clamp(200px, 34vw, 300px);
-    top: clamp(-24px, 1vh, 32px);
+    width: min(70vw, 640px);
+  }
+
+  .blob {
+    top: clamp(-160px, -8vh, -80px);
+    right: clamp(-180px, -14vw, -50px);
+    height: clamp(560px, 82vh, 760px);
+    opacity: 0.82;
   }
 }
 
