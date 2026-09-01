@@ -33,16 +33,18 @@ export const WORK: WorkProject[] = [
     href: '/work',
   },
   {
-    slug: 'field-notes',
+    slug: 'nextrail',
     slot: 'b',
     index: '02',
-    title: 'Field Notes',
-    discipline: 'Design system',
-    year: '2024',
+    title: 'Nextrail',
+    discipline: 'AI travel experience',
+    year: '2025',
     ratio: '3 / 4',
-    src: U('1499750310107-5fef28a66643', 900, 1200),
-    owned: 'A cross-platform design system and its adoption program.',
-    href: '/work',
+    // Real project imagery — served same-origin from /public, so the WorkCardGL
+    // bake stays untainted and the bow runs.
+    src: '/nextrail_casestudy/people/friends.jpg',
+    owned: 'Turning saved travel inspiration into an actionable trip — Feed2Fly.',
+    href: '/work/nextrail',
   },
   {
     slug: 'chess-com',

@@ -1,0 +1,732 @@
+@use 'mixins' as *;
+
+// ===========================================================================
+// Nextrail case study — same portfolio shell as Chess.com (paper / ink /
+// orange). Feed2Fly gets a Nextrail-violet identity, used sparingly: the
+// concept reveal, the "how it works" markers, a few transition moments.
+// ===========================================================================
+
+.root {
+  --sect: clamp(3.5rem, 2rem + 6vh, 7rem);
+  --edge: var(--gutter);
+  --cs-measure: 46ch;
+
+  // Nextrail identity — violet. Orange stays the portfolio accent.
+  --nx-violet: #6a4cf0;
+  --nx-violet-600: #573bd6;
+  --nx-violet-300: #b4a6f8;
+
+  background: var(--bg);
+  color: var(--fg);
+  overflow: clip;
+}
+
+.section {
+  position: relative;
+  padding: var(--sect) var(--edge);
+  scroll-margin-top: calc(var(--header-h) + 2rem);
+}
+
+// one-shot scroll-reveal hook. GSAP owns the animation; no resting styles here
+// so content stays visible before JS runs, under reduced motion, and with JS off.
+.rise {
+  /* intentionally empty */
+}
+
+// heading cluster — eyebrow + big h2
+.head {
+  margin-bottom: clamp(1.75rem, 3.5vw, 3.25rem);
+}
+
+.kick {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.1em;
+
+  &::before {
+    content: '';
+    width: 1.6em;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.65;
+  }
+
+  &[data-violet] {
+    color: var(--nx-violet);
+  }
+}
+
+.h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 1rem + 5vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  max-width: 18ch;
+
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+.lede {
+  max-width: var(--cs-measure);
+  font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--fg);
+  text-wrap: pretty;
+}
+
+.micro {
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+  max-width: 46ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--fg-muted);
+
+  em {
+    font-style: normal;
+    color: var(--fg);
+  }
+}
+
+// ---------------------------------------------------------------- HERO
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(7rem, 16vh, 11rem) var(--edge) clamp(3.5rem, 8vh, 6rem);
+  overflow: clip;
+  isolation: isolate;
+}
+
+.heroInner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 48rem; // left column — the phone cluster sits on the right
+
+  a {
+    pointer-events: auto;
+  }
+}
+
+.projectTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--nx-violet);
+  }
+}
+
+.heroTitle {
+  margin: clamp(1.1rem, 3vw, 1.9rem) 0 clamp(1.1rem, 2.5vw, 1.6rem);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.1rem, 1rem + 3.5vw, 3.9rem);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.tl {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.04em;
+
+  > span {
+    display: block;
+    will-change: transform;
+  }
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.heroSay {
+  max-width: 46ch;
+  font-size: clamp(1rem, 0.92rem + 0.55vw, 1.3rem);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  text-wrap: pretty;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  margin: clamp(1.75rem, 4vw, 2.75rem) 0 clamp(1.75rem, 3vw, 2.25rem);
+  max-width: 40rem;
+
+  dt {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.6em;
+  }
+
+  dd {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.15rem);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+}
+
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.9em 1.5em;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--line);
+  transition:
+    background 0.25s var(--ease-quart-in-out),
+    color 0.25s var(--ease-quart-in-out),
+    border-color 0.25s var(--ease-quart-in-out);
+
+  span {
+    transition: transform 0.25s var(--ease-quart-in-out);
+  }
+
+  @include hover {
+    &:hover {
+      border-color: var(--fg);
+      span {
+        transform: translateY(3px);
+      }
+    }
+  }
+}
+
+// ------------------------------------------------------ PROBLEM: triad
+.triad {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.6rem, 2vw, 1.4rem);
+  margin-top: clamp(2.5rem, 6vw, 4.5rem);
+
+  li {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(2rem, 1rem + 5vw, 4.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    transition:
+      color 0.5s var(--ease-quart-in-out),
+      opacity 0.5s var(--ease-quart-in-out);
+
+    &:not(:last-child)::after {
+      content: '↓';
+      display: block;
+      margin-top: 0.2em;
+      font-size: 0.32em;
+      font-weight: 400;
+      color: var(--fg-muted);
+    }
+  }
+}
+
+.triad[data-cold] li[data-lost] {
+  color: var(--fg-muted);
+  opacity: 0.42;
+}
+
+.turn {
+  margin-top: clamp(3.5rem, 9vw, 7rem);
+  max-width: 22ch;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2rem, 1rem + 5.5vw, 5.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+// ------------------------------------------------- RESEARCH: insights
+.insights {
+  display: flex;
+  flex-direction: column;
+}
+
+.insight {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  column-gap: clamp(1rem, 3vw, 2.5rem);
+  padding: clamp(2rem, 5vw, 3.5rem) 0;
+  border-top: 1px solid var(--line);
+
+  &:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+.insightN {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.insightStatement {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+.insightBody {
+  grid-column: 2;
+  margin-top: 0.8em;
+  max-width: 46ch;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+// -------------------------------------------------- OPPORTUNITY moment
+.opp {
+  overflow: clip;
+}
+
+.oppLead {
+  font-size: clamp(0.9rem, 0.8rem + 0.4vw, 1.2rem);
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.oppQ {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2rem, 1rem + 5.4vw, 5.4rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0.18em 0 clamp(2rem, 6vw, 4rem);
+  will-change: transform;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+
+  &[data-old] {
+    color: var(--fg-muted);
+  }
+
+  &[data-new] {
+    color: var(--nx-violet);
+  }
+}
+
+// --------------------------------------------- INTRODUCING FEED2FLY band
+.reveal {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: clamp(4rem, 2.5rem + 7vh, 8rem) var(--edge);
+  background:
+    radial-gradient(
+      130% 95% at 84% 6%,
+      rgba(150, 122, 255, 0.5) 0%,
+      rgba(150, 122, 255, 0) 58%
+    ),
+    linear-gradient(158deg, #5b47c7 0%, #4a38ab 52%, #3a2c8e 100%);
+  color: #f4f0e9;
+  overflow: clip;
+  isolation: isolate;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: center;
+}
+
+.revealMap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: min(1300px, 128%);
+  height: auto;
+  opacity: 0.12;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.revealInner {
+  position: relative;
+  z-index: 1;
+}
+
+.revealKick {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--nx-violet-300);
+  margin-bottom: 0.9em;
+}
+
+.revealTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(3rem, 1rem + 11vw, 8.5rem);
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+
+.revealSay {
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.25rem, 0.9rem + 1.6vw, 2.2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 24ch;
+  color: #fff;
+}
+
+.revealBody {
+  margin-top: 1.25em;
+  max-width: 46ch;
+  color: rgba(244, 240, 233, 0.74);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.revealDevice {
+  position: relative;
+  z-index: 1;
+  justify-self: center;
+  margin: 0;
+
+  img {
+    display: block;
+    width: min(20rem, 62vw);
+    height: auto;
+    filter: drop-shadow(0 40px 70px rgba(0, 0, 0, 0.55));
+  }
+}
+
+// -------------------------------------------- FEED2FLY EXPERIENCE: moments
+.moments {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3.5rem, 9vw, 7rem);
+}
+
+.moment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: center;
+
+  &:nth-child(even) .momentMedia {
+    order: -1;
+  }
+}
+
+.momentLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nx-violet);
+  margin-bottom: 0.9em;
+
+  &::before {
+    content: '';
+    width: 1.6em;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.55;
+  }
+}
+
+.momentTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1rem + 2.2vw, 2.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+.momentCopy {
+  margin-top: 0.9em;
+  max-width: 40ch;
+  color: var(--fg-muted);
+  line-height: 1.55;
+}
+
+.momentMedia {
+  display: flex;
+  gap: clamp(0.75rem, 2vw, 1.75rem);
+  justify-content: center;
+  align-items: flex-end;
+
+  img {
+    width: clamp(9rem, 21vw, 12rem);
+    height: auto;
+    filter: drop-shadow(0 22px 42px rgba(20, 17, 13, 0.18));
+  }
+
+  img:nth-child(2) {
+    margin-bottom: clamp(1rem, 4vw, 2.5rem);
+  }
+}
+
+// ------------------------------------------------------- PROCESS ladder
+.ladder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(0.55rem, 2vw, 1.2rem);
+  margin: clamp(2.5rem, 6vw, 4rem) 0 clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.ladderNode {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55em;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.3rem);
+  letter-spacing: -0.01em;
+
+  span {
+    font-size: 0.68em;
+    color: var(--fg-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &[data-strong] {
+    color: var(--nx-violet);
+  }
+}
+
+.ladderArrow {
+  color: var(--fg-muted);
+  font-size: 0.9em;
+}
+
+// --------------------------------------------------- MY CONTRIBUTION
+.contribs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 3vw, 1.75rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+.contrib {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+
+  h3 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  p {
+    margin-top: 0.85em;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  &[data-feed] {
+    border-color: color-mix(in oklab, var(--nx-violet) 45%, transparent);
+    background: color-mix(in oklab, var(--nx-violet) 7%, transparent);
+
+    h3 {
+      color: var(--nx-violet);
+    }
+  }
+}
+
+// ------------------------------------------------------- REFLECTION
+.close {
+  padding-bottom: clamp(4rem, 9vh, 8rem);
+}
+
+.lessons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 6vw, 4rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+.lesson {
+  h3 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 1rem + 1.8vw, 2.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    max-width: 16ch;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin-top: 1em;
+    color: var(--fg-muted);
+    max-width: 42ch;
+    line-height: 1.6;
+  }
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  transition: color 0.25s var(--ease-quart-in-out);
+
+  span {
+    transition: transform 0.25s var(--ease-quart-in-out);
+  }
+
+  @include hover {
+    &:hover {
+      color: var(--accent);
+      span {
+        transform: translateX(-3px);
+      }
+    }
+  }
+}
+
+// ===========================================================================
+// Responsive
+// ===========================================================================
+@media (min-width: 1600px) {
+  .root {
+    --sect: clamp(9rem, 6rem + 10vh, 15rem);
+  }
+  .heroInner {
+    max-width: 56rem;
+  }
+}
+
+@include mq-max('lg') {
+  .heroInner {
+    max-width: 44rem; // fan is a faint accent below lg — text gets the width
+  }
+  .reveal {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2rem, 8vw, 3.5rem);
+  }
+  .revealDevice {
+    order: -1;
+    img {
+      width: min(16rem, 52vw);
+    }
+  }
+}
+
+@include mq-max('md') {
+  .heroInner {
+    max-width: none;
+  }
+  .meta {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem 1.25rem;
+  }
+  .moment,
+  .contribs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .moment {
+    gap: clamp(1.5rem, 5vw, 2.5rem);
+
+    &:nth-child(even) .momentMedia {
+      order: 0;
+    }
+  }
+  .momentMedia {
+    justify-content: flex-start;
+  }
+  .lessons {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2rem, 8vw, 3rem);
+  }
+}
+
+@include mq-max('sm') {
+  .h2 {
+    max-width: none;
+  }
+  .meta {
+    grid-template-columns: 1fr;
+  }
+  .insight {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.5rem;
+  }
+  .insightBody {
+    grid-column: 1;
+  }
+  .momentMedia img {
+    width: clamp(7rem, 34vw, 9rem);
+  }
+}
+
+@include reduced-motion {
+  .tl > span {
+    will-change: auto;
+  }
+  .oppQ {
+    will-change: auto;
+  }
+}
