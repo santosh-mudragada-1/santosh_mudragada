@@ -134,11 +134,9 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 70rem;
-  pointer-events: none; // the reveal behind stays interactive; links re-enable
+  max-width: 54rem; // left column — the playing board sits top-right
 
-  a,
-  .watch {
+  a {
     pointer-events: auto;
   }
 }
@@ -210,10 +208,11 @@
 .heroFoot {
   position: relative;
   z-index: 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: clamp(1.25rem, 4vw, 3.5rem);
+  justify-content: space-between;
+  gap: clamp(1.25rem, 4vw, 3rem);
   padding-top: clamp(1.25rem, 3vh, 2rem);
 }
 
@@ -230,27 +229,54 @@
   }
 }
 
-.watch {
+.ctas {
   flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ctaPrimary,
+.ctaGhost {
   display: inline-flex;
   align-items: center;
-  gap: 0.55em;
-  padding: 0.85em 1.5em;
+  gap: 0.5em;
+  padding: 0.9em 1.5em;
   border-radius: 999px;
-  background: var(--fg);
-  color: var(--bg);
   font-weight: 600;
   font-size: 0.9375rem;
   white-space: nowrap;
-  transition: background 0.25s var(--ease-quart-in-out);
+  transition:
+    background 0.25s var(--ease-quart-in-out),
+    color 0.25s var(--ease-quart-in-out),
+    border-color 0.25s var(--ease-quart-in-out);
 
   span {
     transition: transform 0.25s var(--ease-quart-in-out);
   }
+}
+
+.ctaPrimary {
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
 
   @include hover {
     &:hover {
       background: var(--accent);
+      border-color: var(--accent);
+    }
+  }
+}
+
+.ctaGhost {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--line);
+
+  @include hover {
+    &:hover {
+      border-color: var(--fg);
       span {
         transform: translateY(3px);
       }
@@ -264,43 +290,6 @@
   font-size: 0.78rem;
   line-height: 1.6;
   color: var(--fg-muted);
-}
-
-.floaters {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.floater {
-  position: absolute;
-  filter: drop-shadow(0 22px 30px rgba(0, 0, 0, 0.28));
-  opacity: 0;
-  animation:
-    floatIn 1s cubic-bezier(0.16, 1, 0.3, 1) both var(--delay, 0.5s),
-    floatBob var(--dur, 7s) ease-in-out infinite calc(var(--delay, 0.5s) + 1s);
-}
-
-@keyframes floatIn {
-  from {
-    opacity: 0;
-    transform: translateY(28px) scale(0.9) rotate(var(--rot, 0deg));
-  }
-  to {
-    opacity: 0.62;
-    transform: translateY(0) scale(1) rotate(var(--rot, 0deg));
-  }
-}
-
-@keyframes floatBob {
-  0%,
-  100% {
-    transform: translateY(0) rotate(var(--rot, 0deg));
-  }
-  50% {
-    transform: translateY(-16px) rotate(calc(var(--rot, 0deg) + 4deg));
-  }
 }
 
 // ---------------------------------------------------- loop (nodes)
@@ -821,7 +810,7 @@
     --sect: clamp(9rem, 6rem + 10vh, 15rem);
   }
   .heroInner {
-    max-width: 78rem;
+    max-width: 60rem;
   }
 }
 
@@ -842,16 +831,19 @@
   .carry {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .heroInner {
+    max-width: 44rem; // the corner board is smaller here
+  }
 }
 
 @include mq-max('md') {
-  .heroFoot {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: 1.5rem;
+  .heroInner {
+    max-width: none; // board + pieces hidden — text can use the width
   }
-  .floaters {
-    display: none;
+  .heroFoot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
   }
   .carry {
     grid-template-columns: minmax(0, 1fr);

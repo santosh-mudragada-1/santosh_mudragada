@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/chess';
-import { pieceImage } from '@/components/CaseStudy/chess/fen';
-import { BlobReveal } from './BlobReveal';
+import { HeroBoard } from './HeroBoard';
+import { HeroPieces } from './HeroPieces';
 import styles from './ChessCom.module.scss';
 
 // The back-rank position the "journey" section plays out — White to find Rd8#.
@@ -53,15 +53,9 @@ const METRICS = [
   { name: 'Review → puzzle', q: 'How many reviewed games yield one worth practising?' },
 ];
 
-const FLOATERS = [
-  { p: 'n', x: '6%', y: '18%', s: 1, rot: -12, dur: 7, delay: 0.4 },
-  { p: 'p', x: '15%', y: '64%', s: 0.72, rot: 9, dur: 8.5, delay: 0.7 },
-  { p: 'b', x: '32%', y: '30%', s: 0.86, rot: 16, dur: 6.4, delay: 1 },
-  { p: 'q', x: '3%', y: '78%', s: 0.66, rot: -8, dur: 9, delay: 1.3 },
-];
-
 export function ChessCom() {
   const rootRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
   const journeyRef = useRef<HTMLDivElement>(null);
   const [solved, setSolved] = useState(false);
@@ -149,30 +143,9 @@ export function ChessCom() {
   return (
     <article ref={rootRef} className={styles.root}>
       {/* ============================================================ HERO */}
-      <header className={styles.hero}>
-        <div className={styles.floaters} aria-hidden>
-          {FLOATERS.map((f, i) => (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              key={i}
-              className={styles.floater}
-              src={pieceImage(f.p)}
-              alt=""
-              style={
-                {
-                  left: f.x,
-                  top: f.y,
-                  width: `calc(${f.s} * clamp(54px, 7vw, 116px))`,
-                  '--rot': `${f.rot}deg`,
-                  '--dur': `${f.dur}s`,
-                  '--delay': `${f.delay}s`,
-                } as React.CSSProperties
-              }
-            />
-          ))}
-        </div>
-
-        <BlobReveal />
+      <header ref={heroRef} className={styles.hero}>
+        <HeroBoard />
+        <HeroPieces hostRef={heroRef} />
 
         <div className={styles.heroInner}>
           <ul className={styles.tags}>
@@ -200,9 +173,14 @@ export function ChessCom() {
               Your own blunders, handed back as puzzles.{' '}
               <b>The loop finally closes.</b>
             </p>
-            <a href="#journey" className={styles.watch} data-cursor="link">
-              Watch the story <span aria-hidden>↓</span>
-            </a>
+            <div className={styles.ctas}>
+              <a href="#journey" className={styles.ctaPrimary} data-cursor="link">
+                Solve three yourself
+              </a>
+              <a href="#journey" className={styles.ctaGhost} data-cursor="link">
+                Watch the story <span aria-hidden>↓</span>
+              </a>
+            </div>
           </div>
 
           <p className={styles.disc}>

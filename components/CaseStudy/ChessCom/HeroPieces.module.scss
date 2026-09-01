@@ -1,0 +1,61 @@
+.field {
+  position: absolute;
+  inset: 0;
+  z-index: 3; // in front of the copy, but placed clear of it
+  pointer-events: none;
+}
+
+// outer span — cursor drift (GSAP writes --mx / --my in px)
+.piece {
+  position: absolute;
+  --mx: 0px;
+  --my: 0px;
+  transform: translate(var(--mx), var(--my));
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.22));
+
+  // inner img — entrance + idle bob own their transform, so the two layers
+  // never fight
+  img {
+    display: block;
+    opacity: 0;
+    animation:
+      pcIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both var(--delay, 0.4s),
+      pcBob var(--dur, 7s) ease-in-out infinite calc(var(--delay, 0.4s) + 0.9s);
+  }
+}
+
+@keyframes pcIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.9) rotate(var(--rot, 0deg));
+  }
+  to {
+    opacity: 0.6;
+    transform: translateY(0) scale(1) rotate(var(--rot, 0deg));
+  }
+}
+
+@keyframes pcBob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+  50% {
+    transform: translateY(-13px) rotate(calc(var(--rot, 0deg) + 4deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece img {
+    animation: none;
+    opacity: 0.55;
+    transform: rotate(var(--rot, 0deg));
+  }
+}
+
+// mobile: hero is text-only
+@media (max-width: 767.98px) {
+  .field {
+    display: none;
+  }
+}
