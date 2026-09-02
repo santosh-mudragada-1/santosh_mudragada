@@ -1847,6 +1847,25 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .heroInner {
     max-width: 52rem;
   }
+  // hero: stack and centre — title, then tagline, then the CTA
+  .heroFoot {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: clamp(1.25rem, 3vw, 1.75rem);
+  }
+  .heroSay {
+    max-width: 34ch;
+    margin-inline: auto;
+  }
+  .ctaCol {
+    align-items: center;
+    max-width: none;
+  }
+  .protoNote {
+    display: none;
+  }
   .bento {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
@@ -1879,6 +1898,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   }
   .drItem {
     flex: 0 0 auto;
+    width: auto; // was 100% from the base — kept all five in view as a tab strip
 
     span {
       display: none;
@@ -1891,15 +1911,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
 @include mq-max('md') {
   .heroInner {
-    max-width: none; // board hidden below this — text can use the width
-  }
-  .heroFoot {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.75rem;
-  }
-  .ctaCol {
-    max-width: none;
+    max-width: none; // board hidden below this, text can use the width
   }
   .carry {
     grid-template-columns: minmax(0, 1fr);

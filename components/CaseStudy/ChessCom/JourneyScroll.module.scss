@@ -210,10 +210,34 @@
 
   .stage {
     position: sticky;
-    top: calc(var(--header-h) + 0.5rem);
+    top: var(--header-h);
     z-index: 2;
     background: var(--bg);
-    padding-block: 0.85rem 1.35rem;
+    padding-block: 1rem 1.4rem;
+
+    // opaque cap: hides beats that scroll up between the header and the frame
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      height: calc(var(--header-h) + 1.5rem);
+      background: var(--bg);
+      pointer-events: none;
+    }
+
+    // soft fade-out: beats dissolve as they scroll behind the frame's base
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      height: 3rem;
+      background: linear-gradient(to bottom, var(--bg), transparent);
+      pointer-events: none;
+    }
   }
 
   .frame {
@@ -223,7 +247,7 @@
   }
 
   .beats {
-    padding-block: 18vh 24vh;
+    padding-block: 24vh 24vh;
   }
   .beats li {
     min-height: 52vh;
