@@ -103,9 +103,14 @@
   }
 }
 
-// mobile: the hero is text-only
+// mobile: the board rides high behind the hero text, small and faint
 @media (max-width: 767.98px) {
   .wrap {
-    display: none;
+    width: 116vw;
+  }
+
+  .blob {
+    margin-top: clamp(-32px, -3vh, -8px);
+    opacity: 0.38;
   }
 }

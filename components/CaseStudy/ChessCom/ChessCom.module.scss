@@ -149,17 +149,19 @@
     background: color-mix(in oklab, var(--bg) 70%, transparent);
     backdrop-filter: blur(6px);
   }
+}
 
-  li[data-accent] {
-    border-color: color-mix(in oklab, var(--accent) 45%, transparent);
-    color: var(--accent);
+// desktop: the two <ul>s collapse so the pills flow straight into .tags
+.tagsSet {
+  display: contents;
+}
+.tagsDupe {
+  display: none;
+}
 
-    i {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
+@keyframes tag-marquee {
+  to {
+    transform: translateX(-100%);
   }
 }
 
@@ -1875,15 +1877,16 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
       'done done'
       'rows rows';
   }
-  // below lg the scroll-pin is dropped — rail becomes a horizontal picker
+  // still scroll-stepped, but the rail sits on top as a horizontal strip
   .drTrack {
-    height: auto;
+    height: 340vh;
   }
   .drReview {
-    position: static;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     max-width: none;
-    min-height: 0;
+    min-height: min(30rem, 78vh);
+    top: calc(var(--header-h) + 0.5rem);
   }
   .drRail {
     flex-direction: row;
@@ -1898,7 +1901,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   }
   .drItem {
     flex: 0 0 auto;
-    width: auto; // was 100% from the base — kept all five in view as a tab strip
+    width: auto; // was 100% from the base
 
     span {
       display: none;
@@ -1928,25 +1931,102 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .netGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  // hero pills: an auto-scrolling marquee, all one grey tone
+  .tags {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0; // the seam gap comes from .tagsSet padding-right, so the loop is even
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .tagsSet {
+    display: flex;
+    flex: none;
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+    animation: tag-marquee 20s linear infinite;
+  }
+  .tagsDupe {
+    display: flex;
+  }
+
+  // rating-band cards hug their content instead of a fixed height
+  .netCard {
+    min-height: 0;
+  }
+
+  // diary: square dates, tighter
+  .calDay {
+    height: auto;
+    aspect-ratio: 1;
+    font-size: 0.6rem;
+  }
+  .calDone::after {
+    font-size: 0.6rem;
+  }
+
+  // V1 rolling window: show only the first four games
+  .windowGame:nth-of-type(n + 5) {
+    display: none;
+  }
+
+  // hero: no CTA / prototype note on phones
+  .ctaCol {
+    display: none;
+  }
+
+  // built pieces: a horizontal carousel, every tile the same height
   .bento {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    align-items: stretch;
+    grid-template-areas: none;
     grid-auto-rows: auto;
-    grid-template-areas:
-      'home'
-      'badges'
-      'eval'
-      'coach'
-      'done'
-      'rows';
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 6px;
+  }
+  .bento::-webkit-scrollbar {
+    display: none;
+  }
+  .tileHome,
+  .tileEval,
+  .tileBadges,
+  .tileCoach,
+  .tileDone,
+  .tileRows {
+    grid-area: auto;
+    flex: 0 0 88%;
+    scroll-snap-align: center;
   }
   .bDoneRow {
-    flex-direction: column;
+    flex-direction: row;
   }
   .planTile {
     font-size: 0.7rem;
   }
+
+  // process pills stack, with the arrow pointing down between them
+  .loop {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $loop-gap;
+  }
   .loop li {
+    justify-content: center;
     padding: 0.7em 1.05em;
+
+    &:not(:last-child)::after {
+      content: '\2193' / '';
+      right: auto;
+      left: 50%;
+      top: auto;
+      bottom: calc(#{$loop-gap} / -2);
+      transform: translate(-50%, 50%);
+    }
   }
 }
 
@@ -1966,7 +2046,8 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .bShimmer::after,
   .bEvalHot,
   .bRowPulse,
-  .drPanelInner {
+  .drPanelInner,
+  .tagsSet {
     animation: none;
   }
   .calDone {

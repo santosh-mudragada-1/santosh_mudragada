@@ -523,14 +523,20 @@ export function ChessCom() {
         <HeroBoard />
 
         <div className={styles.heroInner}>
-          <ul className={styles.tags}>
-            <li data-accent>
-              <i aria-hidden /> Product design concept
-            </li>
-            {TAGS.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
+          <div className={styles.tags} aria-label="Case study tags">
+            <ul className={styles.tagsSet}>
+              <li>Product design concept</li>
+              {TAGS.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+            <ul className={`${styles.tagsSet} ${styles.tagsDupe}`} aria-hidden>
+              <li>Product design concept</li>
+              {TAGS.map((t) => (
+                <li key={`dupe-${t}`}>{t}</li>
+              ))}
+            </ul>
+          </div>
 
           <h1 className={styles.heroTitle} aria-label="Game-Based Puzzles">
             <span className={styles.tl}>

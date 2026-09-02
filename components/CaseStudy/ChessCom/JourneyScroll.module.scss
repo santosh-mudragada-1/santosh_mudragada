@@ -260,6 +260,14 @@
     padding: 0.85rem;
   }
 
+  // just the blunder icon in the header — drop the labels and the coach line
+  .frameTagName,
+  .frameMeta,
+  .frameChip,
+  .frameCoach {
+    display: none;
+  }
+
   .beatBody {
     max-width: none;
   }

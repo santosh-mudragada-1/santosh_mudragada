@@ -589,6 +589,16 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
+@include mq-max('sm') {
+  // just the theme icon in the HUD, and drop the annotation rail
+  .badgeTagName {
+    display: none;
+  }
+  .annot {
+    display: none;
+  }
+}
+
 @include reduced-motion {
   .streak i,
   .sparkles img,

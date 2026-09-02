@@ -41,14 +41,17 @@ export function CoachBubble({
         <span aria-hidden className={styles.tail} />
         <div className={styles.bubble}>
           {classification && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              className={styles.badge}
-              src={`/case-study/move-types/${classification}.png`}
-              alt=""
-              width={24}
-              height={24}
-            />
+            <span className={styles.cls}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className={styles.badge}
+                src={`/case-study/move-types/${classification}.png`}
+                alt=""
+                width={24}
+                height={24}
+              />
+              <span className={styles.clsName}>{classification}</span>
+            </span>
           )}
           <p className={styles.text}>
             {text}

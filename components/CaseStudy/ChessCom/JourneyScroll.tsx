@@ -181,7 +181,7 @@ export function JourneyScroll() {
             <span className={styles.frameTag}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/case-study/move-types/blunder.png" alt="" width={24} height={24} />
-              Blunder
+              <span className={styles.frameTagName}>Blunder</span>
             </span>
             <span className={styles.frameMeta}>vs. M. Kowalski · Rapid</span>
             <span className={styles.frameChip}>Medium</span>
@@ -208,6 +208,7 @@ export function JourneyScroll() {
           </div>
 
           <CoachBubble
+            className={styles.frameCoach}
             classification={b.coach.classification}
             evalText={b.coach.evalText}
             text={b.coach.text}

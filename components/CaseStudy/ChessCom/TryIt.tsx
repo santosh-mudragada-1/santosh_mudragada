@@ -317,7 +317,7 @@ export function TryIt() {
           <span className={styles.badgeTag} data-tone={p.themeClass}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/case-study/move-types/${p.themeClass}.png`} alt="" width={20} height={20} />
-            {p.theme}
+            <span className={styles.badgeTagName}>{p.theme}</span>
           </span>
           <span className={styles.counter}>
             Puzzle{' '}
