@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/chess';
+import { legalTargets } from '@/components/CaseStudy/chess/fen';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './TryIt.module.scss';
 
@@ -25,6 +26,8 @@ interface Puzzle {
   danger?: string | null;
   mated?: boolean;
   win: string;
+  /** the move actually played in the game, that this puzzle asks you to beat */
+  wrongMove: { from: string; to: string; san: string };
   pieceHint: string; // "the rook on d1"
   targetHint: string; // "d8"
   evalStart: EvalProps;
@@ -45,6 +48,7 @@ const PUZZLES: Puzzle[] = [
     danger: 'g8',
     mated: true,
     win: 'Rxd8#',
+    wrongMove: { from: 'd1', to: 'd3', san: 'Rd3' },
     pieceHint: 'the rook on d1',
     targetHint: 'd8',
     evalStart: { cp: -500, label: '−5.0', peakCp: 1200, peakMate: 1, peakLabel: 'M1', loop: true },
@@ -59,14 +63,14 @@ const PUZZLES: Puzzle[] = [
     },
     whStart: {
       title: 'Puzzle 1 — start',
-      body: 'Opens on the position before the mistake, never a blank board. The red band is the advantage the played move handed over.',
+      body: 'It opens on the position before the mistake, never a blank board. The red band is the advantage the played move handed over.',
     },
     whSolved: {
       title: 'Puzzle 1 — solved',
-      body: 'The rook drops onto the back rank. The pawns on f7, g7, h7 are the walls — the king never had a square.',
+      body: 'The rook drops onto the back rank. The pawns on f7, g7, h7 are the walls, so the king never had a square.',
     },
     coachStart: 'On move 14 you played Rd3 and let a forced mate slip. It is still on the board. Play it.',
-    coachSolved: 'Rxd8#. Back-rank mate. Green sweeps the bar back up — you won back exactly what the blunder cost.',
+    coachSolved: 'Rxd8#. Back-rank mate. Green sweeps the bar back up: you won back exactly what the blunder cost.',
   },
   {
     tag: 'Knight fork',
@@ -77,6 +81,7 @@ const PUZZLES: Puzzle[] = [
     danger: 'e8',
     mated: false,
     win: 'Nc7+',
+    wrongMove: { from: 'b5', to: 'a3', san: 'Na3' },
     pieceHint: 'the knight on b5',
     targetHint: 'c7',
     evalStart: { cp: -180, label: '−1.8', peakCp: 700, peakLabel: '+7', loop: true },
@@ -87,10 +92,10 @@ const PUZZLES: Puzzle[] = [
     },
     whSolved: {
       title: 'Puzzle 2 — solved',
-      body: 'Check first. The king has to step off, then the knight takes the rook on a8 for free — a clean exchange up.',
+      body: 'Check first. The king has to step off, then the knight takes the rook on a8 for free, a clean exchange up.',
     },
-    coachStart: 'You traded into this a move ago and missed the fork. The knight jumps once and the rook is lost.',
-    coachSolved: 'Nc7+. The fork. King moves, then Nxa8 — the rook falls and you are the exchange up.',
+    coachStart: 'You retreated the knight to a3 and walked past the fork. From here it jumps once and the rook is lost.',
+    coachSolved: 'Nc7+. The fork. The king moves, then Nxa8 lifts the rook and you are the exchange up.',
   },
   {
     tag: 'Hanging queen',
@@ -101,6 +106,7 @@ const PUZZLES: Puzzle[] = [
     danger: null,
     mated: false,
     win: 'Bxb7',
+    wrongMove: { from: 'g2', to: 'f1', san: 'Bf1' },
     pieceHint: 'the bishop on g2',
     targetHint: 'b7',
     evalStart: { cp: -260, label: '−2.6', peakCp: 1100, peakLabel: '+9', loop: true },
@@ -113,7 +119,7 @@ const PUZZLES: Puzzle[] = [
       title: 'Puzzle 3 — solved',
       body: 'Nothing was defending the queen. The bishop takes it and the game is effectively over.',
     },
-    coachStart: 'A move ago you shut the diagonal, then reopened it. The queen on b7 has no defender.',
+    coachStart: 'You tucked the bishop back to f1 and left the queen alone. On b7 it has no defender.',
     coachSolved: 'Bxb7. The queen was hanging the whole time. Free piece, game over.',
   },
 ];
@@ -125,18 +131,25 @@ export function TryIt() {
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const [hinted, setHinted] = useState(false);
+  const [cleared, setCleared] = useState<boolean[]>(() => PUZZLES.map(() => false));
   const [wrong, setWrong] = useState(false);
   const wrongT = useRef(0);
 
   const p = PUZZLES[idx];
   const solved = phase === 'solved';
   const last = idx === PUZZLES.length - 1;
+  const allDone = cleared.every(Boolean);
 
   const flashWrong = useCallback(() => {
     setWrong(true);
     window.clearTimeout(wrongT.current);
     wrongT.current = window.setTimeout(() => setWrong(false), 420);
   }, []);
+
+  const markSolved = useCallback(() => {
+    setPhase('solved');
+    setCleared((c) => (c[idx] ? c : c.map((v, i) => (i === idx ? true : v))));
+  }, [idx]);
 
   const onSquare = useCallback(
     (sq: string) => {
@@ -146,16 +159,15 @@ export function TryIt() {
         else flashWrong();
         return;
       }
-      // picked
-      if (sq === p.to) setPhase('solved');
+      if (sq === p.to) markSolved();
       else if (sq === p.from) setPhase('idle');
       else flashWrong();
     },
-    [phase, p.from, p.to, flashWrong],
+    [phase, p.from, p.to, flashWrong, markSolved],
   );
 
   const goNext = () => {
-    setIdx((i) => (last ? 0 : i + 1));
+    setIdx((i) => i + 1);
     setPhase('idle');
     setHinted(false);
   };
@@ -163,14 +175,15 @@ export function TryIt() {
     setIdx(0);
     setPhase('idle');
     setHinted(false);
+    setCleared(PUZZLES.map(() => false));
   };
 
   const evalProps = solved ? p.evalSolved : p.evalStart;
   const wh = solved ? p.whSolved : p.whStart;
   const statusLine = solved
-    ? `${p.win} played. On to the next.`
+    ? `${p.win} played.`
     : phase === 'picked'
-      ? `Now the square — click ${p.targetHint}.`
+      ? `Now the square. Click ${p.targetHint}.`
       : `White to play. Click ${p.pieceHint}.`;
 
   return (
@@ -195,8 +208,9 @@ export function TryIt() {
             orientation="white"
             onSquareClick={onSquare}
             ariaLabel={statusLine}
+            wrong={phase === 'idle' ? [p.wrongMove.from, p.wrongMove.to] : []}
             hint={!solved && (phase === 'picked' || hinted) ? [p.from] : []}
-            dots={phase === 'picked' ? [p.to] : []}
+            dots={phase === 'picked' ? legalTargets(p.fen, p.from) : []}
             highlight={solved ? [p.from, p.to] : []}
             lastMove={solved ? { from: p.from, to: p.to } : null}
             danger={solved ? p.danger ?? null : null}
@@ -206,14 +220,21 @@ export function TryIt() {
           <div className={styles.deviceEval}>
             <EvalBar {...evalProps} step={`${idx}-${phase}`} />
           </div>
-          {solved && !reduced && <Confetti run count={38} />}
+          {solved && !reduced && <Confetti run count={allDone ? 64 : 38} />}
         </div>
+
+        {phase === 'idle' && (
+          <p className={styles.playedWrong}>
+            <span aria-hidden>✗</span> In the game:{' '}
+            <s>{p.wrongMove.san}</s>. Find White&rsquo;s move.
+          </p>
+        )}
 
         <div className={styles.deviceActions}>
           <button
             type="button"
             className={styles.btnPrimary}
-            onClick={goNext}
+            onClick={last ? restart : goNext}
             disabled={!solved}
             data-cursor="link"
           >
@@ -223,7 +244,7 @@ export function TryIt() {
             type="button"
             className={styles.btn}
             onClick={() => setHinted(true)}
-            disabled={solved}
+            disabled={solved || hinted}
             data-cursor="link"
           >
             Hint
@@ -231,7 +252,7 @@ export function TryIt() {
           <button
             type="button"
             className={styles.btn}
-            onClick={() => setPhase('solved')}
+            onClick={markSolved}
             disabled={solved}
             data-cursor="link"
           >
@@ -251,22 +272,40 @@ export function TryIt() {
           text={solved ? p.coachSolved : p.coachStart}
         />
 
-        <div className={styles.happening}>
-          <p className={styles.happeningKick}>
-            <i aria-hidden /> What&rsquo;s happening
-          </p>
-          <h3 className={styles.happeningTitle}>{wh.title}</h3>
-          <p className={styles.happeningBody}>{wh.body}</p>
-          <hr className={styles.happeningRule} />
-          <p className={styles.happeningStatus}>
-            <span data-state={solved ? 'solved' : 'ready'}>{solved ? 'Solved' : 'Ready'}</span>
-            {statusLine}
-          </p>
-        </div>
+        {allDone ? (
+          <div className={`${styles.happening} ${styles.happeningDone}`}>
+            <p className={styles.happeningKick}>
+              <i aria-hidden /> Set complete
+            </p>
+            <h3 className={styles.happeningTitle}>Three for three.</h3>
+            <p className={styles.happeningBody}>
+              Back-rank mate, knight fork, hanging queen: all solved. One set, one player, one week
+              of games.
+            </p>
+            <ul className={styles.doneList}>
+              {PUZZLES.map((pz) => (
+                <li key={pz.tag}>{pz.tag}</li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className={styles.happening}>
+            <p className={styles.happeningKick}>
+              <i aria-hidden /> What&rsquo;s happening
+            </p>
+            <h3 className={styles.happeningTitle}>{wh.title}</h3>
+            <p className={styles.happeningBody}>{wh.body}</p>
+            <hr className={styles.happeningRule} />
+            <p className={styles.happeningStatus}>
+              <span data-state={solved ? 'solved' : 'ready'}>{solved ? 'Solved' : 'Ready'}</span>
+              {statusLine}
+            </p>
+          </div>
+        )}
 
         <p className={styles.tally} aria-live="polite">
           {PUZZLES.map((pz, i) => (
-            <span key={pz.tag} data-on={i < idx || (i === idx && solved) || undefined}>
+            <span key={pz.tag} data-on={cleared[i] || undefined}>
               {pz.tag}
             </span>
           ))}

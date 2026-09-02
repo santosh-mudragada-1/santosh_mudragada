@@ -100,6 +100,23 @@
   }
 }
 
+// "the move played in the game" note, under the board
+.playedWrong {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #d99a9a;
+
+  span {
+    font-weight: 800;
+    margin-right: 0.3em;
+  }
+  s {
+    color: #e98b8b;
+    text-decoration-thickness: 1px;
+    font-weight: 600;
+  }
+}
+
 .deviceActions {
   display: flex;
   flex-wrap: wrap;
@@ -110,36 +127,44 @@
 .btn,
 .btnPrimary,
 .btnGhost {
-  padding: 0.72em 1.1em;
-  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.82em 1.15em;
+  border-radius: 11px;
   font-family: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
+  letter-spacing: -0.005em;
   cursor: pointer;
   transition:
     background 0.2s var(--ease-quart-in-out),
+    border-color 0.2s var(--ease-quart-in-out),
     opacity 0.2s var(--ease-quart-in-out);
 
   &:disabled {
-    opacity: 0.38;
+    opacity: 0.36;
     cursor: not-allowed;
   }
 }
 
 .btnPrimary {
-  flex: 1 1 8rem;
+  flex: 3 1 10rem;
   border: 1px solid #7cb342;
   background: #7cb342;
   color: #16210a;
+  box-shadow: 0 6px 18px -10px rgba(124, 179, 66, 0.7);
 
   @include hover {
     &:not(:disabled):hover {
       background: #8bc34a;
+      border-color: #8bc34a;
     }
   }
 }
 
 .btn {
+  flex: 1 1 6.5rem;
   border: 1px solid #45423f;
   background: #333230;
   color: #e8e6e3;
@@ -147,11 +172,13 @@
   @include hover {
     &:not(:disabled):hover {
       background: #3d3b39;
+      border-color: #55524e;
     }
   }
 }
 
 .btnGhost {
+  flex: 1 1 auto;
   border: 1px solid transparent;
   background: transparent;
   color: #9a9793;
@@ -215,6 +242,34 @@
   border: 0;
   margin: 1.05rem 0;
   background: #333230;
+}
+
+// completion variant of the card
+.happeningDone {
+  border-color: color-mix(in oklab, #7cb342 45%, transparent);
+  background: linear-gradient(180deg, rgba(124, 179, 66, 0.14), #1f1e1c 60%);
+}
+
+.doneList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.4rem;
+  margin-top: 1rem;
+
+  li {
+    position: relative;
+    padding-left: 1.3em;
+    font-size: 0.85rem;
+    color: #d7d5d1;
+
+    &::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #a5d16a;
+      font-weight: 800;
+    }
+  }
 }
 
 .happeningStatus {

@@ -20,6 +20,8 @@ interface BoardProps {
   hint?: string[];
   /** Small move-dots on empty squares (a legal-move ladder). */
   dots?: string[];
+  /** Squares of a move that was played and shouldn't have been — faint red. */
+  wrong?: string[];
   /** King-in-check square, painted red (breathing if `mated`). */
   danger?: string | null;
   mated?: boolean;
@@ -43,6 +45,7 @@ export function Board({
   highlight = [],
   hint = [],
   dots = [],
+  wrong = [],
   danger = null,
   mated = false,
   lastMove = null,
@@ -55,6 +58,7 @@ export function Board({
   const hi = new Set(highlight);
   const hn = new Set(hint);
   const dt = new Set(dots);
+  const wr = new Set(wrong);
 
   return (
     <div
@@ -83,9 +87,11 @@ export function Board({
                 data-pulse={isMatedKing || undefined}
               />
             )}
+            {wr.has(cell.square) && <span className={styles.wrong} />}
             {hi.has(cell.square) && <span className={styles.hl} />}
             {hn.has(cell.square) && <span className={styles.hint} />}
             {dt.has(cell.square) && !cell.piece && <span className={styles.dot} aria-hidden />}
+            {dt.has(cell.square) && cell.piece && <span className={styles.dotCapture} aria-hidden />}
 
             {cell.piece && (
               <motion.span

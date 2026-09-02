@@ -48,6 +48,23 @@
   pointer-events: none;
 }
 
+// legal target that holds an enemy piece — ring the square instead of a dot
+.dotCapture {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+}
+
+// a move that was played in the game and shouldn't have been
+.wrong {
+  position: absolute;
+  inset: 0;
+  background: rgba(225, 83, 83, 0.32);
+  box-shadow: inset 0 0 0 2px rgba(225, 83, 83, 0.55);
+}
+
 .danger {
   position: absolute;
   inset: 0;

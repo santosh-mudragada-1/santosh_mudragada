@@ -97,3 +97,74 @@ export function moveOffset(from: string, to: string, orientation: PieceColor) {
   const t = squareColRow(to, orientation);
   return { x: (f.col - t.col) * 100, y: (f.row - t.row) * 100 };
 }
+
+/**
+ * Pseudo-legal destination squares for the piece on `square` — rook, bishop,
+ * queen, knight and king only, no pawns / castling / check / pin logic.
+ * Enough to light up the move-dots on the scripted "Try it" boards.
+ */
+export function legalTargets(fen: string, square: string): string[] {
+  const grid = boardFromFen(fen);
+  const pieceAt = (f: number, r: number) =>
+    f < 0 || f > 7 || r < 0 || r > 7 ? undefined : grid[7 - r][f].piece;
+
+  const f0 = square.charCodeAt(0) - 97;
+  const r0 = Number(square[1]) - 1;
+  const piece = pieceAt(f0, r0);
+  if (!piece) return [];
+
+  const white = piece === piece.toUpperCase();
+  const type = piece.toLowerCase();
+  const enemy = (p: string | null | undefined) =>
+    p != null && (white ? p === p.toLowerCase() : p === p.toUpperCase());
+
+  const out: string[] = [];
+  const push = (f: number, r: number) => out.push(`${FILES[f]}${r + 1}`);
+
+  const ray = (df: number, dr: number) => {
+    for (let f = f0 + df, r = r0 + dr; f >= 0 && f <= 7 && r >= 0 && r <= 7; f += df, r += dr) {
+      const p = grid[7 - r][f].piece;
+      if (p == null) push(f, r);
+      else {
+        if (enemy(p)) push(f, r);
+        break;
+      }
+    }
+  };
+  const hop = (df: number, dr: number) => {
+    const f = f0 + df;
+    const r = r0 + dr;
+    const p = pieceAt(f, r);
+    if (p === null || enemy(p)) push(f, r);
+  };
+
+  const ORTHO = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ];
+  const DIAG = [
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+    [-1, -1],
+  ];
+  const KNIGHT = [
+    [1, 2],
+    [2, 1],
+    [2, -1],
+    [1, -2],
+    [-1, -2],
+    [-2, -1],
+    [-2, 1],
+    [-1, 2],
+  ];
+
+  if (type === 'r' || type === 'q') ORTHO.forEach(([df, dr]) => ray(df, dr));
+  if (type === 'b' || type === 'q') DIAG.forEach(([df, dr]) => ray(df, dr));
+  if (type === 'n') KNIGHT.forEach(([df, dr]) => hop(df, dr));
+  if (type === 'k') [...ORTHO, ...DIAG].forEach(([df, dr]) => hop(df, dr));
+
+  return out;
+}
