@@ -5,8 +5,8 @@
 // coach swap to that beat's state.
 .scrolly {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2rem, 6vw, 5.5rem);
+  grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 5rem);
   // NB: no `align-items: start` — the stage cell must stretch to the beats
   // column height so the sticky frame inside it has room to travel.
 }
@@ -18,7 +18,8 @@
 
 .frame {
   position: sticky;
-  top: calc(var(--header-h) + 2rem);
+  top: calc(var(--header-h) + 1.25rem);
+  max-width: 33rem;
   background: #262522;
   border: 1px solid #3d3a37;
   border-radius: 16px;
@@ -129,20 +130,14 @@
 .beats {
   display: flex;
   flex-direction: column;
+  // lead-in so beat 1 is active on entry and holds; trail-out so beat 6
+  // holds before the sticky frame releases. Every beat gets the same pitch.
+  padding-block: 22vh 30vh;
 
   li {
-    min-height: 44vh;
+    min-height: 42vh;
     display: flex;
     align-items: center;
-
-    &:first-child {
-      min-height: 32vh;
-      align-items: flex-end;
-    }
-    &:last-child {
-      min-height: 40vh;
-      align-items: flex-start;
-    }
   }
 }
 
@@ -220,10 +215,11 @@
     margin-inline: auto;
   }
 
-  .beats li,
-  .beats li:first-child,
-  .beats li:last-child {
-    min-height: 58vh;
+  .beats {
+    padding-block: 18vh 24vh;
+  }
+  .beats li {
+    min-height: 52vh;
   }
 }
 
@@ -237,10 +233,8 @@
     max-width: none;
   }
 
-  .beats li,
-  .beats li:first-child,
-  .beats li:last-child {
-    min-height: 64vh;
+  .beats li {
+    min-height: 58vh;
   }
 }
 
