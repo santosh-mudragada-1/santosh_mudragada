@@ -37,7 +37,7 @@ const MATE_FEN = '3R2k1/5ppp/8/8/8/8/5PPP/6K1';
 
 const UPGRADE_FLOW = [
   'Hit the wall at puzzle 3',
-  'Upgrade in place — no reload',
+  'Upgrade in place, no reload',
   'Short celebration',
   'Resume at puzzle 4',
 ];
@@ -194,7 +194,7 @@ function BuiltPieces() {
         </div>
         <figcaption className={styles.tileCap}>
           <h4>Home hero card</h4>
-          <p>Reads the same progress state the solver writes to — it can never drift.</p>
+          <p>Reads the same progress state the solver writes to, so it can never drift.</p>
         </figcaption>
       </figure>
 
@@ -243,7 +243,7 @@ function BuiltPieces() {
         <figcaption className={styles.tileCap}>
           <h4>Evaluation bar</h4>
           <p>
-            The red band carries the size of the drop — or the mate thrown away. No subtraction
+            The red band carries the size of the drop, or the mate thrown away. No subtraction
             required.
           </p>
         </figcaption>
@@ -272,7 +272,7 @@ function BuiltPieces() {
         </div>
         <figcaption className={styles.tileCap}>
           <h4>Classification badges</h4>
-          <p>Official art, one colour each — the taxonomy the queue is built on.</p>
+          <p>Official art, one colour each: the taxonomy the queue is built on.</p>
         </figcaption>
       </figure>
 
@@ -282,7 +282,7 @@ function BuiltPieces() {
           <CoachBubble
             classification="missed"
             caret
-            text="♜xd8# — checkmate on the weak back rank. Spot a forced mate in one and start it with the right move."
+            text="♜xd8#. Checkmate on the weak back rank. Spot a forced mate in one and start it with the right move."
           />
         </div>
         <figcaption className={styles.tileCap}>
@@ -341,7 +341,7 @@ function BuiltPieces() {
           </div>
         </div>
         <figcaption className={styles.tileCap}>
-          <h4>Completion — free vs premium</h4>
+          <h4>Completion: free vs premium</h4>
           <p>The set is never trimmed. Free members see all 12 and exactly where the wall sits.</p>
         </figcaption>
       </figure>
@@ -384,7 +384,7 @@ const DECISIONS = [
     label: 'What counts as a puzzle',
     claim: 'The engine’s best move is not a puzzle.',
     coach:
-      'Not every engine disagreement is teachable. Three gates now stand between a raw disagreement and a puzzle — findable, singular, worth it — so eight solid puzzles beat fifteen with five duds.',
+      'Not every engine disagreement is teachable. Three gates now stand between a raw disagreement and a puzzle: findable, singular, worth it. Eight solid puzzles beat fifteen with five duds.',
   },
   {
     n: '02',
@@ -394,7 +394,7 @@ const DECISIONS = [
     label: 'One mistake, one lesson',
     claim: 'One mistake is one lesson, however many disasters followed it.',
     coach:
-      'One error, repeated in a game, used to become four near-identical puzzles. Near-duplicates now collapse into the single clearest instance — one mistake teaches one lesson.',
+      'One error, repeated in a game, used to become four near-identical puzzles. Near-duplicates now collapse into the single clearest instance, so one mistake teaches one lesson.',
   },
   {
     n: '03',
@@ -404,7 +404,7 @@ const DECISIONS = [
     label: 'What rating decides',
     claim: 'Rating sets how deep we look, never how hard the puzzle is.',
     coach:
-      'Rating sets depth of search, never puzzle difficulty. A mate in three stays a mate in three for an 1100 — the whole idea, not a truncated half of it.',
+      'Rating sets depth of search, never puzzle difficulty. A mate in three stays a mate in three for an 1100: the whole idea, not a truncated half of it.',
   },
   {
     n: '04',
@@ -414,7 +414,7 @@ const DECISIONS = [
     label: 'The bar does the talking',
     claim: 'The bar explains the loss, so the copy doesn’t have to.',
     coach:
-      'The eval bar carries the cost of a move on its own — anchored at what was available, draining to what was left. No two numbers to subtract in your head.',
+      'The eval bar carries the cost of a move on its own, anchored at what was available, draining to what was left. No two numbers to subtract in your head.',
   },
   {
     n: '05',
@@ -424,7 +424,7 @@ const DECISIONS = [
     label: 'The whole set, wall included',
     claim: 'Show free members the whole set, including what they can’t reach.',
     coach:
-      'Free members see the whole set, all twelve, with the wall shown exactly where it falls. Upgrading resumes at the next puzzle — the locked ones are the pitch.',
+      'Free members see the whole set, all twelve, with the wall shown exactly where it falls. Upgrading resumes at the next puzzle, and the locked ones are the pitch.',
   },
 ] as const;
 
@@ -670,8 +670,8 @@ export function ChessCom() {
           than fixed at one number of games.
         </p>
         <p className={`${styles.fairNote} ${styles.rise}`}>
-          An exploration rule, not a validated formula &mdash; the bands below are a starting
-          point to test, not a measured result.
+          An exploration rule, not a validated formula. The bands below are a starting point to
+          test, not a measured result.
         </p>
 
         <div className={`${styles.netGrid} ${styles.rise}`}>
@@ -688,8 +688,8 @@ export function ChessCom() {
         </div>
 
         <p className={`${styles.micro} ${styles.rise}`}>
-          The set size is still never padded &mdash; the net widens, the quality gates
-          don&rsquo;t move. If the games only held eight fair puzzles, the set is eight.
+          The set size is still never padded. The net widens, the quality gates don&rsquo;t move.
+          If the games only held eight fair puzzles, the set is eight.
         </p>
       </section>
 
@@ -704,8 +704,8 @@ export function ChessCom() {
           </h2>
         </div>
         <p className={`${styles.lede} ${styles.rise}`}>
-          Two answers were arguable. Rather than argue in the abstract, both were built &mdash; so
-          they can be tested on real players rather than decided in a room.
+          Two answers were arguable. Rather than argue in the abstract, both were built, so they
+          can be tested on real players rather than decided in a room.
         </p>
 
         <div className={styles.versions}>
@@ -738,9 +738,9 @@ export function ChessCom() {
                 that&rsquo;s always there.
               </p>
               <ul className={styles.pros}>
-                <li>Zero navigation &mdash; open the page, puzzles are waiting</li>
+                <li>Zero navigation: open the page, puzzles are waiting</li>
                 <li>Best-of selection from a wide pool</li>
-                <li data-con>No sense of time or rhythm &mdash; it&rsquo;s a bucket, not a record</li>
+                <li data-con>No sense of time or rhythm; it&rsquo;s a bucket, not a record</li>
                 <li data-con>Once solved, there&rsquo;s nothing to come back to</li>
               </ul>
             </div>
@@ -800,16 +800,16 @@ export function ChessCom() {
             <div className={styles.versionBody}>
               <h3>Puzzles from the day you played</h3>
               <p>
-                Grouped by date, with a stepper and a month calendar. No target, no padding
-                &mdash; a day is as long as that day&rsquo;s chess deserved.
+                Grouped by date, with a stepper and a month calendar. No target, no padding. A
+                day is as long as that day&rsquo;s chess deserved.
               </p>
               <ul className={styles.pros}>
                 <li>
-                  The calendar <em>is</em> the progress record &mdash; streaks and gaps become
+                  The calendar <em>is</em> the progress record, so streaks and gaps become
                   visible
                 </li>
                 <li>An uncleared day sits there, visibly uncleared</li>
-                <li data-con>Play nothing, get nothing &mdash; empty days are real</li>
+                <li data-con>Play nothing, get nothing: empty days are real</li>
                 <li data-con>A navigation decision before you can solve anything</li>
               </ul>
             </div>
@@ -822,9 +822,9 @@ export function ChessCom() {
           </span>
           <p>
             Both are live in the prototype behind a switch, so the same account can be run on
-            either. <b>V1 optimises the session</b> &mdash; always full, no decisions.{' '}
-            <b>V2 optimises the return</b> &mdash; an uncleared day pulls you back. Which one wins
-            is a research question, not a taste one.
+            either. <b>V1 optimises the session</b>: always full, no decisions.{' '}
+            <b>V2 optimises the return</b>: an uncleared day pulls you back. Which one wins is a
+            research question, not a taste one.
           </p>
         </div>
       </section>
@@ -892,8 +892,8 @@ export function ChessCom() {
             <p className={styles.planHint}>Locked puzzles stay visible, greyed.</p>
             <p className={styles.planNote}>
               A queue that looks three long has nothing to sell.{' '}
-              <b>The puzzles you can see but can&rsquo;t reach are the argument</b> &mdash; stated
-              as a fact, not a sales line.
+              <b>The puzzles you can see but can&rsquo;t reach are the argument</b>, stated as a
+              fact, not a sales line.
             </p>
           </div>
 
@@ -923,7 +923,7 @@ export function ChessCom() {
             <p className={styles.planHint}>Retry 3 · Next theme · Solve again.</p>
             <p className={styles.planNote}>
               The end card is about improvement, not celebration. Actions are ordered by
-              usefulness and the default focus moves down the list as options disappear &mdash;{' '}
+              usefulness and the default focus moves down the list as options disappear, so{' '}
               <b>the most useful remaining action is always under your finger</b>.
             </p>
           </div>
@@ -937,11 +937,6 @@ export function ChessCom() {
             </li>
           ))}
         </ol>
-
-        <p className={`${styles.micro} ${styles.rise}`}>
-          The most common way to ruin an upgrade moment is to make someone find their place
-          again.
-        </p>
       </section>
 
       {/* ====================================================== MEASURE */}

@@ -237,7 +237,7 @@ export function JourneyScroll() {
           >
             <div className={styles.beatCard}>
               <p className={styles.beatKick}>
-                {String(i + 1).padStart(2, '0')} — {beat.tag}
+                {String(i + 1).padStart(2, '0')} · {beat.tag}
               </p>
               <h3 className={styles.beatTitle}>{beat.title}</h3>
               <p className={styles.beatBody}>{beat.body}</p>

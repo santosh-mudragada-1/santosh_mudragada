@@ -131,7 +131,7 @@ export function TryIt() {
   const [shakeSig, setShakeSig] = useState(0);
   const [popDot, setPopDot] = useState<number | null>(null);
   const [finishOpen, setFinishOpen] = useState(false);
-  const [annot, setAnnot] = useState({ state: 'Puzzle 1 — start', why: START_WHY });
+  const [annot, setAnnot] = useState({ state: 'Puzzle 1: start', why: START_WHY });
   const [log, setLog] = useState<LogRow[]>([
     { tag: 'Ready', text: 'White to play. Click the rook on d1.' },
   ]);
@@ -154,7 +154,7 @@ export function TryIt() {
       setPopDot(null);
       const pz = PUZZLES[i];
       if (!quiet) {
-        setAnnot({ state: `Puzzle ${i + 1} — start`, why: START_WHY });
+        setAnnot({ state: `Puzzle ${i + 1}: start`, why: START_WHY });
         pushLog(
           'Loaded',
           `${pz.theme}: click the ${pz.piece === 'e5' ? 'knight' : 'rook'} on ${pz.piece}.`,
@@ -264,7 +264,7 @@ export function TryIt() {
     setPhase('hinted');
     setHintedThis(true);
     setAnnot({
-      state: 'Hint — step 1 of 3',
+      state: 'Hint: step 1 of 3',
       why: 'Ring the piece, then draw the arrow, then play it out. Each step costs more; only the last one records a failure.',
     });
     pushLog('Hint', 'Piece ringed. Clean solve forfeited.');

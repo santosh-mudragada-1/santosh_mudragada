@@ -1257,7 +1257,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
 .calDone {
   background: $v-green;
-  color: $v-green-ink;
+  color: #fff;
   font-weight: 700;
   animation: day-land 6s $v-quint infinite;
   animation-delay: var(--i, 0s);
@@ -1475,7 +1475,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   &[data-state='done'] {
     background: #81b64c;
     border-color: #81b64c;
-    color: #10240a;
+    color: #fff;
   }
   &[data-state='current'] {
     color: var(--fg);
@@ -1539,16 +1539,18 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 // picks the active call. Rail items also jump on click.
 .drTrack {
   position: relative;
-  height: 420vh;
+  height: 460vh;
   margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
 }
 
 .drReview {
   position: sticky;
-  top: max(calc(var(--header-h) + 1.5rem), calc(50vh - 17rem));
+  top: max(calc(var(--header-h) + 1.5rem), calc(50vh - 16rem));
   display: grid;
-  grid-template-columns: minmax(0, 19rem) minmax(0, 34rem);
+  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
   align-items: stretch;
+  max-width: 76rem;
+  min-height: clamp(25rem, 42vh, 31rem);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -1558,19 +1560,20 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 .drRail {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px;
+  justify-content: center;
+  gap: 7px;
+  padding: 16px;
   border-right: 1px solid var(--line);
 }
 
 .drItem {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 13px;
   width: 100%;
-  padding: 13px 14px;
+  padding: 15px 16px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
   font: inherit;
   text-align: left;
@@ -1585,21 +1588,21 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     font-family: var(--font-heading);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--fg-muted);
     transition: color 0.25s var(--ease-quart-in-out);
   }
   img {
     flex: none;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     opacity: 0.55;
     transition: opacity 0.25s var(--ease-quart-in-out);
   }
   span {
     flex: 1;
     min-width: 0;
-    font-size: 0.84rem;
+    font-size: 0.875rem;
     line-height: 1.3;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1636,12 +1639,12 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   min-width: 0;
   display: flex;
   align-items: center;
-  padding: clamp(1.75rem, 4vw, 3rem);
+  padding: clamp(2rem, 4.5vw, 3.5rem);
 }
 
 .drPanelInner {
   width: 100%;
-  max-width: 32rem;
+  max-width: 37rem; // ~3/4 of the panel column at full width
   animation: dr-in 0.45s var(--ease-quart-in-out) both;
 }
 
@@ -1678,9 +1681,9 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .drClaim {
-  margin: 0 0 clamp(1.5rem, 3.5vw, 2rem);
+  margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
   font-family: var(--font-heading);
-  font-size: clamp(1.35rem, 1rem + 1.5vw, 1.95rem);
+  font-size: clamp(1.5rem, 1rem + 1.9vw, 2.2rem);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.03em;
@@ -1688,7 +1691,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .drSay {
-  min-height: 8rem;
+  min-height: 10rem;
 }
 
 // ----------------------------------------------------- metrics
@@ -1836,9 +1839,12 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .drReview {
     position: static;
     grid-template-columns: minmax(0, 1fr);
+    max-width: none;
+    min-height: 0;
   }
   .drRail {
     flex-direction: row;
+    justify-content: flex-start;
     overflow-x: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
