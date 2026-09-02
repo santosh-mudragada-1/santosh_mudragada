@@ -30,7 +30,7 @@
   flex: 0 0 clamp(104px, 10.5vw, 170px);
   min-width: 0;
   overflow: hidden;
-  // dissolve both ends so screens fade into the dark rather than hard-cut
+  // dissolve both ends so the columns fade into the page rather than hard-cut
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
@@ -57,7 +57,7 @@
     display: block;
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 26px 46px rgba(0, 0, 0, 0.55));
+    filter: drop-shadow(0 20px 40px rgba(20, 17, 13, 0.16));
   }
 
   &[data-dir='up'] {

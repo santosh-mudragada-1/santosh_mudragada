@@ -97,17 +97,6 @@
   color-scheme: dark;
 }
 
-// A full-bleed dark hero at the very top of a page (e.g. the Nextrail case
-// study) toggles this on <html> while it still covers the fixed nav, so the
-// wordmark + primary links read as light. The page's own root re-asserts its
-// token values, so this never leaks into light content further down.
-html[data-nav-invert] {
-  --fg: var(--paper);
-  --fg-muted: var(--smoke-300);
-  --line: rgba(244, 240, 233, 0.2);
-  --line-strong: rgba(244, 240, 233, 0.36);
-}
-
 // ===========================================================================
 // Base
 // ===========================================================================

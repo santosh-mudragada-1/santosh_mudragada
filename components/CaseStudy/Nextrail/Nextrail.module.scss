@@ -16,16 +16,6 @@
   --nx-violet-600: #573bd6;
   --nx-violet-300: #b4a6f8;
 
-  // Re-assert the light system for the article body. The fixed nav flips to a
-  // light treatment while the dark hero is on screen (html[data-nav-invert] in
-  // globals) — keep that from cascading into the cream sections below.
-  --bg: var(--paper);
-  --bg-elev: var(--paper-2);
-  --fg: var(--ink);
-  --fg-muted: var(--smoke-500);
-  --line: rgba(20, 17, 13, 0.14);
-  --line-strong: rgba(20, 17, 13, 0.28);
-
   background: var(--bg);
   color: var(--fg);
   overflow: clip;
@@ -108,9 +98,8 @@
 }
 
 // ---------------------------------------------------------------- HERO
-// A full-bleed dark intro (data-theme="dark" flips the tokens). Three tilted
-// marquees of screens bleed off the top-right; the fixed nav borrows its light
-// treatment while this section holds the top of the viewport.
+// Portfolio cream shell. Three tilted marquees of Nextrail screens bleed off
+// the top-right; the copy column sits on the left.
 .hero {
   position: relative;
   min-height: 100svh;
@@ -118,43 +107,13 @@
   flex-direction: column;
   justify-content: center;
   padding: clamp(7rem, 16vh, 11rem) var(--edge) clamp(3.5rem, 8vh, 6rem);
-  background: var(--bg); // carbon, via data-theme="dark"
-  color: var(--fg);
   overflow: clip;
   isolation: isolate;
 }
 
-// soft, near-black organic glows behind the marquee
-.heroGlow {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(38% 34% at 16% 78%, #17171d 0%, transparent 70%),
-    radial-gradient(46% 40% at 82% 26%, #1a1620 0%, transparent 72%),
-    radial-gradient(30% 26% at 62% 88%, #141418 0%, transparent 70%);
-}
-
-// darkens the strip the fixed nav sits in so the (light) wordmark + links read
-// over the screens behind them
-.heroTopFade {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: clamp(130px, 20vh, 220px);
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    var(--carbon) 4%,
-    color-mix(in oklab, var(--carbon) 58%, transparent) 46%,
-    transparent 100%
-  );
-}
-
 .heroInner {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   width: 100%;
   max-width: 44rem; // left column — the marquee rig sits on the right
 }
@@ -175,7 +134,7 @@
     font-weight: 500;
     color: var(--fg-muted);
     white-space: nowrap;
-    background: color-mix(in oklab, var(--bg) 55%, transparent);
+    background: color-mix(in oklab, var(--bg) 70%, transparent);
     backdrop-filter: blur(6px);
   }
 

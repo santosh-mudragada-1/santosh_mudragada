@@ -38,8 +38,8 @@ export function CoachBubble({ text, evalText, classification, className }: Coach
               className={styles.badge}
               src={`/case-study/move-types/${classification}.png`}
               alt=""
-              width={20}
-              height={20}
+              width={24}
+              height={24}
             />
           )}
           <p className={styles.text}>{text}</p>

@@ -361,26 +361,6 @@ export function TryIt() {
 
               {solved && !reduced && <Confetti run count={finishOpen ? 70 : 40} />}
 
-              {invite.length > 0 && (
-                <div className={styles.nudge} aria-hidden>
-                  <p className={styles.nudgeText}>
-                    go on, try one
-                    <br />
-                    it takes 10 seconds
-                  </p>
-                  <svg className={styles.nudgeArrow} viewBox="0 0 120 120" fill="none">
-                    <path
-                      d="M14 112C-2 92 6 62 30 56c18-5 33 9 30 24-2 12-16 18-25 11-14-11-7-36 8-47 16-12 38-14 56-9"
-                      stroke="currentColor"
-                      strokeWidth="4.5"
-                      strokeLinecap="round"
-                      fill="none"
-                    />
-                    <polygon points="94,25 116,34 93,46" fill="currentColor" />
-                  </svg>
-                </div>
-              )}
-
               <AnimatePresence>
                 {finishOpen && (
                   <motion.div

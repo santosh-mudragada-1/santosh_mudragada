@@ -84,7 +84,6 @@ const LESSONS = [
 
 export function Nextrail() {
   const rootRef = useRef<HTMLElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
   const triadRef = useRef<HTMLUListElement>(null);
   const [cold, setCold] = useState(false);
@@ -116,27 +115,6 @@ export function Nextrail() {
       if (!root) return;
       const q = gsap.utils.selector(root);
       const kill: Array<() => void> = [];
-
-      // dark hero -> flip the fixed nav to its light treatment while the hero
-      // still covers the nav strip (driven by ScrollTrigger, so Lenis-accurate)
-      const heroEl = heroRef.current;
-      if (heroEl) {
-        const docEl = document.documentElement;
-        const setInvert = (on: boolean) =>
-          docEl.toggleAttribute('data-nav-invert', on);
-        const nav = ScrollTrigger.create({
-          trigger: heroEl,
-          start: 'top top',
-          end: 'bottom top', // keep the light nav until the hero fully clears
-          onToggle: (self) => setInvert(self.isActive),
-          onRefresh: (self) => setInvert(self.isActive),
-        });
-        setInvert(nav.isActive);
-        kill.push(() => {
-          nav.kill();
-          docEl.removeAttribute('data-nav-invert');
-        });
-      }
 
       // hero title line-mask
       const lines = q<HTMLElement>(`.${styles.tl} > span`);
@@ -232,10 +210,8 @@ export function Nextrail() {
   return (
     <article ref={rootRef} className={styles.root}>
       {/* ============================================================ HERO */}
-      <header ref={heroRef} className={styles.hero} data-theme="dark" data-nav-boundary>
-        <div className={styles.heroGlow} aria-hidden />
+      <header className={styles.hero} data-nav-boundary>
         <HeroMarquee />
-        <div className={styles.heroTopFade} aria-hidden />
 
         <div className={styles.heroInner}>
           <ul className={styles.pills}>
