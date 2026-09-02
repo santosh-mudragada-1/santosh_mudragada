@@ -1,16 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
-import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/chess';
 import { HeroBoard } from './HeroBoard';
+import { JourneyScroll } from './JourneyScroll';
 import styles from './ChessCom.module.scss';
-
-// The back-rank position the "journey" section plays out: White to find Rd8#.
-const FEN_BEFORE = '6k1/5ppp/8/8/8/8/5PPP/3R2K1';
-const FEN_AFTER = '3R2k1/5ppp/8/8/8/8/5PPP/6K1';
 
 const TAGS = ['UX', 'Game-based learning', 'Chess.com', 'Prototype'];
 
@@ -25,15 +21,6 @@ const GATES = [
   { name: 'Findable', rule: 'First move is a capture, a check, or mate.', out: 'A quiet move nothing asks you to look at.' },
   { name: 'Singular', rule: 'Beats the second-best move by a clear margin.', out: 'A coin toss you’re told you lost.' },
   { name: 'Worth it', rule: 'Wins something decisive: mate or real material.', out: 'A puzzle whose answer wins a tenth of a pawn.' },
-];
-
-const BEATS: Array<[string, string]> = [
-  ['Play', 'A real game from your archive.'],
-  ['Detect', 'Stockfish flags the move: the blunder handed back the mate and the rook.'],
-  ['Rewind', 'The board returns to the instant before the decision.'],
-  ['Decide', 'Legal dots, a ring for the key capture, a three-step hint ladder.'],
-  ['Feedback', 'The right move. Green sweeps back up the bar.'],
-  ['Return', 'Home card, set counter and queue all update at once.'],
 ];
 
 const DECISIONS = [
@@ -55,28 +42,6 @@ const METRICS = [
 export function ChessCom() {
   const rootRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
-  const journeyRef = useRef<HTMLDivElement>(null);
-  const [solved, setSolved] = useState(false);
-
-  // the journey board plays itself out once it holds in view
-  useEffect(() => {
-    const el = journeyRef.current;
-    if (!el) return;
-    let t = 0;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        io.disconnect();
-        t = window.setTimeout(() => setSolved(true), reduced ? 400 : 1600);
-      },
-      { threshold: 0.55 },
-    );
-    io.observe(el);
-    return () => {
-      io.disconnect();
-      window.clearTimeout(t);
-    };
-  }, [reduced]);
 
   useGSAP(
     () => {

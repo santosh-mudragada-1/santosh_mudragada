@@ -18,6 +18,8 @@ interface BoardProps {
   highlight?: string[];
   /** Teal ring on the piece(s) to find. */
   hint?: string[];
+  /** Small move-dots on empty squares (a legal-move ladder). */
+  dots?: string[];
   /** King-in-check square, painted red (breathing if `mated`). */
   danger?: string | null;
   mated?: boolean;
@@ -36,6 +38,7 @@ export function Board({
   orientation = 'white',
   highlight = [],
   hint = [],
+  dots = [],
   danger = null,
   mated = false,
   lastMove = null,
@@ -45,6 +48,7 @@ export function Board({
   const cells = cellsForOrientation(boardFromFen(fen), orientation);
   const hi = new Set(highlight);
   const hn = new Set(hint);
+  const dt = new Set(dots);
 
   return (
     <div
@@ -73,6 +77,7 @@ export function Board({
             )}
             {hi.has(cell.square) && <span className={styles.hl} />}
             {hn.has(cell.square) && <span className={styles.hint} />}
+            {dt.has(cell.square) && !cell.piece && <span className={styles.dot} aria-hidden />}
 
             {cell.piece && (
               <motion.span

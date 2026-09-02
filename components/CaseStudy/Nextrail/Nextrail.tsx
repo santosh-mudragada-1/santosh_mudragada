@@ -4,17 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
-import { HeroPhones } from './HeroPhones';
+import { HeroMarquee } from './HeroMarquee';
 import { Feed2FlyScroll } from './Feed2FlyScroll';
 import styles from './Nextrail.module.scss';
 
 const U = '/nextrail_casestudy/ui';
 
-const META = [
-  ['Role', 'Product Designer'],
-  ['Team', 'Group project · 7 members'],
-  ['Focus', 'UX/UI · Product thinking · AI experience'],
-];
+const PILLS = ['Group project', '7 members', 'UX/UI design', 'AI experience'];
 
 const INSIGHTS = [
   {
@@ -88,9 +84,11 @@ const LESSONS = [
 
 export function Nextrail() {
   const rootRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
   const triadRef = useRef<HTMLUListElement>(null);
   const [cold, setCold] = useState(false);
+
 
   // the "forget" word cools once the triad has held in view
   useEffect(() => {
@@ -118,6 +116,27 @@ export function Nextrail() {
       if (!root) return;
       const q = gsap.utils.selector(root);
       const kill: Array<() => void> = [];
+
+      // dark hero -> flip the fixed nav to its light treatment while the hero
+      // still covers the nav strip (driven by ScrollTrigger, so Lenis-accurate)
+      const heroEl = heroRef.current;
+      if (heroEl) {
+        const docEl = document.documentElement;
+        const setInvert = (on: boolean) =>
+          docEl.toggleAttribute('data-nav-invert', on);
+        const nav = ScrollTrigger.create({
+          trigger: heroEl,
+          start: 'top top',
+          end: 'bottom top', // keep the light nav until the hero fully clears
+          onToggle: (self) => setInvert(self.isActive),
+          onRefresh: (self) => setInvert(self.isActive),
+        });
+        setInvert(nav.isActive);
+        kill.push(() => {
+          nav.kill();
+          docEl.removeAttribute('data-nav-invert');
+        });
+      }
 
       // hero title line-mask
       const lines = q<HTMLElement>(`.${styles.tl} > span`);
@@ -213,39 +232,44 @@ export function Nextrail() {
   return (
     <article ref={rootRef} className={styles.root}>
       {/* ============================================================ HERO */}
-      <header className={styles.hero}>
-        <HeroPhones />
+      <header ref={heroRef} className={styles.hero} data-theme="dark" data-nav-boundary>
+        <div className={styles.heroGlow} aria-hidden />
+        <HeroMarquee />
+        <div className={styles.heroTopFade} aria-hidden />
 
         <div className={styles.heroInner}>
-          <p className={styles.projectTag}>Nextrail</p>
+          <ul className={styles.pills}>
+            <li data-accent>
+              <i aria-hidden /> {PILLS[0]}
+            </li>
+            {PILLS.slice(1).map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ul>
 
-          <h1 className={styles.heroTitle} aria-label="From travel inspiration to an actual trip.">
+          <h1 className={styles.heroTitle} aria-label="Nextrail">
             <span className={styles.tl}>
-              <span>From travel inspiration</span>
+              <span>Nextrail</span>
             </span>
-            <span className={styles.tl}>
-              <span className={styles.accent}>to an actual trip.</span>
-            </span>
+            <svg className={styles.mark} viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+            </svg>
           </h1>
 
           <p className={styles.heroSay}>
-            Travel inspiration is everywhere — turning it into a trip is still fragmented.
-            Nextrail explores how AI can bridge the gap between discovering a place and
-            planning the journey.
+            A group exploration of how AI can take you{' '}
+            <b>from travel inspiration to an actual trip</b> — starting from the content
+            you already save, not a blank search.
           </p>
 
-          <dl className={styles.meta}>
-            {META.map(([k, v]) => (
-              <div key={k}>
-                <dt>{k}</dt>
-                <dd>{v}</dd>
-              </div>
-            ))}
-          </dl>
-
-          <a href="#feed2fly" className={styles.ctaGhost} data-cursor="link">
-            Meet Feed2Fly <span aria-hidden>↓</span>
-          </a>
+          <p className={styles.roleLine}>
+            <span>My role</span> Product Designer
+          </p>
         </div>
       </header>
 

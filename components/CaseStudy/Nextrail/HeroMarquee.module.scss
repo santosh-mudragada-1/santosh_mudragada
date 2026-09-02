@@ -1,0 +1,128 @@
+@use 'mixins' as *;
+
+.wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: clip;
+}
+
+// The rig fits its columns and is anchored toward the top-right, then rotated
+// so the columns run on a diagonal. `perspective()` inside the same transform
+// gives depth without a `preserve-3d` ancestor (which the clipping wrapper
+// would flatten anyway). A large perspective keeps the near edge from
+// ballooning.
+.rig {
+  position: absolute;
+  top: -8%;
+  left: 46%;
+  width: 60%;
+  height: 150%;
+  display: flex;
+  gap: clamp(0.8rem, 1.6vw, 1.7rem);
+  transform: perspective(2400px) rotateX(6deg) rotateY(-14deg) rotate(-28deg)
+    scale(0.92);
+  transform-origin: 26% 26%;
+}
+
+.col {
+  flex: 0 0 clamp(104px, 10.5vw, 170px);
+  min-width: 0;
+  overflow: hidden;
+  // dissolve both ends so screens fade into the dark rather than hard-cut
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 14%,
+    #000 86%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 14%,
+    #000 86%,
+    transparent 100%
+  );
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 2rem);
+  will-change: transform;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 26px 46px rgba(0, 0, 0, 0.55));
+  }
+
+  &[data-dir='up'] {
+    animation: nxUp 54s linear infinite;
+  }
+  &[data-dir='down'] {
+    animation: nxDown 54s linear infinite;
+  }
+}
+
+@keyframes nxUp {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes nxDown {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+// tablet — two columns, flatter tilt, pushed further off the edge
+@include mq-max('lg') {
+  .rig {
+    left: 54%;
+    width: 92%;
+    transform: perspective(2800px) rotateX(5deg) rotateY(-10deg) rotate(-25deg)
+      scale(0.78);
+    transform-origin: 20% 22%;
+  }
+  .col {
+    flex-basis: clamp(92px, 12vw, 138px);
+  }
+  .col:nth-child(3) {
+    display: none;
+  }
+}
+
+// mobile — one faint column behind the text, off to the right
+@include mq-max('md') {
+  .rig {
+    left: 64%;
+    width: 130%;
+    gap: 0.8rem;
+    opacity: 0.3;
+    transform: rotate(-19deg) scale(0.95);
+  }
+  .col:nth-child(2),
+  .col:nth-child(3) {
+    display: none;
+  }
+  .col {
+    flex-basis: 42vw;
+  }
+}
+
+@include reduced-motion {
+  .track {
+    animation: none;
+  }
+}
