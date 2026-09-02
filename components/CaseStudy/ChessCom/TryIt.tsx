@@ -7,32 +7,12 @@ import { legalTargets } from '@/components/CaseStudy/chess/fen';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './TryIt.module.scss';
 
-/* ------------------------------------------------------------------ icons */
-// Chess.com's tick, taken verbatim from the prototype (puzzle-solver.tsx).
-const Tick = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 16 16" className={className} aria-hidden focusable="false">
-    <path
-      d="M14.13 5.31 6.58 12.86c-.49.49-.85.47-1.34 0L1.85 9.44c-.75-.75-.75-1.06 0-1.82l.06-.06c.76-.76 1.07-.76 1.82 0l2.2 2.2 6.31-6.33c.75-.75 1.07-.75 1.82 0l.07.06c.75.76.75 1.07 0 1.82Z"
-      fill="currentColor"
-    />
-  </svg>
-);
+/* ============================================================ puzzle data
+   Ported verbatim from framercomponent.tsx (#try). Positions rebuilt as FEN;
+   the eval-bar %s are mapped onto <EvalBar>'s centipawn scale. Em dashes
+   swapped out of the copy to match the rest of the case study. */
 
-/* ---------------------------------------------------------------- figurine */
-const GLYPH: Record<string, string> = { R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔' };
-function San({ san }: { san: string }) {
-  const g = GLYPH[san[0]];
-  return (
-    <span className={styles.san}>
-      {g && <span aria-hidden>{g}</span>}
-      <span>{g ? san.slice(1) : san}</span>
-      <span className={styles.sr}>{san}</span>
-    </span>
-  );
-}
-
-/* ------------------------------------------------------------------ data */
-type EvalProps = {
+type EvalCfg = {
   cp: number;
   label: string;
   peakCp?: number;
@@ -44,302 +24,502 @@ type EvalProps = {
 };
 
 interface Puzzle {
-  tag: string;
-  opponent: string;
-  from: string;
-  to: string;
+  theme: string;
+  themeClass: 'blunder' | 'missed';
   fen: string;
   solvedFen: string;
-  danger?: string | null;
-  mated?: boolean;
-  win: string;
-  wrongMove: { from: string; to: string; san: string };
-  pieceHint: string;
-  targetHint: string;
-  wasLabel: string;
-  nowLabel: string;
-  finalLabel: string;
-  evalStart: EvalProps;
-  evalSolved: EvalProps;
-  coachStart: string;
-  coachSolved: string;
+  piece: string;
+  solution: string;
+  mate: string | null;
+  pill: string;
+  endPill: string;
+  evalStart: EvalCfg;
+  evalEnd: EvalCfg;
+  coach: string;
+  solved: string;
+  hint: string;
 }
+
+// fill%/peak% -> centipawns, inverting EvalBar's pct(): 50 + cp/1200 * 44
+const cpFor = (pctVal: number) => Math.round(((pctVal - 50) / 44) * 1200);
 
 const PUZZLES: Puzzle[] = [
   {
-    tag: 'Back-rank mate',
-    opponent: 'M. Kowalski',
-    from: 'd1',
-    to: 'd8',
+    theme: 'Missed Tactic',
+    themeClass: 'blunder',
     fen: '3r2k1/5ppp/8/8/8/8/5PPP/3R2K1',
     solvedFen: '3R2k1/5ppp/8/8/8/8/5PPP/6K1',
-    danger: 'g8',
-    mated: true,
-    win: 'Rxd8#',
-    wrongMove: { from: 'd1', to: 'd3', san: 'Rd3' },
-    pieceHint: 'the rook on d1',
-    targetHint: 'd8',
-    wasLabel: 'M1',
-    nowLabel: '−5.0',
-    finalLabel: '1-0',
-    evalStart: { cp: -500, label: '−5.0', peakCp: 1200, peakMate: 1, peakLabel: 'M1', loop: true },
-    evalSolved: {
-      cp: 1200,
-      label: '1-0',
+    piece: 'd1',
+    solution: 'd8',
+    mate: 'g8',
+    pill: 'M1 → −5.0',
+    endPill: '1-0',
+    evalStart: {
+      cp: cpFor(32),
+      label: '−5.0',
       peakCp: 1200,
       peakMate: 1,
       peakLabel: 'M1',
-      decided: true,
-      isUserMove: true,
+      loop: true,
     },
-    coachStart:
-      'On move 14 you played Rd3 and let a forced mate slip. It is still on the board. Play it.',
-    coachSolved:
-      'Rxd8#. Back-rank mate. Green sweeps the bar back up: you won back exactly what the blunder cost.',
+    evalEnd: { cp: 1200, label: '1-0', decided: true, isUserMove: true },
+    coach: 'On move 14 you played Rd3 and let a forced mate slip. It is still there, so start it.',
+    solved:
+      '♜xd8#. Checkmate on the weak back rank. Spot a forced mate in one and start it with the right move.',
+    hint: 'Start with the rook. Which square ends it?',
   },
   {
-    tag: 'Knight fork',
-    opponent: 'T. Berg',
-    from: 'b5',
-    to: 'c7',
-    fen: 'r3k3/5ppp/8/1N6/8/8/5PPP/6K1',
-    solvedFen: 'r3k3/2N2ppp/8/8/8/8/5PPP/6K1',
-    danger: 'e8',
-    mated: false,
-    win: 'Nc7+',
-    wrongMove: { from: 'b5', to: 'a3', san: 'Na3' },
-    pieceHint: 'the knight on b5',
-    targetHint: 'c7',
-    wasLabel: '+7',
-    nowLabel: '−1.8',
-    finalLabel: '+5.2',
-    evalStart: { cp: -180, label: '−1.8', peakCp: 700, peakLabel: '+7', loop: true },
-    evalSolved: { cp: 520, label: '+5.2', isUserMove: true },
-    coachStart:
-      'You retreated the knight to a3 and walked past the fork. From here it jumps once and the rook is lost.',
-    coachSolved:
-      'Nc7+. The fork. The king moves, then Nxa8 lifts the rook and you are the exchange up.',
+    theme: 'Knight Fork',
+    themeClass: 'missed',
+    fen: 'r2q3k/6pp/8/4N3/8/2Q5/5PPP/6K1',
+    solvedFen: 'r2q3k/5Npp/8/8/8/2Q5/5PPP/6K1',
+    piece: 'e5',
+    solution: 'f7',
+    mate: null,
+    pill: '+5.2 → +0.2',
+    endPill: '+5.2',
+    evalStart: { cp: cpFor(51), label: '+0.2', peakCp: cpFor(69), peakLabel: '5.0', loop: true },
+    evalEnd: { cp: cpFor(69), label: '+5.2', isUserMove: true },
+    coach: 'You traded here and missed a family fork. One knight square wins the queen.',
+    solved:
+      '♞f7+. King and queen on the same fork. When a king is boxed in by its own pawns, look for the square that touches both.',
+    hint: 'The knight, not the rook. Find the square that checks and hits d8.',
   },
   {
-    tag: 'Hanging queen',
-    opponent: 'A. Ruiz',
-    from: 'g2',
-    to: 'b7',
-    fen: '6k1/1q3ppp/8/8/8/8/5PBP/6K1',
-    solvedFen: '6k1/1B3ppp/8/8/8/8/5P1P/6K1',
-    danger: null,
-    mated: false,
-    win: 'Bxb7',
-    wrongMove: { from: 'g2', to: 'f1', san: 'Bf1' },
-    pieceHint: 'the bishop on g2',
-    targetHint: 'b7',
-    wasLabel: '+9',
-    nowLabel: '−2.6',
-    finalLabel: '+9.0',
-    evalStart: { cp: -260, label: '−2.6', peakCp: 1100, peakLabel: '+9', loop: true },
-    evalSolved: { cp: 1000, label: '+9.0', isUserMove: true },
-    coachStart:
-      'You tucked the bishop back to f1 and left the queen alone. On b7 it has no defender.',
-    coachSolved: 'Bxb7. The queen was hanging the whole time. Free piece, game over.',
+    theme: 'Hanging Piece',
+    themeClass: 'blunder',
+    fen: '6k1/5ppp/8/3q4/8/8/5PPP/3R2K1',
+    solvedFen: '6k1/5ppp/8/3R4/8/8/5PPP/6K1',
+    piece: 'd1',
+    solution: 'd5',
+    mate: null,
+    pill: '+5.0 → −4.0',
+    endPill: '+5.0',
+    evalStart: { cp: cpFor(35), label: '−4.0', peakCp: cpFor(68), peakLabel: '9.0', loop: true },
+    evalEnd: { cp: cpFor(68), label: '+5.0', isUserMove: true },
+    coach: 'You pushed a pawn and left the queen alive. It was hanging the whole time.',
+    solved:
+      '♜xd5. The queen was undefended for three moves. Before anything clever, check what is simply hanging.',
+    hint: 'Look down the d-file. Nothing is defending it.',
   },
 ];
 
-type Phase = 'idle' | 'picked' | 'solved';
+const START_WHY =
+  'Every puzzle opens on the position before the mistake, never a blank board. The red band is the advantage the played move handed over.';
+
+const SPARKS = [
+  { left: '16%', top: '22%', width: 16, d: '0s' },
+  { left: '74%', top: '16%', width: 22, d: '0.5s' },
+  { left: '30%', top: '62%', width: 13, d: '1.1s' },
+  { left: '84%', top: '56%', width: 15, d: '1.7s' },
+  { left: '56%', top: '8%', width: 11, d: '2.2s' },
+];
+
+type Phase = 'start' | 'selected' | 'hinted' | 'wrong' | 'solved';
+type LogRow = { tag: string; text: string; bad?: boolean };
 
 export function TryIt() {
   const reduced = usePrefersReducedMotion();
+
   const [idx, setIdx] = useState(0);
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [hinted, setHinted] = useState(0); // 0 none · 1 piece · 2 + target
+  const [phase, setPhase] = useState<Phase>('start');
+  const [solvedAny, setSolvedAny] = useState(false);
+  const [hintedThis, setHintedThis] = useState(false);
+  const [wrongCount, setWrongCount] = useState(0);
   const [cleared, setCleared] = useState<boolean[]>(() => PUZZLES.map(() => false));
-  const [shake, setShake] = useState(0);
-  const [dismissed, setDismissed] = useState(false);
+  const [tally, setTally] = useState({ clean: 0, hinted: 0, failed: 0 });
+  const [shakeSig, setShakeSig] = useState(0);
+  const [popDot, setPopDot] = useState<number | null>(null);
+  const [finishOpen, setFinishOpen] = useState(false);
+  const [annot, setAnnot] = useState({ state: 'Puzzle 1 — start', why: START_WHY });
+  const [log, setLog] = useState<LogRow[]>([
+    { tag: 'Ready', text: 'White to play. Click the rook on d1.' },
+  ]);
 
   const p = PUZZLES[idx];
   const solved = phase === 'solved';
-  const last = idx === PUZZLES.length - 1;
-  const allDone = cleared.every(Boolean);
-  const showDone = allDone && !dismissed;
+  const isLast = idx === PUZZLES.length - 1;
+  const allClean = tally.clean === PUZZLES.length;
 
-  const markSolved = useCallback(() => {
-    setPhase('solved');
-    setCleared((c) => (c[idx] ? c : c.map((v, i) => (i === idx ? true : v))));
-  }, [idx]);
+  const pushLog = useCallback((tag: string, text: string, bad?: boolean) => {
+    setLog((rows) => [{ tag, text, bad }, ...rows].slice(0, 8));
+  }, []);
+
+  const loadPuzzle = useCallback(
+    (i: number, quiet: boolean) => {
+      setIdx(i);
+      setPhase('start');
+      setWrongCount(0);
+      setHintedThis(false);
+      setPopDot(null);
+      const pz = PUZZLES[i];
+      if (!quiet) {
+        setAnnot({ state: `Puzzle ${i + 1} — start`, why: START_WHY });
+        pushLog(
+          'Loaded',
+          `${pz.theme}: click the ${pz.piece === 'e5' ? 'knight' : 'rook'} on ${pz.piece}.`,
+        );
+      }
+    },
+    [pushLog],
+  );
+
+  const select = useCallback(() => {
+    setPhase('selected');
+    setAnnot({
+      state: 'Legal moves',
+      why: 'A dot for a quiet square, a ring for a capture. The same affordance the product uses; nothing here is a case-study invention.',
+    });
+    pushLog('Select', `${legalTargets(p.fen, p.piece).length} legal moves.`);
+  }, [p.fen, p.piece, pushLog]);
+
+  const wrong = useCallback(
+    (sq: string) => {
+      setPhase('wrong');
+      setWrongCount((n) => n + 1);
+      setShakeSig((s) => s + 1);
+      setAnnot({
+        state: 'Wrong move',
+        why: 'A shake, not a penalty. The position is never taken away and the counter never moves backwards; the only cost is your clean solve.',
+      });
+      pushLog('Wrong', `${sq}: position held, nothing lost.`, true);
+    },
+    [pushLog],
+  );
+
+  const finish = useCallback(() => {
+    setFinishOpen(true);
+    setAnnot({
+      state: 'Set complete',
+      why: 'Three outcomes reported, never just a score. On a real set the actions here are ordered by usefulness: clean up what went badly, then the next theme, then replay.',
+    });
+    setTally((t) => {
+      pushLog('Complete', `${t.clean} clean · ${t.hinted} hinted · ${t.failed} failed.`);
+      return t;
+    });
+  }, [pushLog]);
+
+  const solve = useCallback(
+    (reveal: boolean) => {
+      setPhase('solved');
+
+      const wasClean = !reveal && wrongCount === 0 && !hintedThis;
+      setTally((t) => ({
+        clean: t.clean + (wasClean ? 1 : 0),
+        hinted: t.hinted + (!reveal && !wasClean ? 1 : 0),
+        failed: t.failed + (reveal ? 1 : 0),
+      }));
+      setCleared((c) => (c[idx] ? c : c.map((v, i) => (i === idx ? true : v))));
+      setSolvedAny(true);
+
+      if (reveal) {
+        setAnnot({
+          state: 'Shown, not solved',
+          why: 'Revealing records the puzzle as failed, the honest outcome. It stays in the queue, and a later clean solve upgrades it.',
+        });
+        pushLog('Reveal', 'Recorded as failed. Stays in the queue.', true);
+      } else if (wasClean) {
+        setAnnot({
+          state: 'Solved clean',
+          why: 'The green band sweeps up exactly the ground the blunder gave away, then dissolves into the fill. Clean is the only number the product treats as real.',
+        });
+        pushLog('Solved', 'Clean, no hint, no wrong move.');
+      } else {
+        setAnnot({
+          state: 'Solved, not clean',
+          why: 'Counted as solved with help. Attempts only ever improve your standing, so replaying this clean later upgrades it.',
+        });
+        pushLog('Solved', 'With help, a replay can upgrade it.');
+      }
+
+      if (idx + 1 < PUZZLES.length) {
+        window.setTimeout(() => setPopDot(idx), reduced ? 0 : 200);
+      } else {
+        window.setTimeout(() => finish(), reduced ? 100 : 950);
+      }
+    },
+    [reduced, wrongCount, hintedThis, idx, pushLog, finish],
+  );
 
   const onSquare = useCallback(
     (sq: string) => {
       if (phase === 'solved') return;
-      if (phase === 'idle') {
-        if (sq === p.from) setPhase('picked');
-        else setShake((s) => s + 1);
+      if (phase !== 'selected' && phase !== 'wrong') {
+        if (sq === p.piece) select();
         return;
       }
-      if (sq === p.to) markSolved();
-      else if (sq === p.from) setPhase('idle');
-      else setShake((s) => s + 1);
+      if (sq === p.piece) {
+        setPhase('start');
+        return;
+      }
+      if (!legalTargets(p.fen, p.piece).includes(sq)) return;
+      if (sq === p.solution) solve(false);
+      else wrong(sq);
     },
-    [phase, p.from, p.to, markSolved],
+    [phase, p.piece, p.fen, p.solution, select, solve, wrong],
   );
 
-  const next = () => {
-    setIdx((i) => i + 1);
-    setPhase('idle');
-    setHinted(0);
+  const doHint = () => {
+    if (solved) return;
+    setPhase('hinted');
+    setHintedThis(true);
+    setAnnot({
+      state: 'Hint — step 1 of 3',
+      why: 'Ring the piece, then draw the arrow, then play it out. Each step costs more; only the last one records a failure.',
+    });
+    pushLog('Hint', 'Piece ringed. Clean solve forfeited.');
   };
-  const restart = () => {
-    setIdx(0);
-    setPhase('idle');
-    setHinted(0);
+  const doShow = () => {
+    if (!solved) solve(true);
+  };
+  const doNext = () => {
+    if (idx + 1 < PUZZLES.length) loadPuzzle(idx + 1, false);
+  };
+  const doReset = () => {
+    setFinishOpen(false);
+    setTally({ clean: 0, hinted: 0, failed: 0 });
     setCleared(PUZZLES.map(() => false));
-    setDismissed(false);
+    setSolvedAny(false);
+    loadPuzzle(0, false);
+    pushLog('Restart', 'Set reset. Three puzzles again.');
   };
 
-  const evalProps = solved ? p.evalSolved : p.evalStart;
+  // derived board marks
+  const selecting = phase === 'selected' || phase === 'wrong';
+  const highlight = solved ? [p.piece, p.solution] : selecting ? [p.piece] : [];
+  const dots = selecting ? legalTargets(p.fen, p.piece) : [];
+  const hintRing = phase === 'hinted' ? [p.piece] : [];
+  const invite = phase === 'start' && !solvedAny ? [p.piece] : [];
 
-  const whTitle = allDone
-    ? 'Set complete'
-    : solved
-      ? 'Solved'
-      : phase === 'picked'
-        ? 'Your move'
-        : `Puzzle ${idx + 1} of ${PUZZLES.length}`;
-  const whBody = allDone
-    ? 'Three tactics from one player’s week, all solved: a back-rank mate, a knight fork and a hanging queen.'
-    : solved
-      ? 'The move lands and the eval bar sweeps back to where it should have been. Green sweep, no popup.'
-      : phase === 'picked'
-        ? 'Every legal square is marked. The real feature only accepts the tactic, not any legal move.'
-        : 'It opens on the position from your game, one move before the mistake. The red squares are the move you actually played.';
+  const evalCfg = solved ? p.evalEnd : p.evalStart;
+  const muteBadge = !solved && (hintedThis || phase === 'wrong');
+  const badge: 'best' | 'blunder' | 'missed' | undefined = solved
+    ? 'best'
+    : muteBadge
+      ? undefined
+      : p.themeClass;
+  const pill = solved ? p.endPill : muteBadge ? undefined : p.pill;
+  const coachText = solved
+    ? p.solved
+    : phase === 'wrong'
+      ? "Not quite, that isn't the move. Take another look."
+      : hintedThis
+        ? p.hint
+        : p.coach;
+
+  const accuracy = Math.round((tally.clean / PUZZLES.length) * 100);
 
   return (
-    <div className={styles.wrap}>
-      {/* --------------------------------------------------- left: board card */}
-      <div className={styles.device}>
-        <div className={styles.deviceHead}>
-          <span className={styles.deviceTag}>
-            <i aria-hidden>??</i> {p.tag}
+    <div className={styles.proto}>
+      {/* ===================================================== left: stage */}
+      <div className={styles.stage}>
+        <div className={styles.hud}>
+          <span className={styles.badgeTag} data-tone={p.themeClass}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/case-study/move-types/${p.themeClass}.png`} alt="" width={20} height={20} />
+            {p.theme}
           </span>
-          <span className={styles.devicePuzzle}>
-            Puzzle <b>{idx + 1} / {PUZZLES.length}</b>
+          <span className={styles.counter}>
+            Puzzle{' '}
+            <span>
+              {idx + 1} / {PUZZLES.length}
+            </span>
           </span>
-          <span className={styles.dots} aria-hidden>
+          <span className={styles.streak} aria-label="Set progress">
             {PUZZLES.map((pz, i) => (
-              <span key={pz.tag} data-on={cleared[i] || undefined} />
+              <i
+                key={pz.theme}
+                data-on={cleared[i] || undefined}
+                data-pop={popDot === i || undefined}
+              />
             ))}
           </span>
         </div>
 
-        <BoardShake signal={shake} reduced={reduced}>
-          <div className={styles.boardRow}>
-            <div className={styles.boardBox}>
+        <div className={styles.top}>
+          <BoardShake signal={shakeSig} reduced={reduced}>
+            <div className={styles.boardWrap}>
               <Board
                 fen={solved ? p.solvedFen : p.fen}
                 orientation="white"
                 onSquareClick={onSquare}
                 ariaLabel={
                   solved
-                    ? `${p.win} played.`
-                    : phase === 'picked'
-                      ? `Now the square. Click ${p.targetHint}.`
-                      : `White to play. Click ${p.pieceHint}.`
+                    ? `${p.endPill}.`
+                    : selecting
+                      ? 'Pick the square that solves it.'
+                      : `White to play. Click the piece on ${p.piece}.`
                 }
-                wrong={phase === 'idle' ? [p.wrongMove.from, p.wrongMove.to] : []}
-                hint={
-                  solved
-                    ? []
-                    : [
-                        ...(phase === 'picked' || hinted >= 1 ? [p.from] : []),
-                        ...(hinted >= 2 ? [p.to] : []),
-                      ]
-                }
-                dots={phase === 'picked' ? legalTargets(p.fen, p.from) : []}
-                highlight={solved ? [p.from, p.to] : []}
-                lastMove={solved ? { from: p.from, to: p.to } : null}
-                danger={solved ? p.danger ?? null : null}
-                mated={solved ? p.mated ?? false : false}
+                highlight={highlight}
+                dots={dots}
+                hint={hintRing}
+                invite={invite}
+                danger={solved ? p.mate : null}
+                mated={solved && !!p.mate}
+                lastMove={solved ? { from: p.piece, to: p.solution } : null}
                 showCoordinates={false}
               />
-              {solved && !reduced && <Confetti run count={allDone ? 64 : 38} />}
+
+              {solved && !reduced && <Confetti run count={finishOpen ? 70 : 40} />}
+
+              {invite.length > 0 && (
+                <div className={styles.nudge} aria-hidden>
+                  <p className={styles.nudgeText}>
+                    go on, try one
+                    <br />
+                    it takes 10 seconds
+                  </p>
+                  <svg className={styles.nudgeArrow} viewBox="0 0 120 120" fill="none">
+                    <path
+                      d="M14 112C-2 92 6 62 30 56c18-5 33 9 30 24-2 12-16 18-25 11-14-11-7-36 8-47 16-12 38-14 56-9"
+                      stroke="currentColor"
+                      strokeWidth="4.5"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                    <polygon points="94,25 116,34 93,46" fill="currentColor" />
+                  </svg>
+                </div>
+              )}
 
               <AnimatePresence>
-                {showDone && (
+                {finishOpen && (
                   <motion.div
-                    className={styles.doneOverlay}
+                    className={styles.finish}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
+                    transition={{ duration: 0.3 }}
                   >
                     <motion.div
-                      className={styles.doneModal}
-                      initial={reduced ? false : { opacity: 0, scale: 0.9, y: 12 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
+                      className={styles.finishCard}
+                      initial={reduced ? false : { opacity: 0, y: 14, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
                     >
-                      <span className={styles.donePiece} aria-hidden>
-                        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden focusable="false">
-                          <path
-                            fill="currentColor"
-                            d="M10.5 3a2 2 0 0 1 2 2c0 .3-.07.58-.18.83-.13.3.06.67.39.67H15a1 1 0 0 1 1 1v2.29c0 .33.37.52.67.39.25-.11.53-.18.83-.18a2 2 0 1 1 0 4c-.3 0-.58-.07-.83-.18-.3-.13-.67.06-.67.39V20a1 1 0 0 1-1 1h-3.29c-.33 0-.52-.37-.39-.67.11-.25.18-.53.18-.83a2 2 0 1 0-4 0c0 .3.07.58.18.83.13.3-.06.67-.39.67H4a1 1 0 0 1-1-1v-3.29c0-.33.37-.52.67-.39.25.11.53.18.83.18a2 2 0 1 0 0-4c-.3 0-.58.07-.83.18-.3.13-.67-.06-.67-.39V7a1 1 0 0 1 1-1h2.29c.33 0 .52-.37.39-.67A2 2 0 0 1 8.5 3Z"
-                          />
-                        </svg>
-                      </span>
-                      <p className={styles.doneKick}>Queue cleared</p>
-                      <h4 className={styles.doneHead}>Perfect set.</h4>
-                      <p className={styles.doneCopy}>
-                        Back-rank mate, knight fork, hanging queen. All three solved.
+                      <button
+                        type="button"
+                        className={styles.finishClose}
+                        onClick={() => setFinishOpen(false)}
+                        aria-label="Close"
+                      >
+                        ✕
+                      </button>
+                      <div className={styles.finishArt}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/case-study/game-based-puzzles.svg" alt="" />
+                        {!reduced && (
+                          <div className={styles.sparkles}>
+                            {SPARKS.map((s, i) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                key={i}
+                                src="/case-study/sparkle.svg"
+                                alt=""
+                                style={{
+                                  left: s.left,
+                                  top: s.top,
+                                  width: s.width,
+                                  ['--d' as string]: s.d,
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <span className={styles.finishTag}>Queue cleared</span>
+                      <h3 className={styles.finishTitle}>
+                        {allClean ? 'Perfect set.' : "You're all caught up!"}
+                      </h3>
+                      <div className={styles.finishStats}>
+                        <div>
+                          <b>
+                            {PUZZLES.length}/{PUZZLES.length}
+                          </b>
+                          <span>Solved</span>
+                        </div>
+                        <div>
+                          <b>
+                            {tally.clean}/{PUZZLES.length}
+                          </b>
+                          <span>Clean</span>
+                        </div>
+                        <div>
+                          <b>{accuracy}%</b>
+                          <span>Accuracy</span>
+                        </div>
+                      </div>
+                      <p className={styles.finishLine}>
+                        {allClean
+                          ? "Three clean solves, that's the number the product treats as real."
+                          : `${PUZZLES.length - tally.clean} ${
+                              PUZZLES.length - tally.clean === 1 ? 'puzzle' : 'puzzles'
+                            } needed a hint or a reveal, those are the ones worth another look.`}
                       </p>
-                      <button
-                        type="button"
-                        className={styles.greenBtn}
-                        onClick={restart}
-                        data-cursor="link"
-                      >
-                        Solve again
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.darkBtn}
-                        onClick={() => setDismissed(true)}
-                        data-cursor="link"
-                      >
-                        Close
-                      </button>
+                      <div className={styles.finishActions}>
+                        <button
+                          type="button"
+                          className={`${styles.finishBtn} ${styles.finishBtnGreen}`}
+                          onClick={doReset}
+                          data-cursor="link"
+                        >
+                          Solve again
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.finishBtn} ${styles.finishBtnGhost}`}
+                          onClick={() => setFinishOpen(false)}
+                          data-cursor="link"
+                        >
+                          Close
+                        </button>
+                      </div>
                     </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-            <div className={styles.evalCol}>
-              <EvalBar {...evalProps} step={`${idx}-${phase}`} />
-            </div>
-          </div>
-        </BoardShake>
+          </BoardShake>
 
-        <div className={styles.actions}>
+          <div className={styles.evalCol}>
+            <EvalBar {...evalCfg} step={`${idx}-${phase}`} />
+          </div>
+        </div>
+
+        <div className={styles.controls}>
+          {solved && !isLast && (
+            <button
+              type="button"
+              className={`${styles.ccBtn} ${styles.ccPrimary}`}
+              onClick={doNext}
+              data-cursor="link"
+            >
+              Next puzzle
+            </button>
+          )}
           <button
             type="button"
-            className={styles.greenBtn}
-            onClick={next}
-            disabled={!solved || last}
-            data-cursor="link"
-          >
-            Next puzzle
-          </button>
-          <button
-            type="button"
-            className={styles.darkBtn}
-            onClick={() => setHinted((h) => Math.min(2, h + 1))}
-            disabled={solved || hinted >= 2}
+            className={`${styles.ccBtn} ${styles.ccSecondary}`}
+            onClick={doHint}
+            disabled={solved || hintedThis}
             data-cursor="link"
           >
             Hint
           </button>
           <button
             type="button"
-            className={styles.ghostBtn}
-            onClick={restart}
+            className={`${styles.ccBtn} ${styles.ccSecondary}`}
+            onClick={doShow}
+            disabled={solved}
+            data-cursor="link"
+          >
+            Show solution
+          </button>
+          <button
+            type="button"
+            className={`${styles.ccBtn} ${styles.ccGhost}`}
+            onClick={doReset}
             data-cursor="link"
           >
             Restart set
@@ -347,131 +527,61 @@ export function TryIt() {
         </div>
       </div>
 
-      {/* --------------------------------------------------- right: panel */}
-      <div className={styles.panel}>
-        <div className={styles.classTag}>
-          <span className={styles.classIco} aria-hidden />
-          <span className={styles.classText}>
-            <b>{p.tag}</b> <span>vs {p.opponent}</span>
-          </span>
-          <span className={styles.diff}>Medium</span>
-        </div>
+      {/* ===================================================== right: side */}
+      <div className={styles.side}>
+        <CoachBubble text={coachText} classification={badge} evalText={pill ?? undefined} />
 
-        <CoachBubble text={solved ? p.coachSolved : p.coachStart} />
-
-        <div className={styles.brief}>
-          {allDone ? (
-            <motion.div
-              className={styles.doneCard}
-              initial={reduced ? false : { opacity: 0, y: 10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+        <aside className={styles.annot}>
+          <div className={styles.annotHead}>
+            <i aria-hidden /> What&rsquo;s happening
+          </div>
+          <AnimatePresence mode="wait">
+            <motion.h3
+              key={annot.state}
+              className={styles.annotState}
+              initial={reduced ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
             >
-              <p className={styles.solvedText}>
-                <Tick className={styles.tick24} /> Set complete
-              </p>
-              <p className={styles.doneSub}>Three for three. One player, one week of games.</p>
-              <ul className={styles.doneList}>
-                {PUZZLES.map((pz) => (
-                  <li key={pz.tag}>{pz.tag}</li>
-                ))}
-              </ul>
-            </motion.div>
-          ) : (
-            <>
-              {!solved && (
-                <>
-                  <p className={styles.briefLabel}>What happened in your game</p>
-                  <div className={styles.card}>
-                    <div className={styles.cardRow}>
-                      <div className={styles.playedCol}>
-                        <p className={styles.youPlayed}>You played</p>
-                        <p className={styles.playedSan}>
-                          <San san={p.wrongMove.san} />
-                          <span className={styles.strike} aria-hidden />
-                        </p>
-                      </div>
-                      <div className={styles.evLabels}>
-                        <p className={styles.evTitle}>Evaluation</p>
-                        <p className={styles.evVals}>
-                          <span className={styles.was}>{p.wasLabel}</span>
-                          <span className={styles.evArrow}>&rarr;</span>
-                          <span className={styles.now}>{p.nowLabel}</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {solved ? (
-                <motion.div
-                  className={styles.solvedBar}
-                  initial={reduced ? false : { opacity: 0, y: 10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 420, damping: 26 }}
-                >
-                  {!reduced && (
-                    <motion.span
-                      aria-hidden
-                      className={styles.shine}
-                      initial={{ x: '-140%' }}
-                      animate={{ x: '420%' }}
-                      transition={{ duration: 1.1, delay: 0.2, ease: 'easeInOut' }}
-                    />
-                  )}
-                  <p className={styles.solvedText}>
-                    <Tick className={styles.tick24} /> Solved
-                  </p>
-                  <p className={styles.solvedEval}>
-                    <span className={styles.seFrom}>{p.nowLabel}</span>
-                    <span className={styles.seArrow}>&rarr;</span>
-                    <span className={styles.seTo}>{p.finalLabel}</span>
-                  </p>
-                </motion.div>
-              ) : (
-                <div className={styles.panelRow}>
-                  <span className={styles.badge}>
-                    <span className={styles.sideSwatch} data-side="white" />
-                  </span>
-                  <p className={styles.rowText}>White to move</p>
-                </div>
-              )}
-
-              {solved && (
-                <motion.div
-                  className={styles.panelRow}
+              {annot.state}
+            </motion.h3>
+          </AnimatePresence>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={annot.why}
+              className={styles.annotWhy}
+              initial={reduced ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+            >
+              {annot.why}
+            </motion.p>
+          </AnimatePresence>
+          <ul className={styles.annotLog}>
+            <AnimatePresence initial={false}>
+              {log.map((row, i) => (
+                <motion.li
+                  key={`${row.tag}-${log.length - i}-${row.text}`}
+                  data-bad={row.bad || undefined}
                   initial={reduced ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: 'spring', stiffness: 480, damping: 30 }}
                 >
-                  <span className={styles.badge}>
-                    <span className={styles.tickCircle}>
-                      <Tick className={styles.tick16} />
-                    </span>
-                  </span>
-                  <p className={`${styles.rowText} ${styles.correct}`}>
-                    <San san={p.win} /> is correct!
-                  </p>
-                </motion.div>
-              )}
-            </>
-          )}
-        </div>
-
-        <div className={styles.happening}>
-          <p className={styles.happeningKick}>
-            <i aria-hidden /> What&rsquo;s happening
-          </p>
-          <h3 className={styles.happeningTitle}>{whTitle}</h3>
-          <p className={styles.happeningBody}>{whBody}</p>
-        </div>
+                  <b>{row.tag}</b>
+                  <span>{row.text}</span>
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </ul>
+        </aside>
       </div>
     </div>
   );
 }
 
-/* Board wrapper that replays the prototype's exact wrong-move shake. */
+/* Board wrapper — replays the prototype's exact wrong-move shake. */
 function BoardShake({
   signal,
   reduced,
@@ -488,8 +598,8 @@ function BoardShake({
     prev.current = signal;
     if (!rose || reduced) return;
     controls.start({
-      x: [0, -9, 9, -7, 7, -3, 0],
-      transition: { duration: 0.42, ease: 'easeInOut' },
+      x: [0, -7, 6, -5, 4, -2, 0],
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
     });
   }, [signal, reduced, controls]);
   return <motion.div animate={controls}>{children}</motion.div>;

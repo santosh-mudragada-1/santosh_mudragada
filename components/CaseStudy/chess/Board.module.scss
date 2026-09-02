@@ -97,6 +97,55 @@
     object-fit: contain;
     padding: 5%;
   }
+
+  // gently advertises a clickable piece before the first solve
+  &[data-invite] img {
+    animation: invitePulse 1.9s ease-in-out infinite;
+  }
+
+  // the mated king takes the blow once, then settles (from tailwind.config.ts)
+  &[data-toppled] img {
+    transform-origin: 50% 88%;
+    animation: kingTopple 0.75s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.44s 1 both;
+  }
+}
+
+@keyframes invitePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes kingTopple {
+  0% {
+    transform: rotate(0deg);
+  }
+  22% {
+    transform: rotate(-9deg);
+  }
+  44% {
+    transform: rotate(6deg);
+  }
+  66% {
+    transform: rotate(-3.5deg);
+  }
+  84% {
+    transform: rotate(1.5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece[data-invite] img,
+  .piece[data-toppled] img {
+    animation: none;
+  }
 }
 
 .coord {

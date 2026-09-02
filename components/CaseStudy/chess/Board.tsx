@@ -22,6 +22,8 @@ interface BoardProps {
   dots?: string[];
   /** Squares of a move that was played and shouldn't have been — faint red. */
   wrong?: string[];
+  /** Piece(s) that gently pulse to advertise "click me". */
+  invite?: string[];
   /** King-in-check square, painted red (breathing if `mated`). */
   danger?: string | null;
   mated?: boolean;
@@ -46,6 +48,7 @@ export function Board({
   hint = [],
   dots = [],
   wrong = [],
+  invite = [],
   danger = null,
   mated = false,
   lastMove = null,
@@ -59,6 +62,7 @@ export function Board({
   const hn = new Set(hint);
   const dt = new Set(dots);
   const wr = new Set(wrong);
+  const iv = new Set(invite);
 
   return (
     <div
@@ -97,6 +101,8 @@ export function Board({
               <motion.span
                 key={isMoved ? `mv-${lastMove!.from}${lastMove!.to}` : 'pc'}
                 className={styles.piece}
+                data-invite={iv.has(cell.square) || undefined}
+                data-toppled={isMatedKing || undefined}
                 initial={off ? { x: `${off.x}%`, y: `${off.y}%` } : false}
                 animate={{ x: '0%', y: '0%' }}
                 transition={{ type: 'spring', stiffness: 700, damping: 42, mass: 0.7 }}
