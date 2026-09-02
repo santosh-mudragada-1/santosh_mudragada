@@ -566,6 +566,13 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
+/* compact laptops (13"–15"): cap the board card so it doesn't dominate */
+@media (min-width: 1024px) and (max-width: 1599.98px) {
+  .proto {
+    grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
+  }
+}
+
 @include mq-max('lg') {
   .proto {
     grid-template-columns: minmax(0, 1fr);

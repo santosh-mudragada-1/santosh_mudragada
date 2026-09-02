@@ -1808,6 +1808,30 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
+// Compact laptops (13"–15", ~1024–1599px). The type scale and the bento mosaic
+// are tuned for 16"+; rein them in so nothing runs oversized here.
+@media (min-width: 1024px) and (max-width: 1599.98px) {
+  .h2 {
+    font-size: clamp(2.2rem, 4.4vw, 3.85rem);
+  }
+  .heroTitle {
+    font-size: clamp(2.75rem, 7vw, 6rem);
+  }
+  .quote {
+    font-size: clamp(2.2rem, 5vw, 4.25rem);
+  }
+
+  // pair tiles by height and let rows fit content — no forced empty space
+  .bento {
+    grid-auto-rows: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'home  badges'
+      'eval  done'
+      'coach rows';
+  }
+}
+
 @include mq-max('lg') {
   .versions,
   .metrics,
