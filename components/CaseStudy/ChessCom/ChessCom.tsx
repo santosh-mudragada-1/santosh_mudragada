@@ -8,7 +8,7 @@ import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/ch
 import { HeroBoard } from './HeroBoard';
 import styles from './ChessCom.module.scss';
 
-// The back-rank position the "journey" section plays out — White to find Rd8#.
+// The back-rank position the "journey" section plays out: White to find Rd8#.
 const FEN_BEFORE = '6k1/5ppp/8/8/8/8/5PPP/3R2K1';
 const FEN_AFTER = '3R2k1/5ppp/8/8/8/8/5PPP/6K1';
 
@@ -24,15 +24,15 @@ const NET = [
 const GATES = [
   { name: 'Findable', rule: 'First move is a capture, a check, or mate.', out: 'A quiet move nothing asks you to look at.' },
   { name: 'Singular', rule: 'Beats the second-best move by a clear margin.', out: 'A coin toss you’re told you lost.' },
-  { name: 'Worth it', rule: 'Wins something decisive — mate or real material.', out: 'A puzzle whose answer wins a tenth of a pawn.' },
+  { name: 'Worth it', rule: 'Wins something decisive: mate or real material.', out: 'A puzzle whose answer wins a tenth of a pawn.' },
 ];
 
 const BEATS: Array<[string, string]> = [
   ['Play', 'A real game from your archive.'],
-  ['Detect', 'Stockfish flags the move — the blunder hands back the mate and the rook.'],
+  ['Detect', 'Stockfish flags the move: the blunder handed back the mate and the rook.'],
   ['Rewind', 'The board returns to the instant before the decision.'],
   ['Decide', 'Legal dots, a ring for the key capture, a three-step hint ladder.'],
-  ['Feedback', 'The right move — green sweeps back up the bar.'],
+  ['Feedback', 'The right move. Green sweeps back up the bar.'],
   ['Return', 'Home card, set counter and queue all update at once.'],
 ];
 
@@ -41,7 +41,7 @@ const DECISIONS = [
   { n: '02', d: 'One mistake is one lesson, however many disasters followed.', out: 'A set that drills one error and calls it four.' },
   { n: '03', d: 'Rating sets how deep we look, never how hard the puzzle is.', out: 'Deciding in advance what you can handle.' },
   { n: '04', d: 'The bar explains the loss, so the copy doesn’t have to.', out: 'A sentence doing a picture’s job.' },
-  { n: '05', d: 'Show free members the whole set — including what they can’t reach.', out: 'Hiding the thing you’re selling.' },
+  { n: '05', d: 'Show free members the whole set, including what they can’t reach.', out: 'Hiding the thing you’re selling.' },
 ];
 
 const METRICS = [
@@ -99,7 +99,7 @@ export function ChessCom() {
         }
       }
 
-      // scroll reveals — one-shot, transform + opacity only
+      // scroll reveals: one-shot, transform + opacity only
       q<HTMLElement>(`.${styles.rise}`).forEach((el) => {
         if (reduced) return;
         const tw = gsap.from(el, {
@@ -170,26 +170,21 @@ export function ChessCom() {
               Your own blunders, handed back as puzzles. <b>The loop finally closes.</b>
             </p>
             <div className={styles.ctaCol}>
-              <div className={styles.ctas}>
-                <a
-                  href="https://game-based-puzzles.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.ctaProto}
-                  data-cursor="link"
-                >
-                  <span className={styles.ctaProtoDot} aria-hidden />
-                  Test the live prototype
-                  <span className={styles.ctaProtoGo} aria-hidden>
-                    ↗
-                  </span>
-                </a>
-                <a href="#journey" className={styles.ctaGhost} data-cursor="link">
-                  Watch the story <span aria-hidden>↓</span>
-                </a>
-              </div>
+              <a
+                href="https://game-based-puzzles.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.ctaProto}
+                data-cursor="link"
+              >
+                <span className={styles.ctaProtoDot} aria-hidden />
+                Test the live prototype
+                <span className={styles.ctaProtoGo} aria-hidden>
+                  ↗
+                </span>
+              </a>
               <p className={styles.protoNote}>
-                I rebuilt it inside a replica of Chess.com &mdash; only{' '}
+                I rebuilt it inside a replica of Chess.com, but only{' '}
                 <b>Game-Based&nbsp;Puzzles</b> runs end to end. The surrounding pages
                 are there for context.
               </p>
@@ -198,11 +193,11 @@ export function ChessCom() {
         </div>
       </header>
 
-      {/* ========================================================= THE GAP */}
-      <section className={styles.section} aria-labelledby="gap">
+      {/* ========================================================= CONTEXT */}
+      <section className={styles.section} aria-labelledby="context">
         <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>The gap</p>
-          <h2 id="gap" className={`${styles.h2} ${styles.rise}`}>
+          <p className={`${styles.kick} ${styles.rise}`}>Context</p>
+          <h2 id="context" className={`${styles.h2} ${styles.rise}`}>
             Review already works.
             <br />
             It just ends too early.
@@ -238,7 +233,7 @@ export function ChessCom() {
           ))}
         </ol>
         <p className={`${styles.micro} ${styles.rise}`}>
-          Every Chess.com puzzle — Daily, Rush, Battle — draws from <em>other people&rsquo;s</em>{' '}
+          Every Chess.com puzzle (Daily, Rush, Battle) draws from <em>other people&rsquo;s</em>{' '}
           games. Not yours.
         </p>
       </section>
@@ -246,7 +241,7 @@ export function ChessCom() {
       {/* ======================================================== INSIGHT */}
       <section className={`${styles.section} ${styles.quoteSec}`}>
         <blockquote className={`${styles.quote} ${styles.rise}`}>
-          The best puzzle for you is one you&rsquo;ve already <em>failed</em> — under a clock, in a
+          The best puzzle for you is one you&rsquo;ve already <em>failed</em>: under a clock, in a
           game that mattered.
         </blockquote>
       </section>
@@ -347,13 +342,13 @@ export function ChessCom() {
                 evalText={solved ? '1-0' : undefined}
                 text={
                   solved
-                    ? '♜–d8# — checkmate on the weak back rank. The king never had a square.'
+                    ? '♜d8#. Checkmate on the weak back rank; the king never had a square.'
                     : 'A forced mate is on the board. The rook can only be one move.'
                 }
               />
               <p className={styles.frameCap}>
                 {solved
-                  ? 'The right move — green sweeps back up the eval bar.'
+                  ? 'The right move. Green sweeps back up the eval bar.'
                   : 'M1 was available. The blunder left −5.0: the mate and the rook.'}
               </p>
             </div>
@@ -361,8 +356,8 @@ export function ChessCom() {
         </div>
 
         <p className={`${styles.micro} ${styles.rise}`}>
-          Difficulty is <em>read off the position</em> — moves to find, alternatives, whether the
-          key move forces, size of payoff — shown as a muted badge. An output, never an input.
+          Difficulty is <em>read off the position</em> (moves to find, alternatives, whether the
+          key move forces, size of payoff) and shown as a muted badge. An output, never an input.
         </p>
       </section>
 
@@ -371,7 +366,7 @@ export function ChessCom() {
         <div className={styles.head}>
           <p className={`${styles.kick} ${styles.rise}`}>Two versions, one switch</p>
           <h2 id="versions" className={`${styles.h2} ${styles.rise}`}>
-            Which games become which puzzles — and when?
+            Which games become which puzzles, and when?
           </h2>
         </div>
 
@@ -387,8 +382,8 @@ export function ChessCom() {
               ))}
             </div>
             <p className={styles.note}>
-              Your last N games, pooled into one set that&rsquo;s always full. A queue — zero
-              navigation, best-of a wide pool.
+              Your last N games, pooled into one set that&rsquo;s always full. A queue: zero
+              navigation, best of a wide pool.
             </p>
           </div>
 
@@ -408,8 +403,8 @@ export function ChessCom() {
               ))}
             </div>
             <p className={styles.note}>
-              Puzzles grouped by the day you played. The calendar <em>is</em> the progress record
-              — streaks and gaps become visible.
+              Puzzles grouped by the day you played. The calendar <em>is</em> the progress
+              record, so streaks and gaps become visible.
             </p>
           </div>
         </div>
@@ -427,7 +422,7 @@ export function ChessCom() {
           <h2 id="wall" className={`${styles.h2} ${styles.rise}`}>The wall is the pitch.</h2>
         </div>
         <p className={`${styles.lede} ${styles.rise}`}>
-          Free members see the whole set — locked, and exactly how far in the wall sits. Upgrading
+          Free members see the whole set, locked, and exactly how far in the wall sits. Upgrading
           resumes at the next puzzle, no reload.
         </p>
 
@@ -444,7 +439,7 @@ export function ChessCom() {
           <span className={styles.wallLine} />
         </div>
         <p className={`${styles.micro} ${styles.rise}`}>
-          Counter reads <em>Puzzle 3 / 12</em> — the whole set, never <em>3 / 3</em>.
+          Counter reads <em>Puzzle 3 / 12</em>, the whole set, never <em>3 / 3</em>.
         </p>
       </section>
 
@@ -487,7 +482,7 @@ export function ChessCom() {
           ))}
         </div>
         <p className={`${styles.micro} ${styles.rise}`}>
-          A prototype, not a launch — outcomes to validate, not claim.
+          A prototype, not a launch: outcomes to validate, not claim.
         </p>
       </section>
 
@@ -501,7 +496,7 @@ export function ChessCom() {
           </div>
           <div>
             <dt>Named weaknesses</dt>
-            <dd>&ldquo;Blunder&rdquo; is a severity, not a lesson — cluster into back rank, hanging pieces, endgames.</dd>
+            <dd>&ldquo;Blunder&rdquo; is a severity, not a lesson. Cluster into back rank, hanging pieces, endgames.</dd>
           </div>
           <div>
             <dt>Queue first, diary on top</dt>

@@ -6,7 +6,7 @@
 // ===========================================================================
 
 .root {
-  --sect: clamp(6rem, 4rem + 12vh, 13rem);
+  --sect: clamp(4.5rem, 3rem + 8vh, 9.5rem);
   --edge: var(--gutter);
   --cs-measure: 46ch;
 
@@ -23,7 +23,7 @@
 
 // heading cluster — eyebrow + big h2, pushed toward the edge
 .head {
-  margin-bottom: clamp(2.5rem, 5vw, 5rem);
+  margin-bottom: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
 }
 
 .eyebrow,
@@ -36,7 +36,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 1.1em;
+  margin-bottom: 0.85em;
 
   &::before {
     content: '';
@@ -105,7 +105,7 @@
 }
 
 .micro {
-  margin-top: clamp(2rem, 4vw, 3.5rem);
+  margin-top: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
   max-width: 44ch;
   font-size: 0.9rem;
   line-height: 1.5;
@@ -242,45 +242,6 @@
   max-width: 40ch;
 }
 
-.ctas {
-  flex: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.ctaGhost {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  padding: 0.9em 1.5em;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  white-space: nowrap;
-  transition:
-    background 0.25s var(--ease-quart-in-out),
-    color 0.25s var(--ease-quart-in-out),
-    border-color 0.25s var(--ease-quart-in-out);
-  background: transparent;
-  color: var(--fg);
-  border: 1px solid var(--line);
-
-  span {
-    transition: transform 0.25s var(--ease-quart-in-out);
-  }
-
-  @include hover {
-    &:hover {
-      border-color: var(--fg);
-      span {
-        transform: translateY(3px);
-      }
-    }
-  }
-}
-
 // primary CTA — rounded pill linking out to the live prototype, with a small
 // pulsing "live" dot
 .ctaProto {
@@ -349,13 +310,16 @@
 }
 
 // ---------------------------------------------------- loop (nodes)
+$loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
+
 .loop {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(0.6rem, 1.4vw, 1rem);
-  margin-top: clamp(2.5rem, 5vw, 4rem);
+  gap: 0.7rem $loop-gap;
+  margin-top: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
 
   li {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.7em;
@@ -372,6 +336,20 @@
       font-weight: 700;
       color: var(--fg-muted);
       font-variant-numeric: tabular-nums;
+    }
+
+    // progress arrow, sitting in the gap to the next pill
+    &:not(:last-child)::after {
+      content: '\2192' / '';
+      position: absolute;
+      right: calc(#{$loop-gap} / -2);
+      top: 50%;
+      transform: translate(50%, -50%);
+      font-family: var(--font-ui);
+      font-size: 0.95em;
+      font-weight: 500;
+      color: var(--fg-muted);
+      pointer-events: none;
     }
 
     &[data-dead] {

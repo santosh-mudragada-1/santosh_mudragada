@@ -5,7 +5,7 @@ import { Board } from '@/components/CaseStudy/chess';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './HeroBoard.module.scss';
 
-// The back-rank line the journey section plays out — here it loops in the
+// The back-rank line the journey section plays out; here it loops in the
 // hero's top-right corner, masked so the board dissolves into the paper:
 // hold on "M1 available", the rook slides d1→d8#, the mated king pulses,
 // reset, repeat.
