@@ -1534,33 +1534,41 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-// -------------------------------------- decisions (the game review)
-// A Chess.com review: a move-list rail on the left, the coach + an eval
-// swing explaining the selected call on the right.
-.drReview {
-  display: grid;
-  grid-template-columns: minmax(0, 14.5rem) minmax(0, 1fr);
+// ------------------------------- decisions (scroll-stepped game review)
+// The rail + panel pin while a tall track scrolls past; scroll position
+// picks the active call. Rail items also jump on click.
+.drTrack {
+  position: relative;
+  height: 420vh;
   margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+
+.drReview {
+  position: sticky;
+  top: max(calc(var(--header-h) + 1.5rem), calc(50vh - 17rem));
+  display: grid;
+  grid-template-columns: minmax(0, 19rem) minmax(0, 34rem);
+  align-items: stretch;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: color-mix(in oklab, var(--fg) 2%, var(--bg));
 }
 
-.drList {
+.drRail {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 10px;
+  padding: 12px;
   border-right: 1px solid var(--line);
 }
 
 .drItem {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   width: 100%;
-  padding: 11px 13px;
+  padding: 13px 14px;
   border: 0;
   border-radius: 10px;
   background: transparent;
@@ -1569,8 +1577,8 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   cursor: pointer;
   color: var(--fg-muted);
   transition:
-    background 0.2s ease,
-    color 0.2s ease;
+    background 0.25s var(--ease-quart-in-out),
+    color 0.25s var(--ease-quart-in-out);
 
   b {
     flex: none;
@@ -1579,27 +1587,31 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     font-variant-numeric: tabular-nums;
     font-size: 0.9rem;
     color: var(--fg-muted);
-    transition: color 0.2s ease;
+    transition: color 0.25s var(--ease-quart-in-out);
   }
   img {
     flex: none;
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
+    opacity: 0.55;
+    transition: opacity 0.25s var(--ease-quart-in-out);
   }
   span {
     flex: 1;
     min-width: 0;
-    font-size: 0.8rem;
+    font-size: 0.84rem;
     line-height: 1.3;
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   @include hover {
     &:hover {
       background: color-mix(in oklab, var(--fg) 5%, transparent);
+      img {
+        opacity: 0.85;
+      }
     }
   }
   &:focus-visible {
@@ -1614,22 +1626,29 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     b {
       color: var(--accent);
     }
+    img {
+      opacity: 1;
+    }
   }
 }
 
 .drPanel {
   min-width: 0;
-  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  display: flex;
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 3rem);
 }
 
 .drPanelInner {
-  animation: dr-in 0.4s var(--ease-quart-in-out) both;
+  width: 100%;
+  max-width: 32rem;
+  animation: dr-in 0.45s var(--ease-quart-in-out) both;
 }
 
 @keyframes dr-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -1641,7 +1660,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -1659,53 +1678,17 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .drClaim {
-  margin: 0 0 clamp(1.5rem, 3.5vw, 2.25rem);
+  margin: 0 0 clamp(1.5rem, 3.5vw, 2rem);
   font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 1rem + 1.7vw, 2.1rem);
+  font-size: clamp(1.35rem, 1rem + 1.5vw, 1.95rem);
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
-.drBody {
-  display: flex;
-  gap: clamp(1rem, 3vw, 1.75rem);
-  align-items: stretch;
-  margin-bottom: clamp(1.25rem, 3vw, 1.75rem);
-}
-
-.drSwing {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  min-height: 128px;
-}
-
-.drCoach {
-  flex: 1;
-  min-width: 0;
-  align-self: center;
-}
-
-.drRuled {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0;
-  padding-top: clamp(1rem, 2.5vw, 1.5rem);
-  border-top: 1px solid var(--line);
-  font-size: 0.8rem;
-  color: var(--fg-muted);
-
-  b {
-    flex: none;
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
+.drSay {
+  min-height: 8rem;
 }
 
 // ----------------------------------------------------- metrics
@@ -1846,17 +1829,22 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
       'done done'
       'rows rows';
   }
+  // below lg the scroll-pin is dropped — rail becomes a horizontal picker
+  .drTrack {
+    height: auto;
+  }
   .drReview {
+    position: static;
     grid-template-columns: minmax(0, 1fr);
   }
-  .drList {
+  .drRail {
     flex-direction: row;
     overflow-x: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
     scrollbar-width: none;
   }
-  .drList::-webkit-scrollbar {
+  .drRail::-webkit-scrollbar {
     display: none;
   }
   .drItem {
@@ -1865,6 +1853,9 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     span {
       display: none;
     }
+  }
+  .drPanelInner {
+    max-width: none;
   }
 }
 
@@ -1912,9 +1903,6 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .planTile {
     font-size: 0.7rem;
   }
-  .drSwing {
-    display: none;
-  }
   .loop li {
     padding: 0.7em 1.05em;
   }
@@ -1935,7 +1923,8 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .calToday,
   .bShimmer::after,
   .bEvalHot,
-  .bRowPulse {
+  .bRowPulse,
+  .drPanelInner {
     animation: none;
   }
   .calDone {

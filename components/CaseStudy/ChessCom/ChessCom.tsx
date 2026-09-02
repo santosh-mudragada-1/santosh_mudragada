@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
@@ -67,66 +67,95 @@ const CAL_CLEARED = [3, 4, 8, 11, 15, 16, 22];
 const CAL_HAS = [5, 9, 12, 18, 19, 23, 25];
 const CAL_TODAY = 26;
 
-// Product decisions — a Chess.com "game review": step the calls on the left,
-// the coach + the eval swing explain each one on the right.
+// Product decisions — a Chess.com "game review" that steps on scroll: the
+// sticky rail + panel stay put while the track scrolls past, advancing the
+// active call. Click a rail item to jump to it.
 function Decisions() {
+  const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight;
+      const total = track.offsetHeight - vh;
+      if (total < vh * 0.5) return; // not pinned (small screen) — leave as-is
+      const scrolled = -track.getBoundingClientRect().top;
+      const p = Math.min(1, Math.max(0, scrolled / total));
+      const idx = Math.min(
+        DECISIONS.length - 1,
+        Math.max(0, Math.floor(p * DECISIONS.length - 1e-6)),
+      );
+      setActive((prev) => (prev === idx ? prev : idx));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const goTo = (i: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const total = track.offsetHeight - window.innerHeight;
+    if (total <= 0) {
+      setActive(i);
+      return;
+    }
+    const top =
+      window.scrollY +
+      track.getBoundingClientRect().top +
+      (total * (i + 0.5)) / DECISIONS.length;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
   const d = DECISIONS[active];
+
   return (
-    <div className={styles.drReview}>
-      <div className={styles.drList} role="tablist" aria-label="Product decisions">
-        {DECISIONS.map((item, i) => (
-          <button
-            key={item.n}
-            type="button"
-            role="tab"
-            aria-selected={active === i}
-            data-on={active === i || undefined}
-            className={styles.drItem}
-            onMouseEnter={() => setActive(i)}
-            onFocus={() => setActive(i)}
-            onClick={() => setActive(i)}
-          >
-            <b>{item.n}</b>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/case-study/move-types/${item.icon}.png`} alt="" width={22} height={22} />
-            <span>{item.claim}</span>
-          </button>
-        ))}
-      </div>
+    <div className={styles.drTrack} ref={trackRef}>
+      <div className={styles.drReview}>
+        <div className={styles.drRail} role="tablist" aria-label="Product decisions">
+          {DECISIONS.map((item, i) => (
+            <button
+              key={item.n}
+              type="button"
+              role="tab"
+              aria-selected={active === i}
+              data-on={active === i || undefined}
+              className={styles.drItem}
+              onClick={() => goTo(i)}
+            >
+              <b>{item.n}</b>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/case-study/move-types/${item.icon}.png`} alt="" width={24} height={24} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
 
-      <div className={styles.drPanel}>
-        <div key={active} className={styles.drPanelInner}>
-          <p className={styles.drKicker}>
-            Decision {d.n}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/case-study/move-types/${d.icon}.png`} alt="" width={18} height={18} />
-            <i style={{ color: `color-mix(in oklab, ${d.color} 68%, var(--fg))` }}>{d.tag}</i>
-          </p>
-          <h3 className={styles.drClaim}>{d.claim}</h3>
-
-          <div className={styles.drBody}>
-            <div className={styles.drSwing} aria-hidden>
-              <div className={styles.bEval}>
-                <span className={styles.bEvalFill} style={{ height: `${d.swing.fill}%` }} />
-                <span
-                  className={styles.bEvalBand}
-                  data-loss
-                  style={{ bottom: `${d.swing.fill}%`, height: `${d.swing.loss}%` }}
-                >
-                  <span className={styles.bEvalHot} />
-                </span>
-                <span className={styles.bEvalMid} />
-              </div>
-            </div>
-            <div className={styles.drCoach}>
+        <div className={styles.drPanel}>
+          <div key={active} className={styles.drPanelInner}>
+            <p className={styles.drKicker}>
+              Decision {d.n}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/case-study/move-types/${d.icon}.png`} alt="" width={18} height={18} />
+              <i style={{ color: `color-mix(in oklab, ${d.color} 66%, var(--fg))` }}>{d.tag}</i>
+            </p>
+            <h3 className={styles.drClaim}>{d.claim}</h3>
+            <div className={styles.drSay}>
               <CoachBubble classification={d.icon} text={d.coach} />
             </div>
           </div>
-
-          <p className={styles.drRuled}>
-            <b>Ruled out</b> {d.ruled}
-          </p>
         </div>
       </div>
     </div>
@@ -349,58 +378,53 @@ function BuiltPieces() {
 const DECISIONS = [
   {
     n: '01',
-    tag: 'Blunder',
-    icon: 'blunder',
-    color: '#ca3431',
+    tag: 'Brilliant',
+    icon: 'brilliant',
+    color: '#26c2a3',
+    label: 'What counts as a puzzle',
     claim: 'The engine’s best move is not a puzzle.',
     coach:
-      'Mining raw engine disagreements mostly produced unsolvable positions. Three gates now separate a disagreement from a genuinely teachable puzzle — findable, singular, worth it.',
-    ruled: 'Puzzles that are unfair rather than hard.',
-    swing: { fill: 38, loss: 30 },
+      'Not every engine disagreement is teachable. Three gates now stand between a raw disagreement and a puzzle — findable, singular, worth it — so eight solid puzzles beat fifteen with five duds.',
   },
   {
     n: '02',
-    tag: 'Mistake',
-    icon: 'mistake',
-    color: '#e58f2a',
+    tag: 'Great',
+    icon: 'great',
+    color: '#5c8bb0',
+    label: 'One mistake, one lesson',
     claim: 'One mistake is one lesson, however many disasters followed it.',
     coach:
-      'A player repeating one error made the generator fire on it four times, teaching the same idea four ways. Near-duplicate mistakes from a game now collapse into the clearest instance.',
-    ruled: 'A set that drills one mistake and calls it four.',
-    swing: { fill: 52, loss: 20 },
+      'One error, repeated in a game, used to become four near-identical puzzles. Near-duplicates now collapse into the single clearest instance — one mistake teaches one lesson.',
   },
   {
     n: '03',
-    tag: 'Inaccuracy',
-    icon: 'inaccuracy',
-    color: '#f0c15c',
+    tag: 'Best',
+    icon: 'best',
+    color: '#81b64c',
+    label: 'What rating decides',
     claim: 'Rating sets how deep we look, never how hard the puzzle is.',
     coach:
-      'The first system truncated a mate in three to one move for a 1100-rated player — half a lesson, the wrong half. Rating now sets depth of search, not puzzle difficulty.',
-    ruled: 'Deciding in advance what someone can handle.',
-    swing: { fill: 56, loss: 15 },
+      'Rating sets depth of search, never puzzle difficulty. A mate in three stays a mate in three for an 1100 — the whole idea, not a truncated half of it.',
   },
   {
     n: '04',
-    tag: 'Inaccuracy',
-    icon: 'inaccuracy',
-    color: '#f0c15c',
+    tag: 'Excellent',
+    icon: 'excellent',
+    color: '#95b776',
+    label: 'The bar does the talking',
     claim: 'The bar explains the loss, so the copy doesn’t have to.',
     coach:
-      'Quoting two numbers made a player do the arithmetic themselves. The bar instead gives a visual read of the cost — anchored at what was available, draining to what the move left.',
-    ruled: 'A sentence doing a picture’s job.',
-    swing: { fill: 62, loss: 11 },
+      'The eval bar carries the cost of a move on its own — anchored at what was available, draining to what was left. No two numbers to subtract in your head.',
   },
   {
     n: '05',
-    tag: 'Miss',
-    icon: 'missed',
-    color: '#e0a03c',
+    tag: 'Good',
+    icon: 'good',
+    color: '#a8a89a',
+    label: 'The whole set, wall included',
     claim: 'Show free members the whole set, including what they can’t reach.',
     coach:
-      'Trimming the queue to three made the feature look small and removed the reason to upgrade. The set is never trimmed — free sees all twelve, and upgrading resumes at the exact puzzle.',
-    ruled: 'Hiding the thing you’re selling.',
-    swing: { fill: 46, loss: 26 },
+      'Free members see the whole set, all twelve, with the wall shown exactly where it falls. Upgrading resumes at the next puzzle — the locked ones are the pitch.',
   },
 ] as const;
 
@@ -829,14 +853,7 @@ export function ChessCom() {
             changed the product.
           </h2>
         </div>
-        <p className={`${styles.lede} ${styles.rise}`}>
-          Each call started as something the first build got wrong. Step through them like a game
-          review — the coach explains the fix, the bar shows what it was costing.
-        </p>
-
-        <div className={styles.rise}>
-          <Decisions />
-        </div>
+        <Decisions />
       </section>
 
       {/* ========================================================== WALL */}
