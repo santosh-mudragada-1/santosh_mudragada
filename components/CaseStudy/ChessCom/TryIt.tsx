@@ -466,16 +466,15 @@ export function TryIt() {
         </div>
 
         <div className={styles.controls}>
-          {solved && !isLast && (
-            <button
-              type="button"
-              className={`${styles.ccBtn} ${styles.ccPrimary}`}
-              onClick={doNext}
-              data-cursor="link"
-            >
-              Next puzzle
-            </button>
-          )}
+          <button
+            type="button"
+            className={`${styles.ccBtn} ${styles.ccPrimary}`}
+            onClick={doNext}
+            disabled={!solved || isLast}
+            data-cursor="link"
+          >
+            Next puzzle
+          </button>
           <button
             type="button"
             className={`${styles.ccBtn} ${styles.ccSecondary}`}

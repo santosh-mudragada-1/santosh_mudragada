@@ -179,7 +179,8 @@ export function JourneyScroll() {
         <div className={styles.frame}>
           <div className={styles.frameHead}>
             <span className={styles.frameTag}>
-              <i aria-hidden>??</i>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/case-study/move-types/blunder.png" alt="" width={24} height={24} />
               Blunder
             </span>
             <span className={styles.frameMeta}>vs. M. Kowalski · Rapid</span>
