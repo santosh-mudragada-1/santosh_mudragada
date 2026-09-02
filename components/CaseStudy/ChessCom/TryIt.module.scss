@@ -1,27 +1,41 @@
 @use 'mixins' as *;
 
-// The playable three-puzzle set. Dark Chess.com "device" on the left, coach
-// bubble + a running "what's happening" card on the right.
+// Chess.com dark-theme tokens, lifted verbatim from the prototype
+// (tailwind.config.ts + puzzle-solver.tsx). The whole widget renders on this
+// palette, not the portfolio's paper theme.
+$surface: #262522;
+$sunken: #1f1e1c;
+$line: #3d3a37;
+$ink: #ffffff;
+$ink-85: rgba(255, 255, 255, 0.85);
+$muted: #a3a19e;
+$label: #9e9c99;
+$brand: #81b64c;
+$brand-hi: #8ec155;
+$wrong: #e0625c;
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+
 .wrap {
   display: grid;
-  grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
-  gap: clamp(1.75rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
   align-items: start;
   margin-top: clamp(2rem, 4vw, 3rem);
 }
 
-// -------------------------------------------------------------- device
+/* ------------------------------------------------------------ left / board */
 .device {
-  background: #262522;
-  border: 1px solid #3d3a37;
-  border-radius: 20px;
-  padding: clamp(0.9rem, 2.2vw, 1.4rem);
+  border-radius: 14px;
+  background: $surface;
+  border: 1px solid $line;
+  padding: clamp(0.9rem, 2vw, 1.25rem);
 }
 
 .deviceHead {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-bottom: 0.8rem;
   font-size: 0.8125rem;
 }
 
@@ -30,7 +44,7 @@
   align-items: center;
   gap: 0.5em;
   font-weight: 700;
-  color: #e98b8b;
+  color: $wrong;
 
   i {
     display: grid;
@@ -47,292 +61,539 @@
   }
 }
 
-.devicePuzzle {
-  margin-left: auto;
-  color: #a3a19e;
-  font-variant-numeric: tabular-nums;
-
-  b {
-    color: #f2f0ed;
-    font-weight: 700;
-  }
-}
-
 .deviceDots {
+  margin-left: auto;
   color: #57544f;
   letter-spacing: 0.15em;
 }
 
-.deviceBoard {
+.boardRow {
+  display: flex;
+  gap: 0.7rem;
+  align-items: stretch;
+}
+
+.evalCol {
+  display: flex;
+  width: 24px;
+  flex: none;
+}
+
+.boardBox {
   position: relative; // confetti
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 24px;
-  gap: 0.8rem;
-  align-items: stretch;
-  margin-top: 0.85rem;
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 1;
 }
 
-.deviceEval {
-  display: flex;
-  align-items: stretch;
-}
-
-.shake {
-  animation: tryShake 0.42s var(--ease-quart-in-out);
-}
-
-@keyframes tryShake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-6px);
-  }
-  40% {
-    transform: translateX(5px);
-  }
-  60% {
-    transform: translateX(-3px);
-  }
-  80% {
-    transform: translateX(2px);
-  }
-}
-
-// "the move played in the game" note, under the board
-.playedWrong {
-  margin-top: 0.75rem;
-  font-size: 0.8rem;
-  color: #d99a9a;
-
-  span {
-    font-weight: 800;
-    margin-right: 0.3em;
-  }
-  s {
-    color: #e98b8b;
-    text-decoration-thickness: 1px;
-    font-weight: 600;
-  }
-}
-
-.deviceActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.btn,
-.btnPrimary,
-.btnGhost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.82em 1.15em;
-  border-radius: 11px;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  cursor: pointer;
-  transition:
-    background 0.2s var(--ease-quart-in-out),
-    border-color 0.2s var(--ease-quart-in-out),
-    opacity 0.2s var(--ease-quart-in-out);
-
-  &:disabled {
-    opacity: 0.36;
-    cursor: not-allowed;
-  }
-}
-
-.btnPrimary {
-  flex: 3 1 10rem;
-  border: 1px solid #7cb342;
-  background: #7cb342;
-  color: #16210a;
-  box-shadow: 0 6px 18px -10px rgba(124, 179, 66, 0.7);
-
-  @include hover {
-    &:not(:disabled):hover {
-      background: #8bc34a;
-      border-color: #8bc34a;
-    }
-  }
-}
-
-.btn {
-  flex: 1 1 6.5rem;
-  border: 1px solid #45423f;
-  background: #333230;
-  color: #e8e6e3;
-
-  @include hover {
-    &:not(:disabled):hover {
-      background: #3d3b39;
-      border-color: #55524e;
-    }
-  }
-}
-
-.btnGhost {
-  flex: 1 1 auto;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #9a9793;
-
-  @include hover {
-    &:hover {
-      color: #cbc9c6;
-    }
-  }
-}
-
-// -------------------------------------------------------------- side
-.side {
+/* ------------------------------------------------------------------ panel */
+.panel {
+  --pad: clamp(1.1rem, 2.4vw, 1.5rem);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.15rem;
+  border-radius: 14px;
+  background: $surface;
+  border: 1px solid $line;
+  padding: var(--pad);
 }
 
-.happening {
-  background: #1f1e1c;
-  border: 1px solid #333230;
-  border-radius: 16px;
-  padding: clamp(1.1rem, 2.4vw, 1.6rem);
-}
-
-.happeningKick {
+// "Back-rank mate vs M. Kowalski   [Medium]"
+.classTag {
   display: flex;
   align-items: center;
-  gap: 0.55em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #a5d16a;
+  gap: 0.5rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.75rem;
+  font-size: 0.875rem;
+}
 
-  i {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
+.classIco {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #e6912c, #cf7d1d);
+}
+
+.classText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  b {
+    font-weight: 600;
+    color: $ink;
+  }
+  span {
+    color: rgba(255, 255, 255, 0.7);
   }
 }
 
-.happeningTitle {
-  margin: 0.7rem 0 0.5rem;
-  font-family: var(--font-heading);
+.diff {
+  flex: none;
+  margin-left: auto;
+  border-radius: 999px;
+  padding: 0.15em 0.6em;
+  font-size: 0.6875rem;
   font-weight: 700;
-  font-size: clamp(1.2rem, 1rem + 1vw, 1.5rem);
-  letter-spacing: -0.02em;
-  color: #f4f2ef;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: rgba(230, 145, 44, 0.18);
+  color: #e6a151;
 }
 
-.happeningBody {
-  font-size: 0.9rem;
-  line-height: 1.55;
-  color: #b3b1ad;
+/* ---- PuzzleBrief ---- */
+.brief {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.happeningRule {
+.briefLabel {
+  padding-bottom: 0.25rem;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16.5px;
+  letter-spacing: 0.275px;
+  text-transform: uppercase;
+  color: $label;
+}
+
+// CARD — flat white 5% wash, radius 10
+.card {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+}
+
+.cardRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.playedCol {
+  min-width: 0;
+}
+
+.youPlayed {
+  font-size: 12px;
+  line-height: 12px;
+  color: $muted;
+}
+
+.playedSan {
+  position: relative;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 19px;
+  color: $wrong;
+}
+
+.strike {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
   height: 1px;
-  border: 0;
-  margin: 1.05rem 0;
-  background: #333230;
+  transform: translateY(-50%);
+  background: $wrong;
 }
 
-// completion variant of the card
-.happeningDone {
-  border-color: color-mix(in oklab, #7cb342 45%, transparent);
-  background: linear-gradient(180deg, rgba(124, 179, 66, 0.14), #1f1e1c 60%);
+.evLabels {
+  flex: none;
+  text-align: right;
+}
+
+.evTitle {
+  font-size: 10px;
+  line-height: 10px;
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+  color: $label;
+}
+
+.evVals {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
+
+  .was {
+    color: $muted;
+  }
+  .evArrow {
+    margin: 0 6px;
+    color: $label;
+  }
+  .now {
+    color: $wrong;
+  }
+}
+
+.san {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// PanelRow — 56px, badge + text on the white 5% wash
+.panelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  flex: none;
+}
+
+.sideSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  border: 1.8px solid #8b8987;
+
+  &[data-side='white'] {
+    background: #fff;
+  }
+  &[data-side='black'] {
+    background: #312e2b;
+  }
+}
+
+.tickCircle {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: $brand;
+  color: #fff;
+}
+
+.tick16 {
+  width: 16px;
+  height: 16px;
+}
+.tick18 {
+  width: 18px;
+  height: 18px;
+}
+.tick24 {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.rowText {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.43px;
+  color: $ink;
+
+  &.correct {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: $brand;
+  }
+}
+
+// SolvedBar — solid brand green, 56px
+.solvedBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 16px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: $brand;
+}
+
+.shine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 33.333%;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.solvedText {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.43px;
+  color: #fff;
+}
+
+.solvedEval {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 13px;
+  font-variant-numeric: tabular-nums;
+
+  .seFrom {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .seArrow {
+    color: #ede9e3;
+  }
+  .seTo {
+    color: #fff;
+  }
+}
+
+// set-complete card
+.doneCard {
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid rgba(129, 182, 76, 0.45);
+  background: linear-gradient(180deg, rgba(129, 182, 76, 0.16), rgba(255, 255, 255, 0.05) 55%);
+
+  .solvedText {
+    color: $brand;
+  }
+}
+
+.doneSub {
+  margin-top: 0.5rem;
+  font-size: 13px;
+  line-height: 1.5;
+  color: $muted;
 }
 
 .doneList {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.4rem;
-  margin-top: 1rem;
+  gap: 0.4rem 1.3rem;
+  margin-top: 0.9rem;
 
   li {
     position: relative;
-    padding-left: 1.3em;
-    font-size: 0.85rem;
+    padding-left: 1.35em;
+    font-size: 13px;
     color: #d7d5d1;
 
     &::before {
       content: '✓';
       position: absolute;
       left: 0;
-      color: #a5d16a;
+      color: $brand;
       font-weight: 800;
     }
   }
 }
 
-.happeningStatus {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: #cbc9c6;
-
-  span[data-state] {
-    display: inline-block;
-    margin-right: 0.65em;
-    padding: 0.2em 0.6em;
-    border-radius: 6px;
-    font-size: 0.66rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    vertical-align: 0.08em;
-  }
-  span[data-state='ready'] {
-    background: rgba(124, 179, 66, 0.18);
-    color: #a5d16a;
-  }
-  span[data-state='solved'] {
-    background: #7cb342;
-    color: #16210a;
-  }
-}
-
-.tally {
+/* ---- footer ---- */
+.footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 1.1rem;
-  font-size: 0.75rem;
-  color: var(--fg-muted);
+  flex-direction: column;
+  gap: 12px;
+  margin: 0.25rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
+  padding: 16px var(--pad) var(--pad);
+  border-top: 1px solid rgba(61, 58, 55, 0.4);
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 0 0 13px 13px;
+}
 
-  span {
-    position: relative;
-    transition: color 0.3s var(--ease-quart-in-out);
-  }
-  span[data-on] {
-    color: var(--accent);
-  }
-  span[data-on]::before {
-    content: '✓ ';
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progIco {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #e6912c, #cf7d1d);
+}
+
+.progMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.progText {
+  font-size: 14px;
+  line-height: 1;
+  color: $ink-85;
+
+  b {
+    font-weight: 700;
+    color: $ink;
+    font-variant-numeric: tabular-nums;
   }
 }
 
-// -------------------------------------------------------------- responsive
+.progTrack {
+  margin-top: 8px;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.progFill {
+  height: 100%;
+  border-radius: 10px;
+  background: $brand;
+  transition: width 0.5s $ease;
+}
+
+/* ---- buttons — verbatim GREEN_BTN / DARK_BTN ---- */
+.btnRow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.greenBtn,
+.darkBtn,
+.iconBtn {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  transition:
+    transform 0.12s $ease,
+    filter 0.15s $ease,
+    background 0.15s $ease,
+    box-shadow 0.15s $ease;
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.greenBtn {
+  flex: 1;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(to bottom, #81b64c, #5d9948);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 -1px 0 0 #45753c;
+
+  @include hover {
+    &:hover {
+      filter: brightness(1.04);
+    }
+  }
+  &:active {
+    filter: brightness(0.95);
+  }
+}
+
+.darkBtn {
+  flex: 1;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @include hover {
+    &:hover {
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
+    }
+  }
+}
+
+.iconBtn {
+  width: 56px;
+  flex: none;
+  color: rgba(255, 255, 255, 0.85);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @include hover {
+    &:hover {
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
+    }
+  }
+}
+
+.restart {
+  align-self: center;
+  border: 0;
+  background: transparent;
+  color: $muted;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s $ease;
+
+  @include hover {
+    &:hover {
+      color: $ink;
+    }
+  }
+}
+
+/* ------------------------------------------------------------ responsive */
 @include mq-max('lg') {
   .wrap {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.75rem;
+    gap: 1.5rem;
   }
   .device,
-  .side {
+  .panel {
     max-width: 34rem;
     margin-inline: auto;
     width: 100%;
-  }
-}
-
-@include reduced-motion {
-  .shake {
-    animation: none;
   }
 }

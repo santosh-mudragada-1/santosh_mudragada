@@ -370,10 +370,18 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   background: color-mix(in oklab, var(--accent) 4%, var(--bg));
 }
 
-// the playable set — pulled forward with a warmer panel + accent hairlines
+// the playable set — steps fully into Chess.com's dark product surface so it
+// reads as "this part is live"
 .tryOut {
-  background: color-mix(in oklab, var(--accent) 9%, var(--bg));
-  border-block: 1px solid color-mix(in oklab, var(--accent) 28%, transparent);
+  background: #302e2b;
+  border-block: 1px solid #3d3a37;
+
+  .h2 {
+    color: #fff;
+  }
+  .lede {
+    color: #b7b4b0;
+  }
 }
 
 // --------------------------------------------------- big pull quote
