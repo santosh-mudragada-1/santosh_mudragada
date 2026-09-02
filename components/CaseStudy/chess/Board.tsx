@@ -26,6 +26,10 @@ interface BoardProps {
   /** The move that produced this position — its piece slides into place. */
   lastMove?: { from: string; to: string } | null;
   showCoordinates?: boolean;
+  /** When set, squares are clickable (pointer cursor + this callback). */
+  onSquareClick?: (square: string) => void;
+  /** Overrides the default "Chess position" label. */
+  ariaLabel?: string;
   className?: string;
 }
 
@@ -43,6 +47,8 @@ export function Board({
   mated = false,
   lastMove = null,
   showCoordinates = true,
+  onSquareClick,
+  ariaLabel,
   className,
 }: BoardProps) {
   const cells = cellsForOrientation(boardFromFen(fen), orientation);
@@ -53,7 +59,8 @@ export function Board({
   return (
     <div
       role="img"
-      aria-label="Chess position"
+      aria-label={ariaLabel ?? 'Chess position'}
+      data-interactive={onSquareClick ? '' : undefined}
       className={`${styles.board}${className ? ` ${className}` : ''}`}
     >
       {cells.map((cell, i) => {
@@ -68,6 +75,7 @@ export function Board({
             key={cell.square}
             className={styles.sq}
             data-dark={!cell.light || undefined}
+            onClick={onSquareClick ? () => onSquareClick(cell.square) : undefined}
           >
             {danger === cell.square && (
               <span

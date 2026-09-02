@@ -370,6 +370,12 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   background: color-mix(in oklab, var(--accent) 4%, var(--bg));
 }
 
+// the playable set — pulled forward with a warmer panel + accent hairlines
+.tryOut {
+  background: color-mix(in oklab, var(--accent) 9%, var(--bg));
+  border-block: 1px solid color-mix(in oklab, var(--accent) 28%, transparent);
+}
+
 // --------------------------------------------------- big pull quote
 .quoteSec {
   padding-block: clamp(7rem, 18vh, 16rem);

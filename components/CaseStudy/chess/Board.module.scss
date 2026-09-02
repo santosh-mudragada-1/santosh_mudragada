@@ -21,6 +21,10 @@
   &[data-dark] {
     background: #769656; // board-dark
   }
+
+  .board[data-interactive] & {
+    cursor: pointer;
+  }
 }
 
 .hl {

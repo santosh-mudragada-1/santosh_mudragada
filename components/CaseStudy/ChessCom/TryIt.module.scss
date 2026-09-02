@@ -1,0 +1,283 @@
+@use 'mixins' as *;
+
+// The playable three-puzzle set. Dark Chess.com "device" on the left, coach
+// bubble + a running "what's happening" card on the right.
+.wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+  gap: clamp(1.75rem, 5vw, 4rem);
+  align-items: start;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+// -------------------------------------------------------------- device
+.device {
+  background: #262522;
+  border: 1px solid #3d3a37;
+  border-radius: 20px;
+  padding: clamp(0.9rem, 2.2vw, 1.4rem);
+}
+
+.deviceHead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.deviceTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 700;
+  color: #e98b8b;
+
+  i {
+    display: grid;
+    place-items: center;
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+    background: #e15353;
+    color: #fff;
+    font-style: normal;
+    font-size: 0.7em;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+  }
+}
+
+.devicePuzzle {
+  margin-left: auto;
+  color: #a3a19e;
+  font-variant-numeric: tabular-nums;
+
+  b {
+    color: #f2f0ed;
+    font-weight: 700;
+  }
+}
+
+.deviceDots {
+  color: #57544f;
+  letter-spacing: 0.15em;
+}
+
+.deviceBoard {
+  position: relative; // confetti
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  gap: 0.8rem;
+  align-items: stretch;
+  margin-top: 0.85rem;
+}
+
+.deviceEval {
+  display: flex;
+  align-items: stretch;
+}
+
+.shake {
+  animation: tryShake 0.42s var(--ease-quart-in-out);
+}
+
+@keyframes tryShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.deviceActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn,
+.btnPrimary,
+.btnGhost {
+  padding: 0.72em 1.1em;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s var(--ease-quart-in-out),
+    opacity 0.2s var(--ease-quart-in-out);
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+}
+
+.btnPrimary {
+  flex: 1 1 8rem;
+  border: 1px solid #7cb342;
+  background: #7cb342;
+  color: #16210a;
+
+  @include hover {
+    &:not(:disabled):hover {
+      background: #8bc34a;
+    }
+  }
+}
+
+.btn {
+  border: 1px solid #45423f;
+  background: #333230;
+  color: #e8e6e3;
+
+  @include hover {
+    &:not(:disabled):hover {
+      background: #3d3b39;
+    }
+  }
+}
+
+.btnGhost {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #9a9793;
+
+  @include hover {
+    &:hover {
+      color: #cbc9c6;
+    }
+  }
+}
+
+// -------------------------------------------------------------- side
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.happening {
+  background: #1f1e1c;
+  border: 1px solid #333230;
+  border-radius: 16px;
+  padding: clamp(1.1rem, 2.4vw, 1.6rem);
+}
+
+.happeningKick {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a5d16a;
+
+  i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+.happeningTitle {
+  margin: 0.7rem 0 0.5rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 1rem + 1vw, 1.5rem);
+  letter-spacing: -0.02em;
+  color: #f4f2ef;
+}
+
+.happeningBody {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #b3b1ad;
+}
+
+.happeningRule {
+  height: 1px;
+  border: 0;
+  margin: 1.05rem 0;
+  background: #333230;
+}
+
+.happeningStatus {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #cbc9c6;
+
+  span[data-state] {
+    display: inline-block;
+    margin-right: 0.65em;
+    padding: 0.2em 0.6em;
+    border-radius: 6px;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    vertical-align: 0.08em;
+  }
+  span[data-state='ready'] {
+    background: rgba(124, 179, 66, 0.18);
+    color: #a5d16a;
+  }
+  span[data-state='solved'] {
+    background: #7cb342;
+    color: #16210a;
+  }
+}
+
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+
+  span {
+    position: relative;
+    transition: color 0.3s var(--ease-quart-in-out);
+  }
+  span[data-on] {
+    color: var(--accent);
+  }
+  span[data-on]::before {
+    content: '✓ ';
+  }
+}
+
+// -------------------------------------------------------------- responsive
+@include mq-max('lg') {
+  .wrap {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+  .device,
+  .side {
+    max-width: 34rem;
+    margin-inline: auto;
+    width: 100%;
+  }
+}
+
+@include reduced-motion {
+  .shake {
+    animation: none;
+  }
+}

@@ -6,6 +6,7 @@ import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { HeroBoard } from './HeroBoard';
 import { JourneyScroll } from './JourneyScroll';
+import { TryIt } from './TryIt';
 import styles from './ChessCom.module.scss';
 
 const TAGS = ['UX', 'Game-based learning', 'Chess.com', 'Prototype'];
@@ -218,6 +219,19 @@ export function ChessCom() {
           The best puzzle for you is one you&rsquo;ve already <em>failed</em>: under a clock, in a
           game that mattered.
         </blockquote>
+      </section>
+
+      {/* ========================================================= TRY IT */}
+      <section className={`${styles.section} ${styles.tryOut}`} aria-labelledby="tryit">
+        <div className={styles.head}>
+          <p className={`${styles.kick} ${styles.rise}`}>Interactive</p>
+          <h2 id="tryit" className={`${styles.h2} ${styles.rise}`}>Your turn: three puzzles.</h2>
+        </div>
+        <p className={`${styles.lede} ${styles.rise}`}>
+          Live, right here: a back-rank mate, a knight fork and a hanging queen. Each state is
+          explained as it happens.
+        </p>
+        <TryIt />
       </section>
 
       {/* ========================================================== FAIR */}
