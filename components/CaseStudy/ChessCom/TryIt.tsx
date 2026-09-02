@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { motion, useAnimationControls } from 'framer-motion';
+import { AnimatePresence, motion, useAnimationControls } from 'framer-motion';
 import { Board, EvalBar, CoachBubble, Confetti } from '@/components/CaseStudy/chess';
 import { legalTargets } from '@/components/CaseStudy/chess/fen';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
@@ -150,14 +150,16 @@ export function TryIt() {
   const reduced = usePrefersReducedMotion();
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
-  const [hinted, setHinted] = useState(false);
+  const [hinted, setHinted] = useState(0); // 0 none · 1 piece · 2 + target
   const [cleared, setCleared] = useState<boolean[]>(() => PUZZLES.map(() => false));
   const [shake, setShake] = useState(0);
+  const [dismissed, setDismissed] = useState(false);
 
   const p = PUZZLES[idx];
   const solved = phase === 'solved';
   const last = idx === PUZZLES.length - 1;
   const allDone = cleared.every(Boolean);
+  const showDone = allDone && !dismissed;
 
   const markSolved = useCallback(() => {
     setPhase('solved');
@@ -182,13 +184,14 @@ export function TryIt() {
   const next = () => {
     setIdx((i) => i + 1);
     setPhase('idle');
-    setHinted(false);
+    setHinted(0);
   };
   const restart = () => {
     setIdx(0);
     setPhase('idle');
-    setHinted(false);
+    setHinted(0);
     setCleared(PUZZLES.map(() => false));
+    setDismissed(false);
   };
 
   const evalProps = solved ? p.evalSolved : p.evalStart;
@@ -241,7 +244,14 @@ export function TryIt() {
                       : `White to play. Click ${p.pieceHint}.`
                 }
                 wrong={phase === 'idle' ? [p.wrongMove.from, p.wrongMove.to] : []}
-                hint={!solved && (phase === 'picked' || hinted) ? [p.from] : []}
+                hint={
+                  solved
+                    ? []
+                    : [
+                        ...(phase === 'picked' || hinted >= 1 ? [p.from] : []),
+                        ...(hinted >= 2 ? [p.to] : []),
+                      ]
+                }
                 dots={phase === 'picked' ? legalTargets(p.fen, p.from) : []}
                 highlight={solved ? [p.from, p.to] : []}
                 lastMove={solved ? { from: p.from, to: p.to } : null}
@@ -250,6 +260,56 @@ export function TryIt() {
                 showCoordinates={false}
               />
               {solved && !reduced && <Confetti run count={allDone ? 64 : 38} />}
+
+              <AnimatePresence>
+                {showDone && (
+                  <motion.div
+                    className={styles.doneOverlay}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <motion.div
+                      className={styles.doneModal}
+                      initial={reduced ? false : { opacity: 0, scale: 0.9, y: 12 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                    >
+                      <span className={styles.donePiece} aria-hidden>
+                        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden focusable="false">
+                          <path
+                            fill="currentColor"
+                            d="M10.5 3a2 2 0 0 1 2 2c0 .3-.07.58-.18.83-.13.3.06.67.39.67H15a1 1 0 0 1 1 1v2.29c0 .33.37.52.67.39.25-.11.53-.18.83-.18a2 2 0 1 1 0 4c-.3 0-.58-.07-.83-.18-.3-.13-.67.06-.67.39V20a1 1 0 0 1-1 1h-3.29c-.33 0-.52-.37-.39-.67.11-.25.18-.53.18-.83a2 2 0 1 0-4 0c0 .3.07.58.18.83.13.3-.06.67-.39.67H4a1 1 0 0 1-1-1v-3.29c0-.33.37-.52.67-.39.25.11.53.18.83.18a2 2 0 1 0 0-4c-.3 0-.58.07-.83.18-.3.13-.67-.06-.67-.39V7a1 1 0 0 1 1-1h2.29c.33 0 .52-.37.39-.67A2 2 0 0 1 8.5 3Z"
+                          />
+                        </svg>
+                      </span>
+                      <p className={styles.doneKick}>Queue cleared</p>
+                      <h4 className={styles.doneHead}>Perfect set.</h4>
+                      <p className={styles.doneCopy}>
+                        Back-rank mate, knight fork, hanging queen. All three solved.
+                      </p>
+                      <button
+                        type="button"
+                        className={styles.greenBtn}
+                        onClick={restart}
+                        data-cursor="link"
+                      >
+                        Solve again
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.darkBtn}
+                        onClick={() => setDismissed(true)}
+                        data-cursor="link"
+                      >
+                        Close
+                      </button>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <div className={styles.evalCol}>
               <EvalBar {...evalProps} step={`${idx}-${phase}`} />
@@ -270,20 +330,11 @@ export function TryIt() {
           <button
             type="button"
             className={styles.darkBtn}
-            onClick={() => setHinted(true)}
-            disabled={solved || hinted}
+            onClick={() => setHinted((h) => Math.min(2, h + 1))}
+            disabled={solved || hinted >= 2}
             data-cursor="link"
           >
             Hint
-          </button>
-          <button
-            type="button"
-            className={styles.darkBtn}
-            onClick={markSolved}
-            disabled={solved}
-            data-cursor="link"
-          >
-            Show solution
           </button>
           <button
             type="button"
@@ -310,7 +361,12 @@ export function TryIt() {
 
         <div className={styles.brief}>
           {allDone ? (
-            <div className={styles.doneCard}>
+            <motion.div
+              className={styles.doneCard}
+              initial={reduced ? false : { opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+            >
               <p className={styles.solvedText}>
                 <Tick className={styles.tick24} /> Set complete
               </p>
@@ -320,7 +376,7 @@ export function TryIt() {
                   <li key={pz.tag}>{pz.tag}</li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ) : (
             <>
               {!solved && (
