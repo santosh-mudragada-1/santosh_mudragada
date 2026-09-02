@@ -469,42 +469,62 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   }
 }
 
-.gates {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
+// ---------------------------------------------------- built pieces
+.parts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
 }
 
-.gate {
+.part {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: 1.25rem 1.4rem;
+  padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.65rem);
 
   p {
-    margin-top: 0.5em;
     font-size: 0.9375rem;
-    color: var(--fg);
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+
+  &[data-context] {
+    border-style: dashed;
+    background: color-mix(in oklab, var(--fg) 3%, var(--bg));
   }
 }
 
-.gateName {
+.partTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.partName {
   font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-weight: 600;
+  font-size: 1.05rem;
   letter-spacing: -0.02em;
 }
 
-.gateOut {
-  color: var(--fg-muted) !important;
-  font-size: 0.85rem !important;
+.partTag {
+  flex: none;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  border-radius: 999px;
+  padding: 0.3em 0.7em;
 
-  span {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: color-mix(in oklab, var(--accent) 80%, var(--fg-muted));
-    margin-right: 0.5em;
+  .part[data-context] & {
+    color: var(--fg-muted);
+    border-color: var(--line);
   }
 }
 
@@ -580,48 +600,151 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   }
 }
 
-// ------------------------------------------------------- wall
-.wallRow {
-  position: relative;
+// ------------------------------------------------- wall / free vs premium
+.plans {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: clamp(2.5rem, 5vw, 4rem);
-  max-width: 52rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 2rem);
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
 }
 
-.wallTile {
+.planCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+
+  &[data-premium] {
+    border-color: color-mix(in oklab, #81b64c 40%, transparent);
+    background: color-mix(in oklab, #81b64c 5%, transparent);
+  }
+}
+
+.planHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.planName {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.planPill {
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: color-mix(in oklab, var(--fg) 6%, transparent);
+  border-radius: 999px;
+  padding: 0.4em 0.9em;
+
+  &[data-on] {
+    color: color-mix(in oklab, #81b64c 88%, var(--fg));
+    background: color-mix(in oklab, #81b64c 16%, transparent);
+  }
+}
+
+.planStrip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.7rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--fg) 4%, transparent);
+}
+
+.planWall {
+  flex: none;
+  align-self: stretch;
+  width: 0;
+  margin-inline: 3px;
+  border-left: 2px dashed #ca3431;
+}
+
+.planTile {
+  flex: 1 1 0;
+  min-width: 0;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--line);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+
+  svg {
+    display: block;
+  }
 
   &[data-state='done'] {
     background: #81b64c;
     border-color: #81b64c;
     color: #10240a;
   }
-  &[data-state='next'] {
-    box-shadow: inset 0 0 0 2px var(--accent);
+  &[data-state='current'] {
+    color: var(--fg);
     border-color: transparent;
+    box-shadow: inset 0 0 0 2px #81b64c;
   }
   &[data-state='locked'] {
-    color: var(--fg-muted);
+    opacity: 0.6;
+  }
+  &[data-state='upcoming'] {
     opacity: 0.5;
   }
 }
 
-.wallLine {
-  position: absolute;
-  top: -6px;
-  bottom: -6px;
-  // sits in the gap after the 3rd tile (25% of the row)
-  left: calc(25% - 4px);
-  width: 2px;
-  border-left: 2px dashed #ca3431;
+.planRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-md);
+  border-left: 3px solid color-mix(in oklab, var(--accent) 55%, transparent);
+  background: color-mix(in oklab, var(--fg) 3%, transparent);
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+
+  b {
+    color: var(--fg);
+    font-weight: 700;
+  }
+
+  .planCard[data-premium] & {
+    border-left-color: color-mix(in oklab, #81b64c 70%, transparent);
+  }
+}
+
+.planRowAside {
+  flex: none;
+  font-size: 0.8rem;
+}
+
+.planHint {
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: var(--fg-muted);
+}
+
+.planNote {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+
+  b {
+    font-weight: 600;
+    color: var(--fg);
+  }
 }
 
 // ---------------------------------------------------- decisions
@@ -787,10 +910,12 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
 
 @include mq-max('lg') {
   .versions,
-  .metrics {
+  .metrics,
+  .plans {
     grid-template-columns: minmax(0, 1fr);
   }
-  .netGrid {
+  .netGrid,
+  .parts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .carry {
@@ -816,12 +941,6 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   .carry {
     grid-template-columns: minmax(0, 1fr);
   }
-  .wallRow {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-  .wallLine {
-    display: none;
-  }
   .metric[data-primary] {
     grid-column: auto;
   }
@@ -831,8 +950,12 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   .h2 {
     max-width: none;
   }
-  .netGrid {
+  .netGrid,
+  .parts {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .planTile {
+    font-size: 0.7rem;
   }
   .dec li {
     grid-template-columns: minmax(0, 1fr);

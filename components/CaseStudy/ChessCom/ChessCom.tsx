@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { Fragment, useRef } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
@@ -18,11 +18,54 @@ const NET = [
   { band: '1800 +', n: 25, w: 100 },
 ];
 
-const GATES = [
-  { name: 'Findable', rule: 'First move is a capture, a check, or mate.', out: 'A quiet move nothing asks you to look at.' },
-  { name: 'Singular', rule: 'Beats the second-best move by a clear margin.', out: 'A coin toss you’re told you lost.' },
-  { name: 'Worth it', rule: 'Wins something decisive: mate or real material.', out: 'A puzzle whose answer wins a tenth of a pawn.' },
+const PARTS = [
+  {
+    name: 'Puzzle board',
+    role: 'Legal-move dots, a ring for captures, a shake on the wrong square, mate detection on the right one.',
+    tag: 'Runs live',
+  },
+  {
+    name: 'Engine eval bar',
+    role: 'The centipawn-and-mate scale, and the red band that shows exactly what the blunder gave away.',
+    tag: 'Runs live',
+  },
+  {
+    name: 'Coach',
+    role: 'Move classification — blunder, best, brilliant — and the one line that explains the current state.',
+    tag: 'Runs live',
+  },
+  {
+    name: 'Solve ladder',
+    role: 'Hint, then arrow, then reveal. Each step costs more; only the last one records a failure.',
+    tag: 'Runs live',
+  },
+  {
+    name: 'End-of-set card',
+    role: 'Clean, hinted and failed reported separately, with the next action ordered by usefulness.',
+    tag: 'Runs live',
+  },
+  {
+    name: 'Chess.com shell',
+    role: 'Nav, home and the surrounding pages — painted for context so the prototype has somewhere to live.',
+    tag: 'Context',
+  },
 ];
+
+const UPGRADE_FLOW = [
+  'Hit the wall at puzzle 3',
+  'Upgrade in place — no reload',
+  'Short celebration',
+  'Resume at puzzle 4',
+];
+
+function Lock() {
+  return (
+    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" aria-hidden>
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" fill="currentColor" />
+      <path d="M7.5 10.5V8a4.5 4.5 0 0 1 9 0v2.5" stroke="currentColor" strokeWidth="2.2" />
+    </svg>
+  );
+}
 
 const DECISIONS = [
   { n: '01', d: 'The engine’s best move is not a puzzle.', out: 'Puzzles that are unfair, not hard.' },
@@ -91,6 +134,55 @@ export function ChessCom() {
           ease: 'power3.out',
           stagger: 0.09,
           scrollTrigger: { trigger: bars[0].closest(`.${styles.netGrid}`), start: 'top 80%' },
+        });
+        kill.push(() => {
+          tw.scrollTrigger?.kill();
+          tw.kill();
+        });
+      }
+
+      // versions — V1 queue bars fill left-to-right
+      const vqBars = q<HTMLElement>(`.${styles.vQueue} span`);
+      if (vqBars.length && !reduced) {
+        const tw = gsap.from(vqBars, {
+          scaleX: 0,
+          transformOrigin: 'left',
+          duration: 0.55,
+          ease: 'power3.out',
+          stagger: 0.07,
+          scrollTrigger: { trigger: vqBars[0].closest(`.${styles.vCard}`), start: 'top 78%' },
+        });
+        kill.push(() => {
+          tw.scrollTrigger?.kill();
+          tw.kill();
+        });
+      }
+
+      // versions — V2 diary cells drop into the grid
+      const calCells = q<HTMLElement>(`.${styles.cal} span`);
+      if (calCells.length && !reduced) {
+        const tw = gsap.from(calCells, {
+          scale: 0.3,
+          duration: 0.5,
+          ease: 'back.out(1.6)',
+          stagger: { each: 0.02, grid: [4, 7], from: 'start' },
+          scrollTrigger: { trigger: calCells[0].closest(`.${styles.vCard}`), start: 'top 78%' },
+        });
+        kill.push(() => {
+          tw.scrollTrigger?.kill();
+          tw.kill();
+        });
+      }
+
+      // wall — plan tiles pop in along each strip
+      const planTiles = q<HTMLElement>(`.${styles.planTile}`);
+      if (planTiles.length && !reduced) {
+        const tw = gsap.from(planTiles, {
+          scale: 0.2,
+          duration: 0.4,
+          ease: 'back.out(1.7)',
+          stagger: 0.03,
+          scrollTrigger: { trigger: planTiles[0].closest(`.${styles.plans}`), start: 'top 80%' },
         });
         kill.push(() => {
           tw.scrollTrigger?.kill();
@@ -281,27 +373,6 @@ export function ChessCom() {
         </p>
       </section>
 
-      {/* ========================================================= GATES */}
-      <section className={styles.section} aria-labelledby="gates">
-        <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>The bar every puzzle clears</p>
-          <h2 id="gates" className={`${styles.h2} ${styles.rise}`}>
-            Three gates, every puzzle.
-          </h2>
-        </div>
-        <div className={`${styles.gates} ${styles.rise}`}>
-          {GATES.map((g) => (
-            <div key={g.name} className={styles.gate}>
-              <span className={styles.gateName}>{g.name}</span>
-              <p>{g.rule}</p>
-              <p className={styles.gateOut}>
-                <span>Rules out</span> {g.out}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ====================================================== VERSIONS */}
       <section className={styles.section} aria-labelledby="versions">
         <div className={styles.head}>
@@ -356,32 +427,33 @@ export function ChessCom() {
         </p>
       </section>
 
-      {/* ========================================================== WALL */}
-      <section className={styles.section} aria-labelledby="wall">
+      {/* =================================================== BUILT PIECES */}
+      <section className={styles.section} aria-labelledby="parts">
         <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>Free vs premium</p>
-          <h2 id="wall" className={`${styles.h2} ${styles.rise}`}>The wall is the pitch.</h2>
+          <p className={`${styles.kick} ${styles.rise}`}>What actually got built</p>
+          <h2 id="parts" className={`${styles.h2} ${styles.rise}`}>
+            The pieces, and which ones are wired.
+          </h2>
         </div>
         <p className={`${styles.lede} ${styles.rise}`}>
-          Free members see the whole set, locked, and exactly how far in the wall sits. Upgrading
-          resumes at the next puzzle, no reload.
+          Game-Based Puzzles runs end to end. Everything around it is painted for context, so the
+          flow has somewhere to happen.
         </p>
-
-        <div className={`${styles.wallRow} ${styles.rise}`} aria-hidden>
-          {Array.from({ length: 12 }).map((_, i) => (
-            <span
-              key={i}
-              className={styles.wallTile}
-              data-state={i < 3 ? 'done' : i === 3 ? 'next' : 'locked'}
+        <div className={styles.parts}>
+          {PARTS.map((p) => (
+            <div
+              key={p.name}
+              className={`${styles.part} ${styles.rise}`}
+              data-context={p.tag === 'Context' || undefined}
             >
-              {i < 3 ? '✓' : i >= 4 ? '⌐' : ''}
-            </span>
+              <span className={styles.partTop}>
+                <span className={styles.partName}>{p.name}</span>
+                <span className={styles.partTag}>{p.tag}</span>
+              </span>
+              <p>{p.role}</p>
+            </div>
           ))}
-          <span className={styles.wallLine} />
         </div>
-        <p className={`${styles.micro} ${styles.rise}`}>
-          Counter reads <em>Puzzle 3 / 12</em>, the whole set, never <em>3 / 3</em>.
-        </p>
       </section>
 
       {/* ===================================================== DECISIONS */}
@@ -403,6 +475,94 @@ export function ChessCom() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* ========================================================== WALL */}
+      <section className={styles.section} aria-labelledby="wall">
+        <div className={styles.head}>
+          <p className={`${styles.kick} ${styles.rise}`}>Free vs premium</p>
+          <h2 id="wall" className={`${styles.h2} ${styles.rise}`}>The wall is the pitch.</h2>
+        </div>
+        <p className={`${styles.lede} ${styles.rise}`}>
+          The set is never trimmed for free members. They see all twelve, and exactly how far in
+          the wall sits.
+        </p>
+
+        <div className={styles.plans}>
+          <div className={`${styles.planCard} ${styles.rise}`}>
+            <div className={styles.planHead}>
+              <span className={styles.planName}>Free</span>
+              <span className={styles.planPill}>3 puzzles a day</span>
+            </div>
+            <div className={styles.planStrip} aria-hidden>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <Fragment key={i}>
+                  {i === 3 && <span className={styles.planWall} />}
+                  <span className={styles.planTile} data-state={i < 3 ? 'done' : 'locked'}>
+                    {i < 3 ? '✓' : <Lock />}
+                  </span>
+                </Fragment>
+              ))}
+            </div>
+            <div className={styles.planRow}>
+              <span>
+                Counter reads <b>Puzzle 3 / 12</b>
+              </span>
+              <span className={styles.planRowAside}>not 3 / 3</span>
+            </div>
+            <p className={styles.planHint}>Locked puzzles stay visible, greyed.</p>
+            <p className={styles.planNote}>
+              A queue that looks three long has nothing to sell.{' '}
+              <b>The puzzles you can see but can&rsquo;t reach are the argument</b> &mdash; stated
+              as a fact, not a sales line.
+            </p>
+          </div>
+
+          <div className={`${styles.planCard} ${styles.rise}`} data-premium>
+            <div className={styles.planHead}>
+              <span className={styles.planName}>Premium</span>
+              <span className={styles.planPill} data-on>
+                The whole set
+              </span>
+            </div>
+            <div className={styles.planStrip} aria-hidden>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <span
+                  key={i}
+                  className={styles.planTile}
+                  data-state={i < 9 ? 'done' : i === 9 ? 'current' : 'upcoming'}
+                >
+                  {i < 9 ? '✓' : i + 1}
+                </span>
+              ))}
+            </div>
+            <div className={styles.planRow}>
+              <span>
+                End card <b>You&rsquo;re all caught up!</b>
+              </span>
+            </div>
+            <p className={styles.planHint}>Retry 3 · Next theme · Solve again.</p>
+            <p className={styles.planNote}>
+              The end card is about improvement, not celebration. Actions are ordered by
+              usefulness and the default focus moves down the list as options disappear &mdash;{' '}
+              <b>the most useful remaining action is always under your finger</b>.
+            </p>
+          </div>
+        </div>
+
+        <ol className={`${styles.loop} ${styles.rise}`} aria-label="Upgrade flow">
+          {UPGRADE_FLOW.map((s, i) => (
+            <li key={s}>
+              <span>{String(i + 1).padStart(2, '0')}</span>
+              {s}
+            </li>
+          ))}
+        </ol>
+
+        <p className={`${styles.micro} ${styles.rise}`}>
+          The most common way to ruin an upgrade moment is to make someone find their place
+          again.
+        </p>
       </section>
 
       {/* ====================================================== MEASURE */}
