@@ -17,35 +17,6 @@ const Tick = ({ className }: { className?: string }) => (
     />
   </svg>
 );
-const stroke = {
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 2,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-};
-const IcoRetry = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false" {...stroke}>
-    <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
-    <path d="M3 3v5h5" />
-  </svg>
-);
-const IcoArrow = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false" {...stroke}>
-    <path d="M5 12h13M13 5l7 7-7 7" />
-  </svg>
-);
-const IcoBulb = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false" {...stroke}>
-    <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.7.6 1 1.3 1 2.3h6c0-1 .3-1.7 1-2.3A7 7 0 0 0 12 2Z" />
-  </svg>
-);
-const IcoSearch = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false" {...stroke}>
-    <circle cx="11" cy="11" r="7" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-);
 
 /* ---------------------------------------------------------------- figurine */
 const GLYPH: Record<string, string> = { R: '♖', N: '♘', B: '♗', Q: '♕', K: '♔' };
@@ -187,8 +158,6 @@ export function TryIt() {
   const solved = phase === 'solved';
   const last = idx === PUZZLES.length - 1;
   const allDone = cleared.every(Boolean);
-  const doneCount = cleared.filter(Boolean).length;
-  const pct = Math.round((doneCount / PUZZLES.length) * 100);
 
   const markSolved = useCallback(() => {
     setPhase('solved');
@@ -215,10 +184,6 @@ export function TryIt() {
     setPhase('idle');
     setHinted(false);
   };
-  const retry = () => {
-    setPhase('idle');
-    setHinted(false);
-  };
   const restart = () => {
     setIdx(0);
     setPhase('idle');
@@ -228,24 +193,41 @@ export function TryIt() {
 
   const evalProps = solved ? p.evalSolved : p.evalStart;
 
+  const whTitle = allDone
+    ? 'Set complete'
+    : solved
+      ? 'Solved'
+      : phase === 'picked'
+        ? 'Your move'
+        : `Puzzle ${idx + 1} of ${PUZZLES.length}`;
+  const whBody = allDone
+    ? 'Three tactics from one player’s week, all solved: a back-rank mate, a knight fork and a hanging queen.'
+    : solved
+      ? 'The move lands and the eval bar sweeps back to where it should have been. Green sweep, no popup.'
+      : phase === 'picked'
+        ? 'Every legal square is marked. The real feature only accepts the tactic, not any legal move.'
+        : 'It opens on the position from your game, one move before the mistake. The red squares are the move you actually played.';
+
   return (
     <div className={styles.wrap}>
-      {/* ----------------------------------------------- board / device */}
+      {/* --------------------------------------------------- left: board card */}
       <div className={styles.device}>
         <div className={styles.deviceHead}>
           <span className={styles.deviceTag}>
-            <i aria-hidden>??</i> Missed tactic
+            <i aria-hidden>??</i> {p.tag}
           </span>
-          <span className={styles.deviceDots} aria-hidden>
-            •••
+          <span className={styles.devicePuzzle}>
+            Puzzle <b>{idx + 1} / {PUZZLES.length}</b>
+          </span>
+          <span className={styles.dots} aria-hidden>
+            {PUZZLES.map((pz, i) => (
+              <span key={pz.tag} data-on={cleared[i] || undefined} />
+            ))}
           </span>
         </div>
 
         <BoardShake signal={shake} reduced={reduced}>
           <div className={styles.boardRow}>
-            <div className={styles.evalCol}>
-              <EvalBar {...evalProps} step={`${idx}-${phase}`} />
-            </div>
             <div className={styles.boardBox}>
               <Board
                 fen={solved ? p.solvedFen : p.fen}
@@ -269,11 +251,52 @@ export function TryIt() {
               />
               {solved && !reduced && <Confetti run count={allDone ? 64 : 38} />}
             </div>
+            <div className={styles.evalCol}>
+              <EvalBar {...evalProps} step={`${idx}-${phase}`} />
+            </div>
           </div>
         </BoardShake>
+
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.greenBtn}
+            onClick={next}
+            disabled={!solved || last}
+            data-cursor="link"
+          >
+            Next puzzle
+          </button>
+          <button
+            type="button"
+            className={styles.darkBtn}
+            onClick={() => setHinted(true)}
+            disabled={solved || hinted}
+            data-cursor="link"
+          >
+            Hint
+          </button>
+          <button
+            type="button"
+            className={styles.darkBtn}
+            onClick={markSolved}
+            disabled={solved}
+            data-cursor="link"
+          >
+            Show solution
+          </button>
+          <button
+            type="button"
+            className={styles.ghostBtn}
+            onClick={restart}
+            data-cursor="link"
+          >
+            Restart set
+          </button>
+        </div>
       </div>
 
-      {/* ----------------------------------------------- panel */}
+      {/* --------------------------------------------------- right: panel */}
       <div className={styles.panel}>
         <div className={styles.classTag}>
           <span className={styles.classIco} aria-hidden />
@@ -380,75 +403,12 @@ export function TryIt() {
           )}
         </div>
 
-        {/* ---- footer: progress + actions ---- */}
-        <div className={styles.footer}>
-          <div className={styles.progressRow}>
-            <span className={styles.progIco} aria-hidden />
-            <div className={styles.progMain}>
-              <p className={styles.progText}>
-                <b>
-                  {doneCount}/{PUZZLES.length}
-                </b>{' '}
-                completed
-              </p>
-              <div className={styles.progTrack}>
-                <div className={styles.progFill} style={{ width: `${pct}%` }} />
-              </div>
-            </div>
-          </div>
-
-          {solved ? (
-            <div className={styles.btnRow}>
-              <button
-                type="button"
-                className={styles.iconBtn}
-                onClick={retry}
-                aria-label="Retry puzzle"
-                data-cursor="link"
-              >
-                <IcoRetry />
-              </button>
-              <button
-                type="button"
-                className={styles.greenBtn}
-                onClick={last ? restart : next}
-                data-cursor="link"
-              >
-                {last ? (
-                  <>
-                    Finish <Tick className={styles.tick18} />
-                  </>
-                ) : (
-                  <>
-                    Next <IcoArrow />
-                  </>
-                )}
-              </button>
-            </div>
-          ) : (
-            <div className={styles.btnRow}>
-              <button
-                type="button"
-                className={styles.darkBtn}
-                onClick={() => (hinted ? markSolved() : setHinted(true))}
-                data-cursor="link"
-              >
-                {hinted ? (
-                  <>
-                    <IcoSearch /> Show solution
-                  </>
-                ) : (
-                  <>
-                    <IcoBulb /> Hint
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          <button type="button" className={styles.restart} onClick={restart} data-cursor="link">
-            Restart set
-          </button>
+        <div className={styles.happening}>
+          <p className={styles.happeningKick}>
+            <i aria-hidden /> What&rsquo;s happening
+          </p>
+          <h3 className={styles.happeningTitle}>{whTitle}</h3>
+          <p className={styles.happeningBody}>{whBody}</p>
         </div>
       </div>
     </div>

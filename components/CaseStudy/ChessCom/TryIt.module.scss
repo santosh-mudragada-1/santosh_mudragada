@@ -1,8 +1,7 @@
 @use 'mixins' as *;
 
 // Chess.com dark-theme tokens, lifted verbatim from the prototype
-// (tailwind.config.ts + puzzle-solver.tsx). The whole widget renders on this
-// palette, not the portfolio's paper theme.
+// (tailwind.config.ts + puzzle-solver.tsx).
 $surface: #262522;
 $sunken: #1f1e1c;
 $line: #3d3a37;
@@ -11,31 +10,32 @@ $ink-85: rgba(255, 255, 255, 0.85);
 $muted: #a3a19e;
 $label: #9e9c99;
 $brand: #81b64c;
-$brand-hi: #8ec155;
 $wrong: #e0625c;
 $ease: cubic-bezier(0.22, 1, 0.36, 1);
 
 .wrap {
   display: grid;
-  grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 33rem) minmax(0, 1fr);
   gap: clamp(1.5rem, 4vw, 3rem);
   align-items: start;
   margin-top: clamp(2rem, 4vw, 3rem);
 }
 
-/* ------------------------------------------------------------ left / board */
+/* ================================================= left — the board card */
 .device {
-  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  border-radius: 16px;
   background: $surface;
   border: 1px solid $line;
-  padding: clamp(0.9rem, 2vw, 1.25rem);
+  padding: clamp(0.9rem, 2vw, 1.3rem);
 }
 
 .deviceHead {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.8rem;
   font-size: 0.8125rem;
 }
 
@@ -43,14 +43,17 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
+  min-width: 0;
   font-weight: 700;
   color: $wrong;
+  white-space: nowrap;
 
   i {
     display: grid;
     place-items: center;
     width: 1.5em;
     height: 1.5em;
+    flex: none;
     border-radius: 50%;
     background: #e15353;
     color: #fff;
@@ -61,22 +64,37 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-.deviceDots {
-  margin-left: auto;
-  color: #57544f;
-  letter-spacing: 0.15em;
+.devicePuzzle {
+  margin: 0 auto;
+  color: $muted;
+  font-variant-numeric: tabular-nums;
+
+  b {
+    color: $ink;
+    font-weight: 700;
+  }
+}
+
+.dots {
+  display: inline-flex;
+  gap: 5px;
+
+  span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    transition: background 0.3s $ease;
+  }
+  span[data-on] {
+    background: $brand;
+  }
 }
 
 .boardRow {
   display: flex;
-  gap: 0.7rem;
+  gap: 0.6rem;
   align-items: stretch;
-}
-
-.evalCol {
-  display: flex;
-  width: 24px;
-  flex: none;
 }
 
 .boardBox {
@@ -86,19 +104,121 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   aspect-ratio: 1;
 }
 
-/* ------------------------------------------------------------------ panel */
+.evalCol {
+  display: flex;
+  width: 24px;
+  flex: none;
+}
+
+/* ---- action row (under the board) ---- */
+.actions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.greenBtn,
+.darkBtn {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 0.12s $ease,
+    filter 0.15s $ease,
+    background 0.15s $ease,
+    box-shadow 0.15s $ease;
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+// GREEN_BTN — verbatim
+.greenBtn {
+  flex: 2 1 9rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(to bottom, #81b64c, #5d9948);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 -1px 0 0 #45753c;
+
+  @include hover {
+    &:hover {
+      filter: brightness(1.04);
+    }
+  }
+  &:active {
+    filter: brightness(0.95);
+  }
+}
+
+// DARK_BTN — verbatim
+.darkBtn {
+  flex: 1 1 6rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @include hover {
+    &:hover {
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
+    }
+  }
+}
+
+.ghostBtn {
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.9rem;
+  border: 0;
+  background: transparent;
+  color: $muted;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s $ease;
+
+  @include hover {
+    &:hover {
+      color: $ink;
+    }
+  }
+}
+
+/* ================================================= right — the panel */
 .panel {
-  --pad: clamp(1.1rem, 2.4vw, 1.5rem);
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
-  border-radius: 14px;
+  border-radius: 16px;
   background: $surface;
   border: 1px solid $line;
-  padding: var(--pad);
+  padding: clamp(1.1rem, 2.4vw, 1.5rem);
 }
 
-// "Back-rank mate vs M. Kowalski   [Medium]"
 .classTag {
   display: flex;
   align-items: center;
@@ -162,7 +282,6 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   color: $label;
 }
 
-// CARD — flat white 5% wash, radius 10
 .card {
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
@@ -254,7 +373,6 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   white-space: nowrap;
 }
 
-// PanelRow — 56px, badge + text on the white 5% wash
 .panelRow {
   display: flex;
   align-items: center;
@@ -281,9 +399,6 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   &[data-side='white'] {
     background: #fff;
   }
-  &[data-side='black'] {
-    background: #312e2b;
-  }
 }
 
 .tickCircle {
@@ -299,10 +414,6 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
 .tick16 {
   width: 16px;
   height: 16px;
-}
-.tick18 {
-  width: 18px;
-  height: 18px;
 }
 .tick24 {
   width: 24px;
@@ -324,7 +435,6 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-// SolvedBar — solid brand green, 56px
 .solvedBar {
   position: relative;
   display: flex;
@@ -378,7 +488,6 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-// set-complete card
 .doneCard {
   border-radius: 10px;
   padding: 16px;
@@ -419,172 +528,48 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-/* ---- footer ---- */
-.footer {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 0.25rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
-  padding: 16px var(--pad) var(--pad);
-  border-top: 1px solid rgba(61, 58, 55, 0.4);
-  background: rgba(0, 0, 0, 0.14);
-  border-radius: 0 0 13px 13px;
+/* ---- what's happening ---- */
+.happening {
+  border-radius: 12px;
+  background: $sunken;
+  border: 1px solid $line;
+  padding: clamp(1.1rem, 2.4vw, 1.5rem);
 }
 
-.progressRow {
+.happeningKick {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.progIco {
-  flex: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: linear-gradient(180deg, #e6912c, #cf7d1d);
-}
-
-.progMain {
-  flex: 1;
-  min-width: 0;
-}
-
-.progText {
-  font-size: 14px;
-  line-height: 1;
-  color: $ink-85;
-
-  b {
-    font-weight: 700;
-    color: $ink;
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-.progTrack {
-  margin-top: 8px;
-  height: 12px;
-  overflow: hidden;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.progFill {
-  height: 100%;
-  border-radius: 10px;
-  background: $brand;
-  transition: width 0.5s $ease;
-}
-
-/* ---- buttons — verbatim GREEN_BTN / DARK_BTN ---- */
-.btnRow {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-}
-
-.greenBtn,
-.darkBtn,
-.iconBtn {
-  display: flex;
-  height: 48px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 10px;
-  font-family: inherit;
-  font-size: 15px;
-  cursor: pointer;
-  transition:
-    transform 0.12s $ease,
-    filter 0.15s $ease,
-    background 0.15s $ease,
-    box-shadow 0.15s $ease;
-
-  &:disabled {
-    pointer-events: none;
-    opacity: 0.5;
-  }
-  &:active {
-    transform: translateY(1px);
-  }
-}
-
-.greenBtn {
-  flex: 1;
+  gap: 0.55em;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: #fff;
-  background: linear-gradient(to bottom, #81b64c, #5d9948);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.14),
-    0 2px 4px rgba(0, 0, 0, 0.1),
-    inset 0 -1px 0 0 #45753c;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a5d16a;
 
-  @include hover {
-    &:hover {
-      filter: brightness(1.04);
-    }
-  }
-  &:active {
-    filter: brightness(0.95);
+  i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
   }
 }
 
-.darkBtn {
-  flex: 1;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.14),
-    0 2px 4px rgba(0, 0, 0, 0.1);
-
-  @include hover {
-    &:hover {
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
-    }
-  }
+.happeningTitle {
+  margin: 0.7rem 0 0.5rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 1rem + 1vw, 1.5rem);
+  letter-spacing: -0.02em;
+  color: #f4f2ef;
 }
 
-.iconBtn {
-  width: 56px;
-  flex: none;
-  color: rgba(255, 255, 255, 0.85);
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.14),
-    0 2px 4px rgba(0, 0, 0, 0.1);
-
-  @include hover {
-    &:hover {
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
-    }
-  }
+.happeningBody {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #b3b1ad;
 }
 
-.restart {
-  align-self: center;
-  border: 0;
-  background: transparent;
-  color: $muted;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.15s $ease;
-
-  @include hover {
-    &:hover {
-      color: $ink;
-    }
-  }
-}
-
-/* ------------------------------------------------------------ responsive */
+/* ================================================= responsive */
 @include mq-max('lg') {
   .wrap {
     grid-template-columns: minmax(0, 1fr);
