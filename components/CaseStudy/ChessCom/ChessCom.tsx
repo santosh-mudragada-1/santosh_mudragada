@@ -13,8 +13,8 @@ const TAGS = ['UX', 'Game-based learning', 'Chess.com', 'Prototype'];
 
 const NET = [
   { band: 'Under 1000', n: 6, w: 24 },
-  { band: '1000–1400', n: 10, w: 40 },
-  { band: '1400–1800', n: 16, w: 64 },
+  { band: '1000 – 1400', n: 10, w: 40 },
+  { band: '1400 – 1800', n: 16, w: 64 },
   { band: '1800 +', n: 25, w: 100 },
 ];
 
@@ -90,7 +90,7 @@ export function ChessCom() {
           duration: 1,
           ease: 'power3.out',
           stagger: 0.09,
-          scrollTrigger: { trigger: bars[0].closest(`.${styles.net}`), start: 'top 80%' },
+          scrollTrigger: { trigger: bars[0].closest(`.${styles.netGrid}`), start: 'top 80%' },
         });
         kill.push(() => {
           tw.scrollTrigger?.kill();
@@ -234,55 +234,71 @@ export function ChessCom() {
         <TryIt />
       </section>
 
+      {/* ================================================ INSIGHT (fair) */}
+      <section className={`${styles.section} ${styles.quoteSec}`}>
+        <blockquote className={`${styles.quote} ${styles.rise}`}>
+          The hard part was never generating puzzles. It was generating <em>fair</em> ones.
+        </blockquote>
+        <p className={`${styles.quoteBy} ${styles.rise}`}>The finding that reshaped the product</p>
+      </section>
+
       {/* ========================================================== FAIR */}
       <section className={styles.section} aria-labelledby="fair">
         <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>How the set is built</p>
+          <p className={`${styles.kick} ${styles.rise}`}>How the set gets built</p>
           <h2 id="fair" className={`${styles.h2} ${styles.rise}`}>
-            The hard part wasn&rsquo;t generating puzzles.
-            <br />
-            It was generating <em>fair</em> ones.
+            Rating decides how wide we cast the net.
           </h2>
         </div>
 
-        <div className={styles.rules}>
-          <div className={`${styles.rule} ${styles.rise}`}>
-            <h3 className={styles.h3}>
-              <span className={styles.ruleN}>1</span> Rating widens the net
-            </h3>
-            <p className={styles.note}>
-              Search depth is read off your Elo, not fixed at a round number. The net widens; the
-              gates don&rsquo;t move.
-            </p>
-            <div className={styles.net}>
-              {NET.map((r) => (
-                <div key={r.band} className={styles.netRow}>
-                  <span className={styles.netBand}>{r.band}</span>
-                  <span className={styles.netBar}>
-                    <i style={{ width: `${r.w}%` }} />
-                  </span>
-                  <b className={styles.netN}>{r.n}</b>
-                </div>
-              ))}
-            </div>
-          </div>
+        <p className={`${styles.fairLede} ${styles.rise}`}>
+          <b>Prototype heuristic:</b> a lower-rated player&rsquo;s games may hold more teachable
+          moments, while a stronger player&rsquo;s games may need a wider search to find
+          worthwhile ones. So the depth of analysis is read off the player&rsquo;s Elo, rather
+          than fixed at one number of games.
+        </p>
+        <p className={`${styles.fairNote} ${styles.rise}`}>
+          An exploration rule, not a validated formula &mdash; the bands below are a starting
+          point to test, not a measured result.
+        </p>
 
-          <div className={`${styles.rule} ${styles.rise}`}>
-            <h3 className={styles.h3}>
-              <span className={styles.ruleN}>2</span> Three gates, every puzzle
-            </h3>
-            <div className={styles.gates}>
-              {GATES.map((g) => (
-                <div key={g.name} className={styles.gate}>
-                  <span className={styles.gateName}>{g.name}</span>
-                  <p>{g.rule}</p>
-                  <p className={styles.gateOut}>
-                    <span>Rules out</span> {g.out}
-                  </p>
-                </div>
-              ))}
+        <div className={`${styles.netGrid} ${styles.rise}`}>
+          {NET.map((r) => (
+            <div key={r.band} className={styles.netCard}>
+              <span className={styles.netCardBand}>{r.band}</span>
+              <b className={styles.netCardN}>{r.n}</b>
+              <span className={styles.netCardLabel}>games analysed</span>
+              <span className={styles.netBar}>
+                <i style={{ width: `${r.w}%` }} />
+              </span>
             </div>
-          </div>
+          ))}
+        </div>
+
+        <p className={`${styles.micro} ${styles.rise}`}>
+          The set size is still never padded &mdash; the net widens, the quality gates
+          don&rsquo;t move. If the games only held eight fair puzzles, the set is eight.
+        </p>
+      </section>
+
+      {/* ========================================================= GATES */}
+      <section className={styles.section} aria-labelledby="gates">
+        <div className={styles.head}>
+          <p className={`${styles.kick} ${styles.rise}`}>The bar every puzzle clears</p>
+          <h2 id="gates" className={`${styles.h2} ${styles.rise}`}>
+            Three gates, every puzzle.
+          </h2>
+        </div>
+        <div className={`${styles.gates} ${styles.rise}`}>
+          {GATES.map((g) => (
+            <div key={g.name} className={styles.gate}>
+              <span className={styles.gateName}>{g.name}</span>
+              <p>{g.rule}</p>
+              <p className={styles.gateOut}>
+                <span>Rules out</span> {g.out}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
