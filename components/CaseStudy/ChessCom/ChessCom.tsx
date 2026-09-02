@@ -235,10 +235,7 @@ function BuiltPieces() {
         </div>
         <figcaption className={styles.tileCap}>
           <h4>Home hero card</h4>
-          <p>
-            Reads the same progress state the solver writes to — it can never drift.{' '}
-            <em>Hover.</em>
-          </p>
+          <p>Reads the same progress state the solver writes to — it can never drift.</p>
         </figcaption>
       </figure>
 
@@ -301,10 +298,13 @@ function BuiltPieces() {
               <span
                 key={b.name}
                 className={styles.bBadge}
-                style={{ color: b.color, ['--i' as string]: `${i * 30}ms` }}
+                style={{
+                  color: `color-mix(in oklab, ${b.color} 72%, var(--fg))`,
+                  ['--i' as string]: `${i * 30}ms`,
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/case-study/move-types/${b.icon}.png`} alt="" width={20} height={20} />
+                <img src={`/case-study/move-types/${b.icon}.png`} alt="" width={28} height={28} />
                 {b.name}
               </span>
             ))}
@@ -313,9 +313,7 @@ function BuiltPieces() {
         </div>
         <figcaption className={styles.tileCap}>
           <h4>Classification badges</h4>
-          <p>
-            Official art, one colour each — the taxonomy the queue is built on. <em>Hover.</em>
-          </p>
+          <p>Official art, one colour each — the taxonomy the queue is built on.</p>
         </figcaption>
       </figure>
 

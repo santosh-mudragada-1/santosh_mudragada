@@ -470,13 +470,9 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
 }
 
 // ------------------------------------------ built pieces (the bento)
-// Framer §9.6 — real prototype screens on the Chess.com surface, each framed
-// by a portfolio-theme tile. Outer tile = paper; inner frame = #302e2b.
-$cc-bg: #302e2b;
-$cc-raised: #353331;
-$cc-ink: #ffffff;
-$cc-muted: #b7b4b0;
-$cc-soft: #a3a19e;
+// Framer §9.6 — real prototype screens, framed by portfolio-theme tiles.
+// Everything (tile + inner well + sub-cards) is on paper; only the buttons,
+// board art, icons and animations stay Chess.com.
 $cc-brand: #81b64c;
 $cc-brand-hover: #8ec155;
 $cc-brand-edge: #4c7a2f;
@@ -546,10 +542,10 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
-/* inner well — Chess.com surface */
+/* inner well — a faint paper surface, so white sub-cards still read */
 .tileFrame {
   flex: 1;
-  background: $cc-bg;
+  background: color-mix(in oklab, var(--fg) 3%, var(--bg));
   padding: 20px;
   display: grid;
   place-items: center;
@@ -591,12 +587,10 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   overflow: clip;
-  border-radius: 5px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.14),
-    0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.28);
 }
 
 .bPreviewBoard {
@@ -617,7 +611,7 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
   gap: 7px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: $cc-ink;
+  color: var(--fg);
   margin: 0 0 6px;
 
   img {
@@ -628,7 +622,7 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
 
 .bPreviewSub {
   font-size: 0.9rem;
-  color: $cc-muted;
+  color: var(--fg-muted);
   margin: 0 0 9px;
 }
 
@@ -645,7 +639,7 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
 .bProgress {
   height: 10px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.28);
+  background: color-mix(in oklab, var(--fg) 12%, transparent);
   overflow: hidden;
   margin-bottom: 11px;
 }
@@ -753,11 +747,11 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
 .bEval {
   position: relative;
   flex: 1;
-  width: 26px;
+  width: 28px;
   border-radius: 3px;
   overflow: hidden;
   background: $ev-dark;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--fg) 18%, transparent);
 }
 
 .bEvalFill {
@@ -845,14 +839,14 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 0.6875rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: $cc-soft;
+  color: var(--fg-muted);
 }
 
 /* --- classification badge stack --- */
 .bStack {
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 15px;
   align-items: flex-start;
   width: 100%;
 }
@@ -860,16 +854,16 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
 .bBadge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
   line-height: 1;
   transition: transform 0.45s $cc-out;
   transition-delay: var(--i, 0ms);
 
   img {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
   }
 }
 .tileBadges:hover .bBadge {
@@ -877,9 +871,9 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bStackNote {
-  margin-top: 6px;
-  font-size: 0.6875rem;
-  color: $cc-soft;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
 }
 
 /* --- coach --- */
@@ -901,14 +895,14 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
   flex: 1;
   min-width: 200px;
   border-radius: 8px;
-  background: $cc-raised;
-  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.6);
+  background: var(--bg);
+  border: 1px solid color-mix(in oklab, #{$cc-brand} 32%, var(--line));
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.28);
   padding: 18px;
   text-align: center;
-  border: 1px solid color-mix(in oklab, #{$cc-brand} 30%, transparent);
 
   &:first-child {
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: var(--line);
   }
 }
 
@@ -917,7 +911,7 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 1.05rem;
   font-weight: 700;
   margin: 0 0 12px;
-  color: $cc-ink;
+  color: var(--fg);
 }
 
 .bCompleteStats {
@@ -930,7 +924,7 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
     gap: 4px;
-    background: rgba(0, 0, 0, 0.25);
+    background: color-mix(in oklab, var(--fg) 6%, transparent);
     border-radius: 6px;
     padding: 9px 4px;
   }
@@ -939,12 +933,12 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
     font-size: 1.15rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    color: $cc-ink;
+    color: var(--fg);
     line-height: 1;
   }
   span {
     font-size: 0.6875rem;
-    color: $cc-soft;
+    color: var(--fg-muted);
   }
 }
 
@@ -963,9 +957,9 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
   gap: 10px;
   padding: 10px 12px;
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.22);
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
   font-size: 0.82rem;
-  color: $cc-muted;
+  color: var(--fg-muted);
 }
 
 .bRowMistake {
@@ -973,8 +967,8 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bRowSolved {
-  background: rgba(129, 182, 76, 0.16);
-  color: $cc-brand-ink;
+  background: color-mix(in oklab, #{$cc-brand} 16%, transparent);
+  color: color-mix(in oklab, #{$cc-brand} 62%, var(--fg));
   border-left: 3px solid $cc-brand;
 }
 
@@ -994,7 +988,7 @@ $cc-out: cubic-bezier(0.16, 1, 0.3, 1);
 
 .bRowPulse {
   justify-content: center;
-  color: $cc-brand-ink;
+  color: color-mix(in oklab, #{$cc-brand} 62%, var(--fg));
   font-weight: 600;
   animation: cc-row-breathe 3.2s ease-in-out infinite;
 }
