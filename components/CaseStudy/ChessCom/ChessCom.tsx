@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useRef } from 'react';
+import { Fragment, useRef, type ReactNode } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
@@ -83,12 +83,178 @@ const CAL_CLEARED = [3, 4, 8, 11, 15, 16, 22];
 const CAL_HAS = [5, 9, 12, 18, 19, 23, 25];
 const CAL_TODAY = 26;
 
+// Decisions "spine" — the rejected build (left) vs the shipped direction (right)
+function BeatEvidence({ n, styles }: { n: string; styles: Record<string, string> }) {
+  const no = (children: ReactNode, micro: string) => (
+    <div className={styles.abPanel} data-no>
+      <span className={styles.abTag}>✕ First build</span>
+      {children}
+      <span className={styles.abMicro}>{micro}</span>
+    </div>
+  );
+  const yes = (children: ReactNode, micro: string) => (
+    <div className={styles.abPanel} data-yes>
+      <span className={styles.abTag}>✓ Refined direction</span>
+      {children}
+      <span className={styles.abMicro}>{micro}</span>
+    </div>
+  );
+  const row = (text: ReactNode, tone?: 'good' | 'bad') => (
+    <div className={styles.solverRow} data-tone={tone}>
+      {text}
+    </div>
+  );
+
+  let left: ReactNode;
+  let right: ReactNode;
+
+  if (n === '01') {
+    left = no(
+      <div className={styles.dupe}>
+        <span>Quiet move, pays off in 3</span>
+        <span>Two equally winning ideas</span>
+        <span>Wins a tenth of a pawn</span>
+        <span>Engine-only, no human line</span>
+      </div>,
+      'every disagreement became a puzzle',
+    );
+    right = yes(
+      <>
+        {row(<><b>✓</b> Findable — a capture, check or mate</>, 'good')}
+        {row(<><b>✓</b> Singular — beats second-best clearly</>, 'good')}
+        {row(<><b>✓</b> Worth it — decisive material or mate</>, 'good')}
+      </>,
+      '8 good puzzles beat 15 with 5 duds',
+    );
+  } else if (n === '02') {
+    left = no(
+      <div className={styles.dupe}>
+        <span>Move 24 · hanging rook</span>
+        <span>Move 26 · hanging rook</span>
+        <span>Move 28 · hanging rook</span>
+        <span>Move 31 · hanging rook</span>
+      </div>,
+      'one game, one idea, four puzzles',
+    );
+    right = yes(
+      <>
+        {row(<>Move 24 · hanging rook</>, 'good')}
+        {row(<>3 repeats folded in</>)}
+      </>,
+      'the clearest instance survives',
+    );
+  } else if (n === '03') {
+    left = no(
+      <>
+        <span className={styles.abMicro}>Rated 1100 → &ldquo;Casual band&rdquo;</span>
+        {row(<>Mate in 3 · cut to 1 move</>, 'bad')}
+      </>,
+      'the reason the first move works was removed',
+    );
+    right = yes(
+      <>
+        <div className={styles.diffRow}>
+          <span className={styles.diffBadge}>&lt;1000 · 6 games</span>
+          <span className={styles.diffBadge}>1400+ · 16 games</span>
+          <span className={styles.diffBadge}>1800+ · 25 games</span>
+        </div>
+        {row(<>Mate in 3 · all 3 moves</>, 'good')}
+      </>,
+      'depth of search, not depth of lesson',
+    );
+  } else if (n === '04') {
+    left = no(
+      row(
+        <>&ldquo;Your move dropped the evaluation from +5.0 to +1.0, losing much of your advantage.&rdquo;</>,
+      ),
+      'read it, then imagine it',
+    );
+    right = yes(
+      <div className={styles.miniEvalRow}>
+        <span className={styles.miniEval}>
+          <span className={styles.miniEvalFill} style={{ height: '54%' }} />
+          <span className={styles.miniEvalBand} data-loss style={{ bottom: '54%', height: '14%' }} />
+        </span>
+        <span className={styles.miniEval}>
+          <span className={styles.miniEvalFill} style={{ height: '100%' }} />
+          <span className={styles.miniEvalBand} data-gain style={{ bottom: '54%', height: '46%' }} />
+        </span>
+      </div>,
+      'the drop, then winning it back',
+    );
+  } else {
+    left = no(
+      <div className={styles.mq}>
+        {[1, 2, 3].map((i) => (
+          <span key={i} className={styles.mqTile} data-state="solved">
+            {i}
+          </span>
+        ))}
+      </div>,
+      '“Puzzle 3 / 3” — nothing left to want',
+    );
+    right = yes(
+      <div className={styles.mq}>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <Fragment key={i}>
+            {i === 3 && <span className={styles.mqWall} />}
+            <span className={styles.mqTile} data-state={i < 3 ? 'solved' : 'locked'}>
+              {i < 3 ? '✓' : i + 1}
+            </span>
+          </Fragment>
+        ))}
+      </div>,
+      '“Puzzle 3 / 12” — the wall is the pitch',
+    );
+  }
+
+  return (
+    <div className={styles.ab}>
+      {left}
+      <span className={styles.abArrow} aria-hidden>
+        →
+      </span>
+      {right}
+    </div>
+  );
+}
+
 const DECISIONS = [
-  { n: '01', d: 'The engine’s best move is not a puzzle.', out: 'Puzzles that are unfair, not hard.' },
-  { n: '02', d: 'One mistake is one lesson, however many disasters followed.', out: 'A set that drills one error and calls it four.' },
-  { n: '03', d: 'Rating sets how deep we look, never how hard the puzzle is.', out: 'Deciding in advance what you can handle.' },
-  { n: '04', d: 'The bar explains the loss, so the copy doesn’t have to.', out: 'A sentence doing a picture’s job.' },
-  { n: '05', d: 'Show free members the whole set, including what they can’t reach.', out: 'Hiding the thing you’re selling.' },
+  {
+    n: '01',
+    claim: 'The engine’s best move is not a puzzle.',
+    sub: 'Not every engine disagreement is a mistake worth teaching — mining raw disagreements mostly produced unsolvable positions. Three gates now separate disagreement from a genuinely teachable puzzle.',
+    ruled: 'Puzzles that are unfair rather than hard.',
+    flip: false,
+  },
+  {
+    n: '02',
+    claim: 'One mistake is one lesson, however many disasters followed it.',
+    sub: 'A player repeating one error made the generator fire on it four times, teaching the same idea four ways. Near-duplicate mistakes from a game now collapse into the clearest instance.',
+    ruled: 'A set that drills one mistake and calls it four.',
+    flip: true,
+  },
+  {
+    n: '03',
+    claim: 'Rating sets how deep we look, never how hard the puzzle is.',
+    sub: 'The first system truncated a mate in three to one move for a 1100-rated player — half a lesson, the wrong half. Rating now sets search depth, not puzzle difficulty.',
+    ruled: 'Deciding in advance what someone can handle.',
+    flip: false,
+  },
+  {
+    n: '04',
+    claim: 'The bar explains the loss, so the copy doesn’t have to.',
+    sub: 'Quoting two numbers made a player do the arithmetic themselves. The bar instead gives a visual read of the cost — anchored at what was available, draining to what the move left.',
+    ruled: 'A sentence doing a picture’s job.',
+    flip: true,
+  },
+  {
+    n: '05',
+    claim: 'Show free members the whole set, including what they can’t reach.',
+    sub: 'Trimming the queue to three made the feature look small and removed the reason to upgrade. The set is never trimmed — free sees all twelve, and upgrading resumes at the exact puzzle.',
+    ruled: 'Hiding the thing you’re selling.',
+    flip: false,
+  },
 ];
 
 const METRICS = [
@@ -526,20 +692,36 @@ export function ChessCom() {
         <div className={styles.head}>
           <p className={`${styles.kick} ${styles.rise}`}>Product decisions</p>
           <h2 id="decisions" className={`${styles.h2} ${styles.rise}`}>
-            Five calls that changed what it does.
+            Five calls that
+            <br />
+            changed the product.
           </h2>
         </div>
-        <ol className={styles.dec}>
+        <p className={`${styles.lede} ${styles.rise}`}>
+          Left is what the first build explored. Right is the direction I refined and carried
+          forward. Read the colours and you have the argument.
+        </p>
+
+        <div className={styles.spine}>
           {DECISIONS.map((d) => (
-            <li key={d.n} className={styles.rise}>
-              <span className={styles.decN}>{d.n}</span>
-              <p className={styles.decD}>{d.d}</p>
-              <p className={styles.decOut}>
-                <span>Ruled out</span> {d.out}
-              </p>
-            </li>
+            <article
+              key={d.n}
+              className={`${styles.beat} ${d.flip ? styles.beatFlip : ''} ${styles.rise}`}
+            >
+              <div>
+                <p className={styles.beatN}>{d.n}</p>
+                <h3 className={styles.beatClaim}>{d.claim}</h3>
+                <p className={styles.beatSub}>{d.sub}</p>
+                <p className={styles.beatRuled}>
+                  <b>Ruled out</b> {d.ruled}
+                </p>
+              </div>
+              <div className={styles.beatAb}>
+                <BeatEvidence n={d.n} styles={styles} />
+              </div>
+            </article>
           ))}
-        </ol>
+        </div>
       </section>
 
       {/* ========================================================== WALL */}

@@ -529,12 +529,9 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
 }
 
 // ----------------------------------------------------- versions
-// Ported from framercomponent.tsx §9.10 — two equal cards, dark demo wells,
-// V1 rows scan on a loop, V2 diary days land in sequence.
-$v-well: #262522;
-$v-ink: #ffffff;
-$v-muted: #b7b4b0;
-$v-soft: #a3a19e;
+// Framer §9.10 graphics + loop animations, in the portfolio's paper theme.
+// V1 rows scan on a loop; V2 diary days land in sequence. Rows/dates are kept
+// compact so the two cards land at roughly the same height.
 $v-green: #81b64c;
 $v-green-ink: #10240a;
 $v-red: #ca3431;
@@ -554,7 +551,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: color-mix(in oklab, var(--fg) 2%, var(--bg));
+  background: var(--bg);
   transition: border-color 0.4s var(--ease-quart-in-out);
 
   @include hover {
@@ -569,7 +566,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 22px 22px 0;
+  padding: clamp(1.1rem, 2.4vw, 1.5rem) clamp(1.1rem, 2.4vw, 1.5rem) 0;
 }
 
 .versionMicro {
@@ -592,18 +589,17 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .versionDemo {
-  margin: 18px 22px 0;
+  margin: clamp(0.9rem, 2vw, 1.15rem) clamp(1.1rem, 2.4vw, 1.5rem) 0;
   border-radius: 14px;
-  background: $v-well;
-  padding: 18px;
-  min-height: 316px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--fg) 3%, var(--bg));
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .versionBody {
-  padding: 20px 22px 24px;
+  padding: clamp(1rem, 2.2vw, 1.35rem) clamp(1.1rem, 2.4vw, 1.5rem) clamp(1.25rem, 2.6vw, 1.6rem);
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -656,10 +652,10 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-/* V1 — the rolling window. Rows light in sequence, so it reads as a sweep. */
+/* V1 — the rolling window. A row lights in sequence, so it reads as a sweep. */
 .window {
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 
 .windowGame {
@@ -667,11 +663,11 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 7px 10px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.05);
-  font-size: 0.72rem;
-  color: $v-muted;
+  padding: 9px 13px;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
+  font-size: 0.78rem;
+  color: var(--fg-muted);
   overflow: hidden;
 
   i {
@@ -687,14 +683,14 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   span {
     margin-left: auto;
     font-variant-numeric: tabular-nums;
-    color: $v-soft;
+    color: var(--fg);
   }
 
   &::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(129, 182, 76, 0.22), transparent);
+    background: linear-gradient(90deg, transparent, rgba(129, 182, 76, 0.32), transparent);
     transform: translateX(-100%);
     animation: row-scan 5.4s ease-in-out infinite;
     animation-delay: var(--i, 0s);
@@ -717,21 +713,21 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
 .windowMore {
   text-align: center;
-  margin: 4px 0 0;
-  font-size: 0.7rem;
-  color: $v-soft;
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  color: var(--fg-muted);
 }
 
 .windowOut {
-  margin-top: 9px;
-  padding: 11px;
-  border-radius: 6px;
-  background: rgba(129, 182, 76, 0.16);
-  border: 1px solid color-mix(in oklab, $v-green 45%, transparent);
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  background: color-mix(in oklab, #{$v-green} 14%, transparent);
+  border: 1px solid color-mix(in oklab, #{$v-green} 42%, transparent);
   text-align: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: color-mix(in oklab, $v-green 65%, #fff);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: color-mix(in oklab, #{$v-green} 72%, var(--fg));
   animation: out-breathe 5.4s ease-in-out infinite;
 }
 
@@ -742,15 +738,15 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: 0 0 0 0 rgba(129, 182, 76, 0);
   }
   92% {
-    box-shadow: 0 0 20px 0 rgba(129, 182, 76, 0.45);
+    box-shadow: 0 0 18px 0 rgba(129, 182, 76, 0.4);
   }
 }
 
-/* V2 — the diary: a real month grid */
+/* V2 — the diary: a real month grid, dates kept as short rectangles */
 .cal {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px;
 }
 
 .calDow {
@@ -758,21 +754,21 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: $v-soft;
+  color: var(--fg-muted);
   text-align: center;
   padding-bottom: 3px;
 }
 
 .calDay {
   position: relative;
-  aspect-ratio: 1;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
+  height: 3rem;
+  border-radius: 5px;
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
   display: grid;
   place-items: center;
-  font-size: 0.625rem;
+  font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
-  color: $v-soft;
+  color: var(--fg-muted);
 }
 
 .calEmpty {
@@ -780,8 +776,8 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .calHas {
-  background: rgba(255, 255, 255, 0.11);
-  color: $v-ink;
+  background: color-mix(in oklab, var(--fg) 12%, transparent);
+  color: var(--fg);
 }
 
 .calDone {
@@ -794,7 +790,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   &::after {
     content: '\2713';
     position: absolute;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
   }
   span {
@@ -821,7 +817,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
 
 .calToday {
   box-shadow: inset 0 0 0 2px $v-green;
-  color: $v-green;
+  color: color-mix(in oklab, #{$v-green} 65%, var(--fg));
   font-weight: 700;
   animation: today-ring 2.6s ease-in-out infinite;
 }
@@ -834,7 +830,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   50% {
     box-shadow:
       inset 0 0 0 2px $v-green,
-      0 0 14px 0 rgba(129, 182, 76, 0.45);
+      0 0 12px 0 rgba(129, 182, 76, 0.4);
   }
 }
 
@@ -852,7 +848,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     font-size: 0.6875rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: $v-soft;
+    color: var(--fg-muted);
   }
   i {
     width: 9px;
@@ -861,7 +857,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     background: $v-green;
   }
   i[data-has] {
-    background: #8b8987;
+    background: color-mix(in oklab, var(--fg) 30%, transparent);
   }
   i[data-today] {
     background: transparent;
@@ -1063,51 +1059,290 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-// ---------------------------------------------------- decisions
-.dec {
-  li {
-    display: grid;
-    grid-template-columns: 4rem minmax(0, 1fr);
-    column-gap: clamp(1rem, 3vw, 2.5rem);
-    padding: clamp(1.5rem, 3.5vw, 2.5rem) 0;
-    border-top: 1px solid var(--line);
+// -------------------------------------------- decisions (the spine)
+// Framer §9.7 — full-width beats, a killed idea next to the shipped one.
+// Read red-vs-green and the headline and you have the argument.
+$sp-red: #ca3431;
+$sp-green: #81b64c;
 
-    &:last-child {
-      border-bottom: 1px solid var(--line);
+.spine {
+  display: grid;
+  gap: 14px;
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+
+.beat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(20px, 3.4vw, 52px);
+  align-items: center;
+  padding: clamp(22px, 2.8vw, 36px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--fg) 2%, var(--bg));
+  transition:
+    border-color 0.45s ease,
+    background 0.45s ease;
+
+  @include hover {
+    &:hover {
+      border-color: var(--line-strong);
+      background: color-mix(in oklab, var(--fg) 4%, var(--bg));
     }
   }
 }
 
-.decN {
+.beatFlip .beatAb {
+  order: -1;
+}
+
+.beatN {
   font-family: var(--font-heading);
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in oklab, var(--fg) 28%, transparent);
+  margin: 0 0 14px;
+  transition: -webkit-text-stroke-color 0.45s ease;
+}
+.beat:hover .beatN {
+  -webkit-text-stroke-color: var(--accent);
+}
+
+.beatClaim {
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 2.5vw, 1.95rem);
   font-weight: 700;
-  font-size: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
-  color: var(--accent);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin: 0 0 10px;
+  text-wrap: balance;
 }
 
-.decD {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(1.2rem, 1rem + 0.9vw, 1.9rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  max-width: 26ch;
+.beatSub {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--fg-muted);
+  margin: 0 0 14px;
+  max-width: 46ch;
+
+  em {
+    font-style: normal;
+    color: var(--fg);
+  }
 }
 
-.decOut {
-  grid-column: 2;
-  margin-top: 0.7em;
-  font-size: 0.875rem;
+.beatRuled {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.75rem;
   color: var(--fg-muted);
 
-  span {
-    font-size: 0.6875rem;
+  b {
+    font-size: 0.625rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: color-mix(in oklab, var(--accent) 80%, var(--fg-muted));
-    margin-right: 0.5em;
+    color: var(--accent);
+    flex: none;
   }
+}
+
+.ab {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.abPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 15px 14px;
+  border-radius: 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  min-height: 150px;
+  justify-content: center;
+
+  &[data-no] {
+    border-color: color-mix(in oklab, #{$sp-red} 32%, transparent);
+  }
+  &[data-yes] {
+    border-color: color-mix(in oklab, #{$sp-green} 42%, transparent);
+  }
+}
+
+.abTag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.59rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  .abPanel[data-no] & {
+    color: $sp-red;
+  }
+  .abPanel[data-yes] & {
+    color: color-mix(in oklab, #{$sp-green} 72%, var(--fg));
+  }
+}
+
+.abArrow {
+  align-self: center;
+  color: var(--accent);
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.abMicro {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--fg-muted);
+}
+
+/* graphic — a stack of near-identical rejected chips */
+.dupe {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  span {
+    padding: 6px 9px;
+    border-radius: 5px;
+    background: color-mix(in oklab, #{$sp-red} 13%, transparent);
+    color: color-mix(in oklab, #{$sp-red} 55%, var(--fg));
+    font-size: 0.66rem;
+  }
+  span + span {
+    opacity: 0.72;
+  }
+  span + span + span {
+    opacity: 0.5;
+  }
+  span + span + span + span {
+    opacity: 0.34;
+  }
+}
+
+/* graphic — one evidence row */
+.solverRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--fg-muted);
+
+  b {
+    color: currentColor;
+    font-weight: 700;
+    flex: none;
+  }
+
+  &[data-tone='good'] {
+    background: color-mix(in oklab, #{$sp-green} 16%, transparent);
+    color: color-mix(in oklab, #{$sp-green} 72%, var(--fg));
+  }
+  &[data-tone='bad'] {
+    background: color-mix(in oklab, #{$sp-red} 13%, transparent);
+    color: color-mix(in oklab, #{$sp-red} 58%, var(--fg));
+  }
+}
+
+/* graphic — rating → search-depth pills */
+.diffRow {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.diffBadge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* graphic — two tiny eval bars */
+.miniEvalRow {
+  display: flex;
+  gap: 18px;
+  height: 92px;
+  align-items: stretch;
+  padding-block: 4px;
+}
+.miniEval {
+  position: relative;
+  width: 18px;
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--fg) 10%, transparent);
+  overflow: hidden;
+}
+.miniEvalFill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: color-mix(in oklab, var(--fg) 28%, transparent);
+}
+.miniEvalBand {
+  position: absolute;
+  left: 0;
+  right: 0;
+
+  &[data-loss] {
+    background: $sp-red;
+  }
+  &[data-gain] {
+    background: $sp-green;
+  }
+}
+
+/* graphic — a mini queue strip */
+.mq {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.mqTile {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in oklab, var(--fg) 8%, transparent);
+  color: var(--fg-muted);
+
+  &[data-state='solved'] {
+    background: $sp-green;
+    color: #10240a;
+  }
+  &[data-state='locked'] {
+    opacity: 0.4;
+  }
+}
+.mqWall {
+  align-self: stretch;
+  width: 2px;
+  margin-inline: 2px;
+  background: repeating-linear-gradient(180deg, #{$sp-red} 0 4px, transparent 4px 8px);
 }
 
 // ----------------------------------------------------- metrics
@@ -1260,6 +1495,13 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .metric[data-primary] {
     grid-column: auto;
   }
+  .ab {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .abArrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
 }
 
 @include mq-max('sm') {
@@ -1273,12 +1515,12 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .planTile {
     font-size: 0.7rem;
   }
-  .dec li {
+  .beat {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 0.6rem;
+    gap: 18px;
   }
-  .decOut {
-    grid-column: 1;
+  .beatFlip .beatAb {
+    order: 0;
   }
   .loop li {
     padding: 0.7em 1.05em;
