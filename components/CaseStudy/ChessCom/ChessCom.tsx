@@ -67,6 +67,22 @@ function Lock() {
   );
 }
 
+// V1 rolling-window demo — a row scans, then the set refills, on a loop
+const WINDOW_GAMES = [
+  { opp: 'vs. Kowalski', n: '2 puzzles', ok: true },
+  { opp: 'vs. Ferreira', n: '3 puzzles', ok: false },
+  { opp: 'vs. Novak', n: '1 puzzle', ok: true },
+  { opp: 'vs. Reyes', n: '4 puzzles', ok: false },
+  { opp: 'vs. Adeyemi', n: '2 puzzles', ok: true },
+  { opp: 'vs. Haddad', n: '0 puzzles', ok: false },
+  { opp: 'vs. Petrov', n: '2 puzzles', ok: true },
+];
+
+// V2 diary demo — a real month; cleared days land in the order they were cleared
+const CAL_CLEARED = [3, 4, 8, 11, 15, 16, 22];
+const CAL_HAS = [5, 9, 12, 18, 19, 23, 25];
+const CAL_TODAY = 26;
+
 const DECISIONS = [
   { n: '01', d: 'The engine’s best move is not a puzzle.', out: 'Puzzles that are unfair, not hard.' },
   { n: '02', d: 'One mistake is one lesson, however many disasters followed.', out: 'A set that drills one error and calls it four.' },
@@ -134,39 +150,6 @@ export function ChessCom() {
           ease: 'power3.out',
           stagger: 0.09,
           scrollTrigger: { trigger: bars[0].closest(`.${styles.netGrid}`), start: 'top 80%' },
-        });
-        kill.push(() => {
-          tw.scrollTrigger?.kill();
-          tw.kill();
-        });
-      }
-
-      // versions — V1 queue bars fill left-to-right
-      const vqBars = q<HTMLElement>(`.${styles.vQueue} span`);
-      if (vqBars.length && !reduced) {
-        const tw = gsap.from(vqBars, {
-          scaleX: 0,
-          transformOrigin: 'left',
-          duration: 0.55,
-          ease: 'power3.out',
-          stagger: 0.07,
-          scrollTrigger: { trigger: vqBars[0].closest(`.${styles.vCard}`), start: 'top 78%' },
-        });
-        kill.push(() => {
-          tw.scrollTrigger?.kill();
-          tw.kill();
-        });
-      }
-
-      // versions — V2 diary cells drop into the grid
-      const calCells = q<HTMLElement>(`.${styles.cal} span`);
-      if (calCells.length && !reduced) {
-        const tw = gsap.from(calCells, {
-          scale: 0.3,
-          duration: 0.5,
-          ease: 'back.out(1.6)',
-          stagger: { each: 0.02, grid: [4, 7], from: 'start' },
-          scrollTrigger: { trigger: calCells[0].closest(`.${styles.vCard}`), start: 'top 78%' },
         });
         kill.push(() => {
           tw.scrollTrigger?.kill();
@@ -378,53 +361,135 @@ export function ChessCom() {
         <div className={styles.head}>
           <p className={`${styles.kick} ${styles.rise}`}>Two versions, one switch</p>
           <h2 id="versions" className={`${styles.h2} ${styles.rise}`}>
-            Which games become which puzzles, and when?
+            Which games become
+            <br />
+            which puzzles, and when?
           </h2>
         </div>
+        <p className={`${styles.lede} ${styles.rise}`}>
+          Two answers were arguable. Rather than argue in the abstract, both were built &mdash; so
+          they can be tested on real players rather than decided in a room.
+        </p>
 
         <div className={styles.versions}>
-          <div className={`${styles.vCard} ${styles.rise}`}>
-            <div className={styles.vTop}>
+          {/* V1 — the rolling window */}
+          <article className={`${styles.version} ${styles.rise}`}>
+            <div className={styles.versionHead}>
               <span className={styles.vTag}>V1</span>
-              <h3 className={styles.h3}>The rolling window</h3>
+              <span className={styles.versionMicro}>The rolling window</span>
             </div>
-            <div className={styles.vQueue} aria-hidden>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <span key={i} data-solved={i < 2 || undefined} />
-              ))}
+            <div className={styles.versionDemo}>
+              <div className={styles.window} aria-hidden>
+                {WINDOW_GAMES.map((g, i) => (
+                  <div
+                    key={g.opp}
+                    className={styles.windowGame}
+                    style={{ ['--i' as string]: `${(i * 0.1).toFixed(1)}s` }}
+                  >
+                    <i data-ok={g.ok || undefined} />
+                    {g.opp} <span>{g.n}</span>
+                  </div>
+                ))}
+                <p className={styles.windowMore}>+ 3 more recent games</p>
+                <div className={styles.windowOut}>One standing set · 12 puzzles</div>
+              </div>
             </div>
-            <p className={styles.note}>
-              Your last N games, pooled into one set that&rsquo;s always full. A queue: zero
-              navigation, best of a wide pool.
-            </p>
-          </div>
+            <div className={styles.versionBody}>
+              <h3>Your last N reviewed games</h3>
+              <p>
+                Everything mineable goes into one pool; the best of it becomes a single set
+                that&rsquo;s always there.
+              </p>
+              <ul className={styles.pros}>
+                <li>Zero navigation &mdash; open the page, puzzles are waiting</li>
+                <li>Best-of selection from a wide pool</li>
+                <li data-con>No sense of time or rhythm &mdash; it&rsquo;s a bucket, not a record</li>
+                <li data-con>Once solved, there&rsquo;s nothing to come back to</li>
+              </ul>
+            </div>
+          </article>
 
-          <div className={`${styles.vCard} ${styles.rise}`}>
-            <div className={styles.vTop}>
+          {/* V2 — the diary */}
+          <article className={`${styles.version} ${styles.rise}`}>
+            <div className={styles.versionHead}>
               <span className={styles.vTag}>V2</span>
-              <h3 className={styles.h3}>The diary</h3>
+              <span className={styles.versionMicro}>The diary</span>
             </div>
-            <div className={styles.cal} aria-hidden>
-              {Array.from({ length: 28 }).map((_, i) => (
-                <span
-                  key={i}
-                  data-state={
-                    i === 20 ? 'today' : [2, 5, 6, 9, 12, 13, 16, 19].includes(i) ? 'done' : [1, 8, 15, 17].includes(i) ? 'has' : undefined
-                  }
-                />
-              ))}
+            <div className={styles.versionDemo}>
+              <div className={styles.cal} aria-hidden>
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                  <span key={`dow-${i}`} className={styles.calDow}>
+                    {d}
+                  </span>
+                ))}
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <span key={`empty-${i}`} className={`${styles.calDay} ${styles.calEmpty}`} />
+                ))}
+                {Array.from({ length: 30 }).map((_, i) => {
+                  const day = i + 1;
+                  const at = CAL_CLEARED.indexOf(day);
+                  const isToday = day === CAL_TODAY;
+                  const cls = [
+                    styles.calDay,
+                    at > -1 ? styles.calDone : '',
+                    CAL_HAS.includes(day) || isToday ? styles.calHas : '',
+                    isToday ? styles.calToday : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ');
+                  return (
+                    <span
+                      key={day}
+                      className={cls}
+                      style={at > -1 ? { ['--i' as string]: `${(at * 0.13).toFixed(2)}s` } : undefined}
+                    >
+                      <span>{day}</span>
+                    </span>
+                  );
+                })}
+              </div>
+              <div className={styles.calLegend} aria-hidden>
+                <span>
+                  <i data-cleared /> Cleared
+                </span>
+                <span>
+                  <i data-has /> Has puzzles
+                </span>
+                <span>
+                  <i data-today /> Today
+                </span>
+              </div>
             </div>
-            <p className={styles.note}>
-              Puzzles grouped by the day you played. The calendar <em>is</em> the progress
-              record, so streaks and gaps become visible.
-            </p>
-          </div>
+            <div className={styles.versionBody}>
+              <h3>Puzzles from the day you played</h3>
+              <p>
+                Grouped by date, with a stepper and a month calendar. No target, no padding
+                &mdash; a day is as long as that day&rsquo;s chess deserved.
+              </p>
+              <ul className={styles.pros}>
+                <li>
+                  The calendar <em>is</em> the progress record &mdash; streaks and gaps become
+                  visible
+                </li>
+                <li>An uncleared day sits there, visibly uncleared</li>
+                <li data-con>Play nothing, get nothing &mdash; empty days are real</li>
+                <li data-con>A navigation decision before you can solve anything</li>
+              </ul>
+            </div>
+          </article>
         </div>
 
-        <p className={`${styles.micro} ${styles.rise}`}>
-          Both shipped behind a switch. V2&rsquo;s &ldquo;a day is as long as it is&rdquo; killed
-          V1&rsquo;s daily quota.
-        </p>
+        <div className={`${styles.vSwitch} ${styles.rise}`}>
+          <span className={styles.vSwitchStep}>
+            <b>?</b> Still open
+          </span>
+          <p>
+            Both are live in the prototype behind a switch, so the same account can be run on
+            either. <b>V1 optimises the session</b> &mdash; always full, no decisions.{' '}
+            <b>V2 optimises the return</b> &mdash; an uncleared day pulls you back. Which one wins
+            is a research question, not a taste one.
+          </p>
+        </div>
       </section>
 
       {/* =================================================== BUILT PIECES */}

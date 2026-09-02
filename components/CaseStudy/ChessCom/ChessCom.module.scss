@@ -529,23 +529,55 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
 }
 
 // ----------------------------------------------------- versions
+// Ported from framercomponent.tsx §9.10 — two equal cards, dark demo wells,
+// V1 rows scan on a loop, V2 diary days land in sequence.
+$v-well: #262522;
+$v-ink: #ffffff;
+$v-muted: #b7b4b0;
+$v-soft: #a3a19e;
+$v-green: #81b64c;
+$v-green-ink: #10240a;
+$v-red: #ca3431;
+$v-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
 .versions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(1.25rem, 3vw, 2rem);
+  align-items: stretch;
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
 }
 
-.vCard {
+.version {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  overflow: hidden;
+  background: color-mix(in oklab, var(--fg) 2%, var(--bg));
+  transition: border-color 0.4s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      border-color: color-mix(in oklab, $v-green 45%, transparent);
+    }
+  }
 }
 
-.vTop {
+.versionHead {
   display: flex;
   align-items: center;
-  gap: 0.8em;
-  margin-bottom: 1.5rem;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 22px 0;
+}
+
+.versionMicro {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
 }
 
 .vTag {
@@ -559,44 +591,328 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   border-radius: 5px;
 }
 
-.vQueue {
+.versionDemo {
+  margin: 18px 22px 0;
+  border-radius: 14px;
+  background: $v-well;
+  padding: 18px;
+  min-height: 316px;
   display: flex;
-  gap: 6px;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  justify-content: center;
+}
 
-  span {
-    flex: 1;
-    height: 34px;
-    border-radius: 6px;
-    background: var(--line);
+.versionBody {
+  padding: 20px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 
-    &[data-solved] {
-      background: #81b64c;
-    }
+  h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 8px;
+  }
+
+  > p {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    margin: 0 0 14px;
   }
 }
 
+.pros {
+  list-style: none;
+  margin: auto 0 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+
+  li {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--fg-muted);
+
+    &::before {
+      content: '+';
+      color: $v-green;
+      font-weight: 700;
+      flex: none;
+    }
+    &[data-con]::before {
+      content: '\2212';
+      color: $v-red;
+    }
+  }
+  em {
+    font-style: normal;
+    color: var(--fg);
+  }
+}
+
+/* V1 — the rolling window. Rows light in sequence, so it reads as a sweep. */
+.window {
+  display: grid;
+  gap: 5px;
+}
+
+.windowGame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.72rem;
+  color: $v-muted;
+  overflow: hidden;
+
+  i {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    flex: none;
+    background: $v-red;
+  }
+  i[data-ok] {
+    background: $v-green;
+  }
+  span {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    color: $v-soft;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(129, 182, 76, 0.22), transparent);
+    transform: translateX(-100%);
+    animation: row-scan 5.4s ease-in-out infinite;
+    animation-delay: var(--i, 0s);
+  }
+}
+
+@keyframes row-scan {
+  0%,
+  62% {
+    transform: translateX(-100%);
+  }
+  76% {
+    transform: translateX(0);
+  }
+  92%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.windowMore {
+  text-align: center;
+  margin: 4px 0 0;
+  font-size: 0.7rem;
+  color: $v-soft;
+}
+
+.windowOut {
+  margin-top: 9px;
+  padding: 11px;
+  border-radius: 6px;
+  background: rgba(129, 182, 76, 0.16);
+  border: 1px solid color-mix(in oklab, $v-green 45%, transparent);
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: color-mix(in oklab, $v-green 65%, #fff);
+  animation: out-breathe 5.4s ease-in-out infinite;
+}
+
+@keyframes out-breathe {
+  0%,
+  84%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(129, 182, 76, 0);
+  }
+  92% {
+    box-shadow: 0 0 20px 0 rgba(129, 182, 76, 0.45);
+  }
+}
+
+/* V2 — the diary: a real month grid */
 .cal {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  margin-bottom: 1.5rem;
+  gap: 4px;
+}
+
+.calDow {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $v-soft;
+  text-align: center;
+  padding-bottom: 3px;
+}
+
+.calDay {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  display: grid;
+  place-items: center;
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: $v-soft;
+}
+
+.calEmpty {
+  background: transparent;
+}
+
+.calHas {
+  background: rgba(255, 255, 255, 0.11);
+  color: $v-ink;
+}
+
+.calDone {
+  background: $v-green;
+  color: $v-green-ink;
+  font-weight: 700;
+  animation: day-land 6s $v-quint infinite;
+  animation-delay: var(--i, 0s);
+
+  &::after {
+    content: '\2713';
+    position: absolute;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+  span {
+    display: none;
+  }
+}
+
+@keyframes day-land {
+  0%,
+  6% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  14%,
+  88% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.calToday {
+  box-shadow: inset 0 0 0 2px $v-green;
+  color: $v-green;
+  font-weight: 700;
+  animation: today-ring 2.6s ease-in-out infinite;
+}
+
+@keyframes today-ring {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 2px $v-green;
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px $v-green,
+      0 0 14px 0 rgba(129, 182, 76, 0.45);
+  }
+}
+
+.calLegend {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
 
   span {
-    aspect-ratio: 1;
-    border-radius: 5px;
-    background: var(--line);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: $v-soft;
+  }
+  i {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    background: $v-green;
+  }
+  i[data-has] {
+    background: #8b8987;
+  }
+  i[data-today] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px $v-green;
+  }
+}
 
-    &[data-state='done'] {
-      background: #81b64c;
-    }
-    &[data-state='has'] {
-      background: color-mix(in oklab, #81b64c 42%, transparent);
-    }
-    &[data-state='today'] {
-      background: transparent;
-      box-shadow: inset 0 0 0 2px var(--accent);
-    }
+/* the still-open switch note under both cards */
+.vSwitch {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding: 18px 22px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in oklab, var(--accent) 32%, transparent);
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+
+  p {
+    flex: 1;
+    min-width: 260px;
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--fg-muted);
+  }
+  b {
+    color: var(--fg);
+    font-weight: 600;
+  }
+}
+
+.vSwitchStep {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fg);
+
+  b {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.75rem;
   }
 }
 
@@ -977,7 +1293,15 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   .tl > span {
     will-change: auto;
   }
-  .ctaProtoDot {
+  .ctaProtoDot,
+  .windowGame::after,
+  .windowOut,
+  .calDone,
+  .calToday {
     animation: none;
+  }
+  .calDone {
+    opacity: 1;
+    transform: none;
   }
 }
