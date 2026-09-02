@@ -469,62 +469,543 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   }
 }
 
-// ---------------------------------------------------- built pieces
-.parts {
+// ------------------------------------------ built pieces (the bento)
+// Framer §9.6 — real prototype screens on the Chess.com surface, each framed
+// by a portfolio-theme tile. Outer tile = paper; inner frame = #302e2b.
+$cc-bg: #302e2b;
+$cc-raised: #353331;
+$cc-ink: #ffffff;
+$cc-muted: #b7b4b0;
+$cc-soft: #a3a19e;
+$cc-brand: #81b64c;
+$cc-brand-hover: #8ec155;
+$cc-brand-edge: #4c7a2f;
+$cc-brand-ink: #e8f3da;
+$cc-info: #4a90d9;
+$cc-info-hover: #5b9ee2;
+$cc-info-edge: #2c6aa8;
+$cc-blunder: #ca3431;
+$ev-light: #f1f0e8;
+$ev-dark: #403d39;
+$ev-loss: #e3a0a0;
+$ev-loss-hot: #d24b4b;
+$ev-gain: #a9d183;
+$ev-gain-hot: #81b64c;
+$cc-quint: cubic-bezier(0.22, 1, 0.36, 1);
+$cc-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+.bento {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(210px, auto);
+  grid-template-areas:
+    'home eval  eval  badges'
+    'home coach coach badges'
+    'done done  rows  rows';
+  gap: 14px;
   margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
 }
 
-.part {
+.tileHome {
+  grid-area: home;
+}
+.tileEval {
+  grid-area: eval;
+}
+.tileBadges {
+  grid-area: badges;
+}
+.tileCoach {
+  grid-area: coach;
+}
+.tileDone {
+  grid-area: done;
+}
+.tileRows {
+  grid-area: rows;
+}
+
+/* outer card — portfolio theme */
+.tile {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  margin: 0;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  padding: clamp(1.25rem, 0.9rem + 1.4vw, 1.65rem);
+  background: var(--bg);
+  overflow: hidden;
+  transition:
+    border-color 0.4s ease,
+    transform 0.45s $cc-out;
 
-  p {
-    font-size: 0.9375rem;
-    line-height: 1.5;
-    color: var(--fg-muted);
-  }
-
-  &[data-context] {
-    border-style: dashed;
-    background: color-mix(in oklab, var(--fg) 3%, var(--bg));
+  @include hover {
+    &:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-5px);
+    }
   }
 }
 
-.partTop {
+/* inner well — Chess.com surface */
+.tileFrame {
+  flex: 1;
+  background: $cc-bg;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.tileHome .tileFrame {
+  padding: 14px;
+  align-items: stretch;
+}
+.tileDone .tileFrame {
+  padding: 16px;
+}
+
+.tileCap {
+  padding: 15px 18px 17px;
+
+  h4 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+  }
+  p {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+  em {
+    font-style: normal;
+    color: var(--fg);
+  }
+}
+
+/* --- home preview card --- */
+.bPreview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: clip;
+  border-radius: 5px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bPreviewBoard {
+  width: 100%;
+  line-height: 0;
+  overflow: hidden;
+}
+
+.bPreviewBody {
+  display: flex;
+  flex-direction: column;
+  padding: 13px;
+}
+
+.bPreviewTitle {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.partName {
-  font-family: var(--font-heading);
+  gap: 7px;
+  font-size: 0.9rem;
   font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
+  color: $cc-ink;
+  margin: 0 0 6px;
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
 }
 
-.partTag {
-  flex: none;
+.bPreviewSub {
+  font-size: 0.9rem;
+  color: $cc-muted;
+  margin: 0 0 9px;
+}
+
+.bPreviewCount {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.4s ease;
+}
+.tileHome:hover .bPreviewCount {
+  color: $cc-brand;
+}
+
+.bProgress {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  margin-bottom: 11px;
+}
+
+.bProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: $cc-brand;
+  width: 33%;
+  transition: width 0.6s $cc-quint;
+}
+.tileHome:hover .bProgressFill {
+  width: 42%;
+}
+
+/* --- Chess.com 3D button --- */
+.bBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.1s $cc-quint,
+    background-color 0.1s $cc-quint;
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.bBtnPrimary {
+  background: $cc-brand;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 3px 0 $cc-brand-edge;
+
+  @include hover {
+    &:hover {
+      background: $cc-brand-hover;
+    }
+  }
+}
+
+.bBtnInfo {
+  background: $cc-info;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 3px 0 $cc-info-edge;
+
+  @include hover {
+    &:hover {
+      background: $cc-info-hover;
+    }
+  }
+}
+
+.bShimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: translateX(-100%);
+  animation: cc-shimmer 2.6s ease-in-out infinite;
+}
+
+@keyframes cc-shimmer {
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* --- eval bars --- */
+.bEvalRow {
+  display: flex;
+  gap: clamp(20px, 3vw, 34px);
+  height: 158px;
+  align-items: stretch;
+}
+
+.bEvalCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.bEval {
+  position: relative;
+  flex: 1;
+  width: 26px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: $ev-dark;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.bEvalFill {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  background: $ev-light;
+}
+
+.bEvalMid {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.bEvalBand {
+  position: absolute;
+  inset-inline: 0;
+  overflow: hidden;
+
+  &[data-loss] {
+    background: $ev-loss;
+  }
+  &[data-gain] {
+    background: $ev-gain;
+  }
+}
+
+.bEvalHot {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 60%;
+
+  [data-loss] > & {
+    background: linear-gradient(to bottom, transparent, $ev-loss-hot, transparent);
+    animation: cc-sweep-down 1.7s ease-in-out infinite 0.2s;
+  }
+  [data-gain] > & {
+    background: linear-gradient(to bottom, transparent, $ev-gain-hot, transparent);
+    animation: cc-sweep-up 1.5s ease-in-out 1 both;
+  }
+}
+
+@keyframes cc-sweep-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(200%);
+  }
+}
+@keyframes cc-sweep-up {
+  from {
+    transform: translateY(200%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.bEvalNum {
+  position: absolute;
+  inset-inline: 0;
+  text-align: center;
   font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #22201d;
+}
+.bEvalNumLive {
+  bottom: 3px;
+}
+.bEvalNumDrop {
+  color: #22201d;
+}
+.bEvalArrow {
+  font-size: 0.5rem;
+  margin-left: 1px;
+}
+.bEvalLbl {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
-  border-radius: 999px;
-  padding: 0.3em 0.7em;
+  color: $cc-soft;
+}
 
-  .part[data-context] & {
-    color: var(--fg-muted);
-    border-color: var(--line);
+/* --- classification badge stack --- */
+.bStack {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.bBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform 0.45s $cc-out;
+  transition-delay: var(--i, 0ms);
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+}
+.tileBadges:hover .bBadge {
+  transform: translateX(10px);
+}
+
+.bStackNote {
+  margin-top: 6px;
+  font-size: 0.6875rem;
+  color: $cc-soft;
+}
+
+/* --- coach --- */
+.tileCoach .tileFrame > div {
+  width: 100%;
+  max-width: 460px;
+}
+
+/* --- completion cards --- */
+.bDoneRow {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.bComplete {
+  flex: 1;
+  min-width: 200px;
+  border-radius: 8px;
+  background: $cc-raised;
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.6);
+  padding: 18px;
+  text-align: center;
+  border: 1px solid color-mix(in oklab, #{$cc-brand} 30%, transparent);
+
+  &:first-child {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.bCompleteTitle {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: $cc-ink;
+}
+
+.bCompleteStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 6px;
+    padding: 9px 4px;
+  }
+  b {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: $cc-ink;
+    line-height: 1;
+  }
+  span {
+    font-size: 0.6875rem;
+    color: $cc-soft;
+  }
+}
+
+/* --- solver rows --- */
+.bRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.bRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 0.82rem;
+  color: $cc-muted;
+}
+
+.bRowMistake {
+  border-left: 3px solid $cc-blunder;
+}
+
+.bRowSolved {
+  background: rgba(129, 182, 76, 0.16);
+  color: $cc-brand-ink;
+  border-left: 3px solid $cc-brand;
+}
+
+.bRowEnd {
+  margin-left: auto;
+
+  &[data-loss] {
+    color: $cc-blunder;
+    font-weight: 600;
+  }
+}
+
+.bFig {
+  font-family: 'Segoe UI Symbol', 'Apple Symbols', serif;
+  font-weight: 600;
+}
+
+.bRowPulse {
+  justify-content: center;
+  color: $cc-brand-ink;
+  font-weight: 600;
+  animation: cc-row-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes cc-row-breathe {
+  0%,
+  100% {
+    background: rgba(129, 182, 76, 0.12);
+  }
+  50% {
+    background: rgba(129, 182, 76, 0.26);
   }
 }
 
@@ -1465,8 +1946,7 @@ $sp-green: #81b64c;
   .plans {
     grid-template-columns: minmax(0, 1fr);
   }
-  .netGrid,
-  .parts {
+  .netGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .carry {
@@ -1474,6 +1954,15 @@ $sp-green: #81b64c;
   }
   .heroInner {
     max-width: 52rem;
+  }
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'home badges'
+      'eval eval'
+      'coach coach'
+      'done done'
+      'rows rows';
   }
 }
 
@@ -1508,9 +1997,22 @@ $sp-green: #81b64c;
   .h2 {
     max-width: none;
   }
-  .netGrid,
-  .parts {
+  .netGrid {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+    grid-template-areas:
+      'home'
+      'badges'
+      'eval'
+      'coach'
+      'done'
+      'rows';
+  }
+  .bDoneRow {
+    flex-direction: column;
   }
   .planTile {
     font-size: 0.7rem;
@@ -1539,11 +2041,17 @@ $sp-green: #81b64c;
   .windowGame::after,
   .windowOut,
   .calDone,
-  .calToday {
+  .calToday,
+  .bShimmer::after,
+  .bEvalHot,
+  .bRowPulse {
     animation: none;
   }
   .calDone {
     opacity: 1;
+    transform: none;
+  }
+  .tile:hover {
     transform: none;
   }
 }

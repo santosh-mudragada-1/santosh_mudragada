@@ -4,6 +4,7 @@ import { Fragment, useRef, type ReactNode } from 'react';
 import Link from 'next/link';
 import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+import { Board, CoachBubble } from '@/components/CaseStudy/chess';
 import { HeroBoard } from './HeroBoard';
 import { JourneyScroll } from './JourneyScroll';
 import { TryIt } from './TryIt';
@@ -18,38 +19,21 @@ const NET = [
   { band: '1800 +', n: 25, w: 100 },
 ];
 
-const PARTS = [
-  {
-    name: 'Puzzle board',
-    role: 'Legal-move dots, a ring for captures, a shake on the wrong square, mate detection on the right one.',
-    tag: 'Runs live',
-  },
-  {
-    name: 'Engine eval bar',
-    role: 'The centipawn-and-mate scale, and the red band that shows exactly what the blunder gave away.',
-    tag: 'Runs live',
-  },
-  {
-    name: 'Coach',
-    role: 'Move classification — blunder, best, brilliant — and the one line that explains the current state.',
-    tag: 'Runs live',
-  },
-  {
-    name: 'Solve ladder',
-    role: 'Hint, then arrow, then reveal. Each step costs more; only the last one records a failure.',
-    tag: 'Runs live',
-  },
-  {
-    name: 'End-of-set card',
-    role: 'Clean, hinted and failed reported separately, with the next action ordered by usefulness.',
-    tag: 'Runs live',
-  },
-  {
-    name: 'Chess.com shell',
-    role: 'Nav, home and the surrounding pages — painted for context so the prototype has somewhere to live.',
-    tag: 'Context',
-  },
+// Move-classification taxonomy for the badge-stack tile (bottom four are mined)
+const BADGES = [
+  { name: 'Brilliant', icon: 'brilliant', color: '#26c2a3' },
+  { name: 'Great', icon: 'great', color: '#5c8bb0' },
+  { name: 'Best', icon: 'best', color: '#81b64c' },
+  { name: 'Excellent', icon: 'excellent', color: '#95b776' },
+  { name: 'Good', icon: 'good', color: '#a8a89a' },
+  { name: 'Book', icon: 'book', color: '#a88865' },
+  { name: 'Inaccuracy', icon: 'inaccuracy', color: '#f0c15c' },
+  { name: 'Mistake', icon: 'mistake', color: '#e58f2a' },
+  { name: 'Miss', icon: 'missed', color: '#e0a03c' },
+  { name: 'Blunder', icon: 'blunder', color: '#ca3431' },
 ];
+
+const MATE_FEN = '3R2k1/5ppp/8/8/8/8/5PPP/6K1';
 
 const UPGRADE_FLOW = [
   'Hit the wall at puzzle 3',
@@ -215,6 +199,221 @@ function BeatEvidence({ n, styles }: { n: string; styles: Record<string, string>
         →
       </span>
       {right}
+    </div>
+  );
+}
+
+// Built pieces — real prototype screens in the Chess.com surface, framed by
+// portfolio-theme tiles. Ported from framercomponent.tsx §9.6.
+function BuiltPieces() {
+  return (
+    <div className={styles.bento}>
+      {/* home hero card */}
+      <figure className={`${styles.tile} ${styles.tileHome} ${styles.rise}`}>
+        <div className={styles.tileFrame}>
+          <div className={styles.bPreview}>
+            <div className={styles.bPreviewBoard}>
+              <Board fen={MATE_FEN} orientation="white" showCoordinates={false} />
+            </div>
+            <div className={styles.bPreviewBody}>
+              <p className={styles.bPreviewTitle}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/case-study/game-based-puzzles.svg" alt="" width={18} height={18} />
+                Game Puzzles
+              </p>
+              <p className={styles.bPreviewSub}>
+                <span className={styles.bPreviewCount}>4/12</span> completed
+              </p>
+              <div className={styles.bProgress}>
+                <div className={styles.bProgressFill} />
+              </div>
+              <button type="button" className={`${styles.bBtn} ${styles.bBtnPrimary} ${styles.bShimmer}`}>
+                Solve Puzzles
+              </button>
+            </div>
+          </div>
+        </div>
+        <figcaption className={styles.tileCap}>
+          <h4>Home hero card</h4>
+          <p>
+            Reads the same progress state the solver writes to — it can never drift.{' '}
+            <em>Hover.</em>
+          </p>
+        </figcaption>
+      </figure>
+
+      {/* evaluation bar */}
+      <figure className={`${styles.tile} ${styles.tileEval} ${styles.rise}`}>
+        <div className={styles.tileFrame}>
+          <div className={styles.bEvalRow}>
+            <div className={styles.bEvalCol}>
+              <div className={styles.bEval}>
+                <span className={styles.bEvalFill} style={{ height: '68%' }} />
+                <span className={styles.bEvalMid} />
+                <span className={`${styles.bEvalNum} ${styles.bEvalNumLive}`}>+5.0</span>
+              </div>
+              <span className={styles.bEvalLbl}>Available</span>
+            </div>
+            <div className={styles.bEvalCol}>
+              <div className={styles.bEval}>
+                <span className={styles.bEvalFill} style={{ height: '54%' }} />
+                <span className={styles.bEvalBand} data-loss style={{ bottom: '54%', height: '14%' }}>
+                  <span className={styles.bEvalHot} />
+                </span>
+                <span className={styles.bEvalMid} />
+                <span className={`${styles.bEvalNum} ${styles.bEvalNumLive}`}>+1.0</span>
+                <span
+                  className={`${styles.bEvalNum} ${styles.bEvalNumDrop}`}
+                  style={{ bottom: 'calc(61% - 5px)' }}
+                >
+                  4.0<span className={styles.bEvalArrow}>↓</span>
+                </span>
+              </div>
+              <span className={styles.bEvalLbl}>Dropped 4.0</span>
+            </div>
+            <div className={styles.bEvalCol}>
+              <div className={styles.bEval}>
+                <span className={styles.bEvalFill} style={{ height: '100%' }} />
+                <span className={styles.bEvalBand} data-gain style={{ bottom: '54%', height: '46%' }}>
+                  <span className={styles.bEvalHot} />
+                </span>
+                <span className={styles.bEvalMid} />
+                <span className={`${styles.bEvalNum} ${styles.bEvalNumLive}`}>1-0</span>
+              </div>
+              <span className={styles.bEvalLbl}>Won back</span>
+            </div>
+          </div>
+        </div>
+        <figcaption className={styles.tileCap}>
+          <h4>Evaluation bar</h4>
+          <p>
+            The red band carries the size of the drop — or the mate thrown away. No subtraction
+            required.
+          </p>
+        </figcaption>
+      </figure>
+
+      {/* classification badges */}
+      <figure className={`${styles.tile} ${styles.tileBadges} ${styles.rise}`}>
+        <div className={styles.tileFrame}>
+          <div className={styles.bStack}>
+            {BADGES.map((b, i) => (
+              <span
+                key={b.name}
+                className={styles.bBadge}
+                style={{ color: b.color, ['--i' as string]: `${i * 30}ms` }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/case-study/move-types/${b.icon}.png`} alt="" width={20} height={20} />
+                {b.name}
+              </span>
+            ))}
+            <span className={styles.bStackNote}>Puzzles are mined from the bottom four.</span>
+          </div>
+        </div>
+        <figcaption className={styles.tileCap}>
+          <h4>Classification badges</h4>
+          <p>
+            Official art, one colour each — the taxonomy the queue is built on. <em>Hover.</em>
+          </p>
+        </figcaption>
+      </figure>
+
+      {/* the coach */}
+      <figure className={`${styles.tile} ${styles.tileCoach} ${styles.rise}`}>
+        <div className={styles.tileFrame}>
+          <CoachBubble
+            classification="missed"
+            caret
+            text="♜xd8# — checkmate on the weak back rank. Spot a forced mate in one and start it with the right move."
+          />
+        </div>
+        <figcaption className={styles.tileCap}>
+          <h4>The coach</h4>
+          <p>Two halves: what happened, then the pattern to take away.</p>
+        </figcaption>
+      </figure>
+
+      {/* completion — free vs premium */}
+      <figure className={`${styles.tile} ${styles.tileDone} ${styles.rise}`}>
+        <div className={styles.tileFrame}>
+          <div className={styles.bDoneRow}>
+            <div className={styles.bComplete}>
+              <p className={styles.bCompleteTitle}>Get Unlimited Puzzles!</p>
+              <div className={styles.bCompleteStats}>
+                <div>
+                  <b>3/3</b>
+                  <span>Clean</span>
+                </div>
+                <div>
+                  <b>0</b>
+                  <span>Hint</span>
+                </div>
+                <div>
+                  <b>9</b>
+                  <span>Locked</span>
+                </div>
+              </div>
+              <button type="button" className={`${styles.bBtn} ${styles.bBtnInfo} ${styles.bShimmer}`}>
+                Go Premium
+              </button>
+            </div>
+            <div className={styles.bComplete}>
+              <p className={styles.bCompleteTitle}>You&rsquo;re all caught up!</p>
+              <div className={styles.bCompleteStats}>
+                <div>
+                  <b>9</b>
+                  <span>Clean</span>
+                </div>
+                <div>
+                  <b>2</b>
+                  <span>Hint</span>
+                </div>
+                <div>
+                  <b>1</b>
+                  <span>Failed</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={`${styles.bBtn} ${styles.bBtnPrimary} ${styles.bShimmer}`}
+              >
+                Retry 3 puzzles
+              </button>
+            </div>
+          </div>
+        </div>
+        <figcaption className={styles.tileCap}>
+          <h4>Completion — free vs premium</h4>
+          <p>The set is never trimmed. Free members see all 12 and exactly where the wall sits.</p>
+        </figcaption>
+      </figure>
+
+      {/* solver rows */}
+      <figure className={`${styles.tile} ${styles.tileRows} ${styles.rise}`}>
+        <div className={styles.tileFrame}>
+          <div className={styles.bRows}>
+            <div className={`${styles.bRow} ${styles.bRowMistake}`}>
+              <span>You played</span>
+              <s className={styles.bFig}>♜d3</s>
+              <span className={styles.bRowEnd} data-loss>
+                M1 → −5.0
+              </span>
+            </div>
+            <div className={`${styles.bRow} ${styles.bRowSolved}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/case-study/move-types/best.png" alt="" width={18} height={18} />
+              <span className={styles.bFig}>♜xd8#</span>
+              <span className={styles.bRowEnd}>is correct!</span>
+            </div>
+            <div className={`${styles.bRow} ${styles.bRowPulse}`}>Solved · 1-0</div>
+          </div>
+        </div>
+        <figcaption className={styles.tileCap}>
+          <h4>Solver rows</h4>
+          <p>Figurine notation, because &ldquo;Rd3&rdquo; reads wrong in a Chess.com context.</p>
+        </figcaption>
+      </figure>
     </div>
   );
 }
@@ -661,30 +860,15 @@ export function ChessCom() {
       {/* =================================================== BUILT PIECES */}
       <section className={styles.section} aria-labelledby="parts">
         <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>What actually got built</p>
+          <p className={`${styles.kick} ${styles.rise}`}>Built pieces</p>
           <h2 id="parts" className={`${styles.h2} ${styles.rise}`}>
-            The pieces, and which ones are wired.
+            The parts that
+            <br />
+            carry the feature.
           </h2>
         </div>
-        <p className={`${styles.lede} ${styles.rise}`}>
-          Game-Based Puzzles runs end to end. Everything around it is painted for context, so the
-          flow has somewhere to happen.
-        </p>
-        <div className={styles.parts}>
-          {PARTS.map((p) => (
-            <div
-              key={p.name}
-              className={`${styles.part} ${styles.rise}`}
-              data-context={p.tag === 'Context' || undefined}
-            >
-              <span className={styles.partTop}>
-                <span className={styles.partName}>{p.name}</span>
-                <span className={styles.partTag}>{p.tag}</span>
-              </span>
-              <p>{p.role}</p>
-            </div>
-          ))}
-        </div>
+        <p className={`${styles.lede} ${styles.rise}`}>Real screens from the prototype. One line each.</p>
+        <BuiltPieces />
       </section>
 
       {/* ===================================================== DECISIONS */}

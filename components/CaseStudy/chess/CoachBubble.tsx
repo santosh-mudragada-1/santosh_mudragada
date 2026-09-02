@@ -17,6 +17,8 @@ interface CoachBubbleProps {
   evalText?: string;
   classification?: MoveClass;
   className?: string;
+  /** Appends a blinking write-caret after the text (used in the component gallery). */
+  caret?: boolean;
 }
 
 /**
@@ -24,7 +26,13 @@ interface CoachBubbleProps {
  * square coach portrait + white bubble with a pointer tail, optional
  * classification badge and grey eval pill.
  */
-export function CoachBubble({ text, evalText, classification, className }: CoachBubbleProps) {
+export function CoachBubble({
+  text,
+  evalText,
+  classification,
+  className,
+  caret,
+}: CoachBubbleProps) {
   return (
     <div className={`${styles.wrap}${className ? ` ${className}` : ''}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -42,7 +50,10 @@ export function CoachBubble({ text, evalText, classification, className }: Coach
               height={24}
             />
           )}
-          <p className={styles.text}>{text}</p>
+          <p className={styles.text}>
+            {text}
+            {caret && <span className={styles.caret} aria-hidden />}
+          </p>
           {evalText && <span className={styles.pill}>{evalText}</span>}
         </div>
       </div>
