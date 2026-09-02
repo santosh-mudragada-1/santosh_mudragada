@@ -337,8 +337,7 @@ export function TryIt() {
         </div>
 
         <div className={styles.top}>
-          <BoardShake signal={shakeSig} reduced={reduced}>
-            <div className={styles.boardWrap}>
+          <BoardShake className={styles.boardWrap} signal={shakeSig} reduced={reduced}>
               <Board
                 fen={solved ? p.solvedFen : p.fen}
                 orientation="white"
@@ -479,7 +478,6 @@ export function TryIt() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
           </BoardShake>
 
           <div className={styles.evalCol}>
@@ -585,10 +583,12 @@ export function TryIt() {
 function BoardShake({
   signal,
   reduced,
+  className,
   children,
 }: {
   signal: number;
   reduced: boolean;
+  className?: string;
   children: ReactNode;
 }) {
   const controls = useAnimationControls();
@@ -602,5 +602,9 @@ function BoardShake({
       transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
     });
   }, [signal, reduced, controls]);
-  return <motion.div animate={controls}>{children}</motion.div>;
+  return (
+    <motion.div className={className} animate={controls}>
+      {children}
+    </motion.div>
+  );
 }
