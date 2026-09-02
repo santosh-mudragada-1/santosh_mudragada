@@ -28,6 +28,7 @@ interface Beat {
   eval?: {
     cp: number;
     label: string;
+    peakCp?: number;
     mate?: number | null;
     peakMate?: number | null;
     peakLabel?: string;
@@ -63,7 +64,15 @@ const BEATS: Beat[] = [
       evalText: 'M1 → −5.0',
       text: 'You played Rd3. Black answers Rxd3 and the mate is gone with the rook.',
     },
-    eval: { cp: -500, label: '−5.0', peakMate: 1, peakLabel: 'M1', isUserMove: true, loop: true },
+    eval: {
+      cp: -500,
+      label: '−5.0',
+      peakCp: 1200,
+      peakMate: 1,
+      peakLabel: 'M1',
+      isUserMove: true,
+      loop: true,
+    },
     status: { pre: 'You played', strike: 'Rd3', badge: 'M1 → −5.0', tone: 'loss' },
   },
   {

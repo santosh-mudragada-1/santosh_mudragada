@@ -18,7 +18,9 @@
 
 .frame {
   position: sticky;
-  top: calc(var(--header-h) + 1.25rem);
+  // vertically centred on tall viewports (≈ half the frame's own height above
+  // centre); falls back to just under the header when there isn't room
+  top: max(calc(var(--header-h) + 1rem), calc(50vh - 21rem));
   max-width: 33rem;
   background: #262522;
   border: 1px solid #3d3a37;
