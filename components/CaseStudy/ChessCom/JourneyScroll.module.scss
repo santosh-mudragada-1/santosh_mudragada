@@ -7,17 +7,18 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2rem, 6vw, 5.5rem);
-  align-items: start;
+  // NB: no `align-items: start` — the stage cell must stretch to the beats
+  // column height so the sticky frame inside it has room to travel.
 }
 
 // -------------------------------------------------------- sticky frame
 .stage {
-  position: sticky;
-  top: calc(var(--header-h) + 2rem);
-  align-self: start;
+  min-width: 0;
 }
 
 .frame {
+  position: sticky;
+  top: calc(var(--header-h) + 2rem);
   background: #262522;
   border: 1px solid #3d3a37;
   border-radius: 16px;
@@ -197,6 +198,8 @@
 }
 
 // -------------------------------------------------------- responsive
+// single column: the whole stage cell becomes the sticky bar (opaque, so the
+// beats scroll cleanly underneath), the frame just centres inside it
 @include mq-max('lg') {
   .scrolly {
     grid-template-columns: minmax(0, 1fr);
@@ -204,22 +207,23 @@
   }
 
   .stage {
-    top: calc(var(--header-h) + 0.75rem);
+    position: sticky;
+    top: calc(var(--header-h) + 0.5rem);
     z-index: 2;
-    margin-bottom: 1.5rem;
     background: var(--bg);
-    padding-block: 0.85rem;
+    padding-block: 0.85rem 1.35rem;
   }
 
   .frame {
-    max-width: 28rem;
+    position: static;
+    max-width: 27rem;
     margin-inline: auto;
   }
 
   .beats li,
   .beats li:first-child,
   .beats li:last-child {
-    min-height: 56vh;
+    min-height: 58vh;
   }
 }
 
@@ -236,7 +240,7 @@
   .beats li,
   .beats li:first-child,
   .beats li:last-child {
-    min-height: 62vh;
+    min-height: 64vh;
   }
 }
 

@@ -203,6 +203,15 @@ export function ChessCom() {
         </p>
       </section>
 
+      {/* ======================================================= JOURNEY */}
+      <section className={styles.section} aria-labelledby="journey">
+        <div className={styles.head}>
+          <p className={`${styles.kick} ${styles.rise}`}>One blunder, end to end</p>
+          <h2 id="journey" className={`${styles.h2} ${styles.rise}`}>Watch it happen.</h2>
+        </div>
+        <JourneyScroll />
+      </section>
+
       {/* ======================================================== INSIGHT */}
       <section className={`${styles.section} ${styles.quoteSec}`}>
         <blockquote className={`${styles.quote} ${styles.rise}`}>
@@ -261,69 +270,6 @@ export function ChessCom() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* ======================================================= JOURNEY */}
-      <section className={styles.section} aria-labelledby="journey">
-        <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>One blunder, end to end</p>
-          <h2 id="journey" className={`${styles.h2} ${styles.rise}`}>Watch it happen.</h2>
-        </div>
-
-        <div className={styles.journey}>
-          <ol className={`${styles.beats} ${styles.rise}`}>
-            {BEATS.map(([name, what], i) => (
-              <li key={name} data-on={solved && i >= 4 ? true : undefined}>
-                <span className={styles.beatN}>{String(i + 1).padStart(2, '0')}</span>
-                <span className={styles.beatName}>{name}</span>
-                <span className={styles.beatWhat}>{what}</span>
-              </li>
-            ))}
-          </ol>
-
-          <div ref={journeyRef} className={`${styles.stage} ${styles.rise}`}>
-            <div className={styles.frame}>
-              <div className={styles.frameBoard}>
-                <Board
-                  fen={solved ? FEN_AFTER : FEN_BEFORE}
-                  orientation="white"
-                  hint={solved ? [] : ['d1']}
-                  highlight={solved ? ['d1', 'd8'] : []}
-                  danger={solved ? 'g8' : null}
-                  mated={solved}
-                  lastMove={solved ? { from: 'd1', to: 'd8' } : null}
-                />
-                <div className={styles.frameEval}>
-                  {solved ? (
-                    <EvalBar cp={1200} label="1-0" peakMate={1} peakLabel="M1" decided isUserMove step="s" />
-                  ) : (
-                    <EvalBar cp={-40} label="−0.4" peakMate={1} peakLabel="M1" loop step="u" />
-                  )}
-                </div>
-                {solved && <Confetti run />}
-              </div>
-              <CoachBubble
-                classification="best"
-                evalText={solved ? '1-0' : undefined}
-                text={
-                  solved
-                    ? '♜d8#. Checkmate on the weak back rank; the king never had a square.'
-                    : 'A forced mate is on the board. The rook can only be one move.'
-                }
-              />
-              <p className={styles.frameCap}>
-                {solved
-                  ? 'The right move. Green sweeps back up the eval bar.'
-                  : 'M1 was available. The blunder left −5.0: the mate and the rook.'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <p className={`${styles.micro} ${styles.rise}`}>
-          Difficulty is <em>read off the position</em> (moves to find, alternatives, whether the
-          key move forces, size of payoff) and shown as a muted badge. An output, never an input.
-        </p>
       </section>
 
       {/* ====================================================== VERSIONS */}

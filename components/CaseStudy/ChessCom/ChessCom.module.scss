@@ -487,90 +487,6 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   }
 }
 
-// ------------------------------------------------------ journey
-.journey {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
-  gap: clamp(2rem, 6vw, 6rem);
-  align-items: start;
-}
-
-.beats {
-  li {
-    display: grid;
-    grid-template-columns: 2.5rem 1fr;
-    column-gap: 1.25rem;
-    padding: clamp(1.1rem, 2.5vw, 1.6rem) 0;
-    border-top: 1px solid var(--line);
-    transition: opacity 0.4s var(--ease-quart-in-out);
-
-    &:last-child {
-      border-bottom: 1px solid var(--line);
-    }
-    &[data-on] .beatN {
-      color: var(--accent);
-    }
-  }
-}
-
-.beatN {
-  grid-row: 1 / span 2;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--fg-muted);
-  font-variant-numeric: tabular-nums;
-  padding-top: 0.15em;
-  transition: color 0.4s var(--ease-quart-in-out);
-}
-
-.beatName {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
-}
-
-.beatWhat {
-  margin-top: 0.3em;
-  font-size: 0.9375rem;
-  color: var(--fg-muted);
-}
-
-.stage {
-  position: sticky;
-  top: calc(var(--header-h) + 2rem);
-}
-
-// Chess.com product frame — deliberately its own dark surface
-.frame {
-  background: #262522;
-  border: 1px solid #3d3a37;
-  border-radius: 16px;
-  padding: clamp(1rem, 2.5vw, 1.6rem);
-}
-
-.frameBoard {
-  position: relative; // contains confetti
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 26px;
-  gap: 0.9rem;
-  align-items: stretch;
-}
-
-.frameEval {
-  display: flex;
-  align-items: stretch;
-}
-
-.frameCap {
-  margin-top: 1rem;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: #a3a19e;
-  font-variant-numeric: tabular-nums;
-}
-
 // ----------------------------------------------------- versions
 .versions {
   display: grid;
@@ -850,17 +766,9 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
 
 @include mq-max('lg') {
   .rules,
-  .journey,
   .versions,
   .metrics {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .journey {
-    gap: clamp(2.5rem, 6vw, 4rem);
-  }
-  .stage {
-    position: static;
-    max-width: 32rem;
   }
   .carry {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -906,10 +814,6 @@ $loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
   }
   .decOut {
     grid-column: 1;
-  }
-  .beats li {
-    grid-template-columns: 2rem 1fr;
-    column-gap: 0.9rem;
   }
   .loop li {
     padding: 0.7em 1.05em;
