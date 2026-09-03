@@ -3,16 +3,13 @@
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './HeroMarquee.module.scss';
 
-const UI = '/nextrail_casestudy/ui';
+const S = '/nextrail_casestudy/screens';
 
-// Real Nextrail screens — order only matters for the diagonal spread.
-const SCREENS = [
-  'home', 'blend-sheet', 'organize-reels', 'feed2fly-grid', 'organize-reels-2',
-  'organize-filter', 'plan-who', 'plan-when', 'plan-when-flex', 'plan-budget',
-  'plan-amenities', 'itinerary-edit', 'itinerary-map', 'trip-summary',
-  'itinerary-hotel', 'booking-flight', 'booking-results', 'booking-pass',
-  'booking-passenger', 'blend-sheet-2',
-].map((n) => `${UI}/${n}.png`);
+// Real Nextrail screens (frameless) — order only matters for the diagonal spread.
+const SCREENS = Array.from(
+  { length: 17 },
+  (_, i) => `${S}/screen-${String(i + 1).padStart(2, '0')}.png`,
+);
 
 // three diagonal columns, alternating scroll direction, middle a touch slower
 const COLS = [
