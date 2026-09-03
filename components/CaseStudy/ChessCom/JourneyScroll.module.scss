@@ -205,12 +205,12 @@
 }
 
 // -------------------------------------------------------- responsive
-// single column: the whole stage cell becomes the sticky bar (opaque, so the
-// beats scroll cleanly underneath), the frame just centres inside it
+// single column: drop the grid entirely (a 1-col grid track was mis-sizing the
+// aspect-ratio board and letting the frame overflow the sticky bar). Plain
+// block flow — .stage is the sticky bar, .beats scroll underneath it.
 @include mq-max('lg') {
   .scrolly {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+    display: block;
   }
 
   .stage {
