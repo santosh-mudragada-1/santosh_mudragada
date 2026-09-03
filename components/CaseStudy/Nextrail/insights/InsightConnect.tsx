@@ -1,218 +1,251 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { Card } from './Card';
+import { FrameViewport } from './FrameViewport';
 import styles from './InsightAnim.module.scss';
 
-const W = 520;
-const H = 300;
+const W = 560;
+const H = 280;
+const CW = 58;
+const CH = 42;
 
-const SIZE = { map: { w: 70, h: 50 }, note: { w: 60, h: 44 }, booking: { w: 64, h: 40 } };
+const START = { x: 366, y: 150 }; // the clean "planning start" — never populated
+const INTENT0 = { x: 104, y: 132 }; // where the orange intent marker rests with the pile
 
-// scattered, independent systems
-const FRAGMENTED = {
-  map: { x: 44, y: 44, r: -9 },
-  note: { x: 300, y: 216, r: 10 },
-  booking: { x: 404, y: 56, r: -7 },
-};
+// Loose pile of saved inspiration, held left of centre.
+const STACK = [
+  { x: 40, y: 86, r: -11 },
+  { x: 78, y: 104, r: 7 },
+  { x: 30, y: 128, r: -16 },
+  { x: 82, y: 148, r: 10 },
+  { x: 50, y: 168, r: -5 },
+];
 
-// one clean horizontal row
-const ALIGNED = {
-  map: { x: 54, y: 148, r: 0 },
-  note: { x: 224, y: 148, r: 0 },
-  booking: { x: 398, y: 148, r: 0 },
-};
+const V: Array<'media' | 'lines' | 'pin'> = ['media', 'pin', 'lines', 'media', 'pin'];
 
-function center(pos: { x: number; y: number }, size: { w: number; h: number }) {
-  return { x: pos.x + size.w / 2, y: pos.y + size.h / 2 };
-}
+// Empty planning placeholders that appear on the reset hold and lead nowhere.
+const SLOTS = [
+  { x: 398, y: 138 },
+  { x: 438, y: 138 },
+  { x: 478, y: 138 },
+];
+const SLOT_W = 30;
+const SLOT_H = 24;
 
 /**
- * ANIMATION 03 — CONNECTION. Three independent systems — a map, saved
- * notes, a booking — sit fragmented and unrelated. An orange route finds
- * its way through the map, the systems draw together into one aligned
- * horizontal journey, the route travels the whole connected line, holds —
- * then the systems separate back into fragments and the cycle begins again.
+ * ANIMATION 03 — RESET. The inspiration already exists: a pile of saved
+ * places, clips and ideas gathers on the left, carrying the user's orange
+ * intent. When it's finally time to plan, the intent moves right toward a
+ * clean planning start — but the saved inspiration doesn't come with it. It
+ * slips away and fades, never arriving. The planning area stays empty: a bare
+ * start point, a few blank slots, a route that leads nowhere. The intent
+ * marker travels all the way back to the beginning, another pile builds, and
+ * it happens again. You already found everything — and planning still starts
+ * from zero.
  *
- * One shared seamless timeline, same reasoning as InsightAccumulate: the
- * end state (FRAGMENTED) matches the start state, so repeat never jumps.
+ * One shared timeline whose end state is identical to its start state, so the
+ * loop never visibly jumps.
  */
 export function InsightConnect() {
   const rootRef = useRef<SVGSVGElement>(null);
-  const mapRef = useRef<SVGGElement>(null);
-  const noteRef = useRef<SVGGElement>(null);
-  const bookingRef = useRef<SVGGElement>(null);
-  const lineMapNoteRef = useRef<SVGLineElement>(null);
-  const lineNoteBookingRef = useRef<SVGLineElement>(null);
-  const routeRef = useRef<SVGCircleElement>(null);
+  const cardRefs = useRef<(SVGGElement | null)[]>([]);
+  const bodyRefs = useRef<(SVGGElement | null)[]>([]);
+  const intentRef = useRef<SVGCircleElement>(null);
+  const startRingRef = useRef<SVGCircleElement>(null);
+  const trailRef = useRef<SVGLineElement>(null);
+  const slotRefs = useRef<(SVGRectElement | null)[]>([]);
   const reduced = usePrefersReducedMotion();
+  const desktop = useMediaQuery('(min-width: 1024px)');
+  const tablet = useMediaQuery('(min-width: 640px)');
 
-  // Fixed aligned-state anchor points — the connecting lines only ever draw
-  // between these, which is exactly where the icon groups sit once aligned.
-  const anchors = useMemo(
-    () => ({
-      map: center(ALIGNED.map, SIZE.map),
-      note: center(ALIGNED.note, SIZE.note),
-      booking: center(ALIGNED.booking, SIZE.booking),
-    }),
-    [],
-  );
-  const lenMapNote = Math.hypot(anchors.note.x - anchors.map.x, anchors.note.y - anchors.map.y);
-  const lenNoteBooking = Math.hypot(
-    anchors.booking.x - anchors.note.x,
-    anchors.booking.y - anchors.note.y,
-  );
+  const count = desktop ? STACK.length : tablet ? 4 : 3;
+  const stack = STACK.slice(0, count);
 
   useGSAP(
     () => {
-      const groups = { map: mapRef.current, note: noteRef.current, booking: bookingRef.current };
-      if (!groups.map || !groups.note || !groups.booking) return;
+      const cards = cardRefs.current.slice(0, count);
+      const bodies = bodyRefs.current.slice(0, count);
+      const slots = slotRefs.current.slice(0, SLOTS.length);
+      if (cards.some((c) => !c)) return;
 
-      const setPose = (pose: typeof FRAGMENTED) => {
-        (Object.keys(groups) as Array<keyof typeof groups>).forEach((k) => {
-          gsap.set(groups[k], { x: pose[k].x, y: pose[k].y, rotation: pose[k].r });
-        });
-      };
+      const toStart = { x: START.x - INTENT0.x, y: START.y - INTENT0.y };
 
       if (reduced) {
-        setPose(ALIGNED);
-        gsap.set([lineMapNoteRef.current, lineNoteBookingRef.current], {
-          opacity: 1,
-          strokeDashoffset: 0,
+        cards.forEach((el, i) => {
+          gsap.set(el, {
+            x: stack[i].x,
+            y: stack[i].y,
+            rotation: stack[i].r,
+            opacity: 1,
+            transformOrigin: '50% 50%',
+          });
         });
-        gsap.set(routeRef.current, { x: anchors.booking.x, y: anchors.booking.y, opacity: 1 });
+        gsap.set(intentRef.current, { x: toStart.x * 0.5, y: toStart.y * 0.5, opacity: 1 });
+        gsap.set(startRingRef.current, { opacity: 1, scale: 1, transformOrigin: '50% 50%' });
+        gsap.set(trailRef.current, { opacity: 0, attr: { x2: START.x } });
+        slots.forEach(
+          (el) => el && gsap.set(el, { opacity: 1, scale: 1, transformOrigin: '50% 50%' }),
+        );
         return;
       }
 
-      setPose(FRAGMENTED);
-      gsap.set([lineMapNoteRef.current, lineNoteBookingRef.current], {
-        opacity: 0,
-        strokeDasharray: (i) => (i === 0 ? lenMapNote : lenNoteBooking),
-        strokeDashoffset: (i) => (i === 0 ? lenMapNote : lenNoteBooking),
-      });
+      const reset = () => {
+        gsap.set(cards, {
+          x: -CW - 40,
+          y: (i) => stack[i].y,
+          rotation: (i) => stack[i].r * 0.5,
+          opacity: 0,
+          transformOrigin: '50% 50%',
+        });
+        gsap.set(bodies, { opacity: 1 });
+        gsap.set(intentRef.current, { x: 0, y: 0, opacity: 0, transformOrigin: '50% 50%' });
+        gsap.set(startRingRef.current, { opacity: 1, scale: 1, transformOrigin: '50% 50%' });
+        gsap.set(trailRef.current, { opacity: 0, attr: { x2: START.x } });
+        gsap.set(slots, { opacity: 0, scale: 0.9, transformOrigin: '50% 50%' });
+      };
 
-      const mapCenterFrag = center(FRAGMENTED.map, SIZE.map);
-      gsap.set(routeRef.current, {
-        x: mapCenterFrag.x,
-        y: mapCenterFrag.y,
-        opacity: 0,
-        transformOrigin: '50% 50%',
-      });
+      reset();
 
-      // explicit, positionally-matched lists — index i in these always means
-      // [map, note, booking], same order the group elements are targeted in.
-      const groupList = [groups.map, groups.note, groups.booking];
-      const alignedList = [ALIGNED.map, ALIGNED.note, ALIGNED.booking];
-      const fragmentedList = [FRAGMENTED.map, FRAGMENTED.note, FRAGMENTED.booking];
+      const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'power2.inOut' } });
 
-      gsap
-        .timeline({ repeat: -1, defaults: { ease: 'power2.inOut' } })
-        // the route finds its way through the still-fragmented map
-        .to(routeRef.current, { opacity: 1, duration: 0.3 })
-        .to(routeRef.current, {
-          x: mapCenterFrag.x - 10,
-          y: mapCenterFrag.y + 7,
-          duration: 0.5,
-        })
-        .to(routeRef.current, { x: mapCenterFrag.x + 9, y: mapCenterFrag.y - 8, duration: 0.55 })
-        .to(routeRef.current, { x: mapCenterFrag.x, y: mapCenterFrag.y, duration: 0.4 })
-        // the three systems draw together into one journey
+      // A — the inspiration is already there: the pile slides in from the left
+      tl.to(
+        cards,
+        {
+          x: (i) => stack[i].x,
+          y: (i) => stack[i].y,
+          rotation: (i) => stack[i].r,
+          opacity: 1,
+          duration: 1.5,
+          stagger: 0.16,
+          ease: 'power2.out',
+        },
+        0,
+      )
+        .fromTo(intentRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.5)
+        // B — it accumulates: a small settle, "I already have all of this"
         .to(
-          groupList,
+          cards,
           {
-            x: (i) => alignedList[i].x,
-            y: (i) => alignedList[i].y,
-            rotation: 0,
-            duration: 1.5,
-            stagger: 0.12,
+            x: (i) => stack[i].x + gsap.utils.random(-4, 4),
+            y: (i) => stack[i].y + gsap.utils.random(-3, 5),
+            duration: 0.9,
+            stagger: 0.05,
           },
-          '+=0.15',
+          '>-0.1',
         )
-        .to(routeRef.current, { x: anchors.map.x, y: anchors.map.y, duration: 0.9 }, '<')
-        .to(
-          [lineMapNoteRef.current, lineNoteBookingRef.current],
-          { opacity: 1, strokeDashoffset: 0, duration: 0.9, stagger: 0.15 },
-          '<0.3',
+        .to({}, { duration: 0.7 })
+        .addLabel('plan')
+        // C — trying to plan: the intent leaves for the start point, the pile leans after it
+        .to(intentRef.current, { x: toStart.x, y: toStart.y, duration: 2.1, ease: 'power1.inOut' }, 'plan')
+        .to(cards, { x: '+=32', duration: 1.5, stagger: 0.05, ease: 'power1.in' }, 'plan+=0.35')
+        .fromTo(
+          trailRef.current,
+          { attr: { x2: START.x }, opacity: 0 },
+          { attr: { x2: START.x + 46 }, opacity: 1, duration: 1.1, ease: 'power1.out' },
+          'plan+=1.05',
         )
-        // the route travels the whole connected journey
-        .to(routeRef.current, { x: anchors.note.x, y: anchors.note.y, duration: 0.8 }, '+=0.1')
-        .to(routeRef.current, { x: anchors.booking.x, y: anchors.booking.y, duration: 0.8 })
-        .to({}, { duration: 1 }) // hold the completed journey
-        // fragment apart again
-        .to(routeRef.current, { opacity: 0, duration: 0.35 })
+        // D — the inspiration is left behind: it drops away and fades, never arriving
         .to(
-          [lineMapNoteRef.current, lineNoteBookingRef.current],
+          cards,
           {
+            y: '+=120',
+            rotation: (i) => stack[i].r + gsap.utils.random(-18, 18),
             opacity: 0,
-            strokeDashoffset: (i) => (i === 0 ? lenMapNote : lenNoteBooking),
-            duration: 0.7,
+            duration: 1.8,
+            stagger: 0.09,
+            ease: 'power1.in',
           },
-          '<',
+          'plan+=1.75',
         )
-        .to(
-          groupList,
-          {
-            x: (i) => fragmentedList[i].x,
-            y: (i) => fragmentedList[i].y,
-            rotation: (i) => fragmentedList[i].r,
-            duration: 1.5,
-            stagger: 0.08,
-          },
-          '-=0.3',
-        )
-        .set(routeRef.current, { x: mapCenterFrag.x, y: mapCenterFrag.y })
+        .addLabel('empty', 'plan+=2.7')
+        // E — the empty reset: the start point pulses, blank slots appear, hold on the emptiness
+        .to(startRingRef.current, { scale: 1.45, opacity: 0.95, duration: 0.4, ease: 'sine.out' }, 'empty')
+        .to(startRingRef.current, { scale: 1, opacity: 1, duration: 0.7, ease: 'sine.inOut' }, '>')
+        .to(slots, { opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: 'power2.out' }, 'empty+=0.15')
+        .to({}, { duration: 1.5 }) // hold — planning is empty; you start from zero
+        .addLabel('back')
+        // F — the intent goes all the way back; the empty route and slots clear
+        .to(trailRef.current, { attr: { x2: START.x }, opacity: 0, duration: 0.6 }, 'back')
+        .to(slots, { opacity: 0, scale: 0.9, duration: 0.5, stagger: 0.08 }, 'back')
+        .to(intentRef.current, { x: 0, y: 0, duration: 1.9, ease: 'power1.inOut' }, 'back+=0.05')
+        .to(intentRef.current, { opacity: 0, duration: 0.4 }, '>-0.05')
+        // land exactly on the start state so the repeat is seamless
+        .set(cards, {
+          x: -CW - 40,
+          y: (i) => stack[i].y,
+          rotation: (i) => stack[i].r * 0.5,
+          opacity: 0,
+        })
+        .set(bodies, { opacity: 1 })
         .to({}, { duration: 0.6 });
     },
-    { scope: rootRef, dependencies: [reduced] },
+    { scope: rootRef, dependencies: [reduced, desktop, tablet] },
   );
 
   return (
-    <svg
-      ref={rootRef}
-      className={styles.canvas}
-      viewBox={`0 0 ${W} ${H}`}
-      aria-hidden
-      focusable="false"
-    >
-      <line
-        ref={lineMapNoteRef}
-        x1={anchors.map.x}
-        y1={anchors.map.y}
-        x2={anchors.note.x}
-        y2={anchors.note.y}
-        className={styles.thinLine}
-      />
-      <line
-        ref={lineNoteBookingRef}
-        x1={anchors.note.x}
-        y1={anchors.note.y}
-        x2={anchors.booking.x}
-        y2={anchors.booking.y}
-        className={styles.thinLine}
-      />
+    <FrameViewport>
+      <svg
+        ref={rootRef}
+        className={styles.canvas}
+        viewBox={`0 0 ${W} ${H}`}
+        aria-hidden
+        focusable="false"
+      >
+        {/* the clean planning start — a faint baseline that never fills */}
+        <line x1={340} y1={START.y} x2={528} y2={START.y} className={styles.baseLine} opacity={0.45} />
 
-      <g ref={mapRef} className={styles.card}>
-        <rect width={SIZE.map.w} height={SIZE.map.h} rx={4} className={styles.cardRect} />
-        <path d="M8,38 C20,10 34,44 46,18 S60,10 64,26" className={styles.thinLine} />
-        <circle cx={20} cy={30} r={2} className={styles.pinDot} />
-        <circle cx={50} cy={16} r={2} className={styles.pinDot} />
-      </g>
+        {SLOTS.map((s, i) => (
+          <rect
+            key={`s-${i}`}
+            ref={(el) => {
+              slotRefs.current[i] = el;
+            }}
+            x={s.x}
+            y={s.y}
+            width={SLOT_W}
+            height={SLOT_H}
+            rx={3}
+            className={styles.slotTick}
+            opacity={0}
+          />
+        ))}
 
-      <g ref={noteRef} className={styles.card}>
-        <rect width={SIZE.note.w} height={SIZE.note.h} rx={4} className={styles.cardRect} />
-        <line x1={9} y1={16} x2={48} y2={16} className={styles.cardLine} />
-        <line x1={9} y1={26} x2={38} y2={26} className={styles.cardLine} />
-        <circle cx={51} cy={9} r={2.2} className={styles.dot} />
-      </g>
+        <line
+          ref={trailRef}
+          x1={START.x}
+          y1={START.y}
+          x2={START.x}
+          y2={START.y}
+          className={styles.intentTrail}
+          opacity={0}
+        />
+        <circle ref={startRingRef} cx={START.x} cy={START.y} r={9} className={styles.startRing} />
+        <circle cx={START.x} cy={START.y} r={3} className={styles.startDot} />
 
-      <g ref={bookingRef} className={styles.card}>
-        <rect width={SIZE.booking.w} height={SIZE.booking.h} rx={4} className={styles.cardRect} />
-        <line x1={9} y1={13} x2={40} y2={13} className={styles.cardLine} />
-        <rect x={9} y={21} width={26} height={9} rx={2} className={styles.bookingBar} />
-      </g>
+        {stack.map((_, i) => (
+          <Card
+            key={`c-${i}`}
+            variant={V[i]}
+            withDot
+            halo
+            w={CW}
+            h={CH}
+            ref={(el) => {
+              cardRefs.current[i] = el;
+            }}
+            bodyRef={(el) => {
+              bodyRefs.current[i] = el;
+            }}
+          />
+        ))}
 
-      <circle ref={routeRef} r={3.5} className={styles.dot} />
-    </svg>
+        <circle ref={intentRef} cx={INTENT0.x} cy={INTENT0.y} r={5} className={styles.intent} />
+      </svg>
+    </FrameViewport>
   );
 }

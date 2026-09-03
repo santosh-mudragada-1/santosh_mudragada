@@ -3,147 +3,203 @@
 import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { Card } from './Card';
+import { FrameViewport } from './FrameViewport';
 import styles from './InsightAnim.module.scss';
 
-const W = 520;
-const H = 300;
-const EMPTY = { x: 452, y: 74 }; // the destination that's never reached
+const W = 560;
+const H = 280;
+const CW = 60;
+const CH = 44;
 
-// Loosely fanned "neat stack" — small, hand-placed offsets and rotations so
-// it reads as a considered pile, not a grid.
-const STACK = [
-  { x: 132, y: 158, r: -9 },
-  { x: 150, y: 168, r: 5 },
-  { x: 118, y: 182, r: -15 },
-  { x: 166, y: 150, r: 11 },
-  { x: 140, y: 194, r: -3 },
-  { x: 156, y: 176, r: 17 },
+type Slot = {
+  x: number;
+  y: number;
+  r: number;
+  revisit?: boolean; // lifts forward once, holds, nothing happens, sinks back
+  far?: boolean; // drifts further as it ages
+};
+
+// A loose central cluster — hand-placed so it reads as a considered pile, not
+// a grid. Two cards get a "revisit" beat; a couple drift wider as they age.
+const SLOTS: Slot[] = [
+  { x: 250, y: 114, r: -8 },
+  { x: 288, y: 130, r: 6, revisit: true },
+  { x: 232, y: 150, r: -14, far: true },
+  { x: 302, y: 148, r: 11 },
+  { x: 262, y: 172, r: -4, revisit: true },
+  { x: 292, y: 102, r: 15, far: true },
+  { x: 244, y: 190, r: -11 },
 ];
 
-// Scattered / disconnected — spread wide, still weighted left-of-centre so
-// the empty marker at top-right stays visually reachable-but-untouched.
-const SCATTER = [
-  { x: 60, y: 84, r: -20 },
-  { x: 226, y: 54, r: 24 },
-  { x: 44, y: 244, r: -30 },
-  { x: 252, y: 224, r: 15 },
-  { x: 150, y: 34, r: -12 },
-  { x: 296, y: 132, r: 27 },
+const V: Array<'media' | 'lines' | 'pin'> = [
+  'media',
+  'lines',
+  'pin',
+  'media',
+  'lines',
+  'pin',
+  'media',
 ];
 
-const REVISIT_IDX = 5; // the card that breaks toward EMPTY and turns back
-
-const CARD_IDS = Array.from({ length: STACK.length }, (_, i) => i);
+function randomEdge() {
+  const s = Math.floor(gsap.utils.random(0, 4));
+  const along = gsap.utils.random(0.12, 0.88);
+  if (s === 0) return { x: -CW - gsap.utils.random(14, 80), y: along * H };
+  if (s === 1) return { x: W + gsap.utils.random(14, 80), y: along * H };
+  if (s === 2) return { x: 60 + along * (W - 200), y: -CH - gsap.utils.random(14, 70) };
+  return { x: 60 + along * (W - 200), y: H + gsap.utils.random(14, 70) };
+}
 
 /**
- * ANIMATION 02 — ACCUMULATION. A pile of saved content forms, then slowly
- * comes apart as attention moves on — the orange save-markers stay visible
- * longer than the cards themselves, since the intent to return outlives the
- * content. One card breaks from the pile toward an empty destination
- * marker and turns back before arriving: saved, never acted on.
+ * ANIMATION 02 — ACCUMULATION. Cards keep arriving from every edge and settle
+ * into a loose central pile: saved, briefly organised. Then attention moves
+ * on — the card bodies fade back while their orange save-markers stay lit
+ * (the intent to return outlives the content), the pile drifts and tilts, and
+ * each card eventually recycles in again from a fresh edge. Now and then one
+ * card is revisited: it lifts forward, holds, and nothing happens — it sinks
+ * back into the pile.
  *
- * This is one shared timeline (unlike InsightFlow's independent loops)
- * because the "form → scatter → reform" choreography needs every card
- * moving in relation to the others. It stays seamless because the
- * timeline's end state is identical to its start state — SCATTER — so the
- * repeat never visibly jumps.
+ * Each card runs its own long, phase-shifted loop, so the pile is always
+ * part-built and always churning — it rebuilds itself continuously with no
+ * single reset frame.
  */
 export function InsightAccumulate() {
   const rootRef = useRef<SVGSVGElement>(null);
   const cardRefs = useRef<(SVGGElement | null)[]>([]);
+  const bodyRefs = useRef<(SVGGElement | null)[]>([]);
   const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
   const reduced = usePrefersReducedMotion();
+  const desktop = useMediaQuery('(min-width: 1024px)');
+  const tablet = useMediaQuery('(min-width: 640px)');
+
+  const count = desktop ? SLOTS.length : tablet ? 5 : 4;
+  const slots = SLOTS.slice(0, count);
 
   useGSAP(
     () => {
-      const cards = cardRefs.current;
-      const dots = dotRefs.current;
+      const cards = cardRefs.current.slice(0, count);
+      const bodies = bodyRefs.current.slice(0, count);
+      const dots = dotRefs.current.slice(0, count);
       if (cards.some((c) => !c)) return;
 
       if (reduced) {
         cards.forEach((el, i) => {
-          gsap.set(el, { x: STACK[i].x, y: STACK[i].y, rotation: STACK[i].r, opacity: 1 });
+          const s = slots[i];
+          gsap.set(el, {
+            x: s.x,
+            y: s.y,
+            rotation: s.r,
+            scale: s.revisit ? 1.06 : 1,
+            opacity: 1,
+            transformOrigin: '50% 50%',
+          });
+          gsap.set(bodies[i], { opacity: i % 3 === 2 ? 0.24 : 1 });
+          gsap.set(dots[i], { opacity: 0.9 });
         });
-        dots.forEach((el) => el && gsap.set(el, { opacity: 1 }));
         return;
       }
 
-      gsap.set(cards, {
-        x: (i) => SCATTER[i].x,
-        y: (i) => SCATTER[i].y,
-        rotation: (i) => SCATTER[i].r,
-        opacity: 0.55,
-        transformOrigin: '50% 50%',
+      cards.forEach((el, i) => {
+        const s = slots[i];
+        const body = bodies[i];
+        const dot = dots[i];
+        const spawn = { x: 0, y: 0 };
+        const jig = () => gsap.utils.random(-9, 9);
+        const farK = s.far ? 1 : 0.4;
+
+        const tl = gsap.timeline({ repeat: -1, repeatRefresh: true });
+
+        tl.set(el, { opacity: 0, scale: 0.9, transformOrigin: '50% 50%' })
+          .set(body, { opacity: 1 })
+          .set(dot, { opacity: 0.9 })
+          .call(() => Object.assign(spawn, randomEdge()))
+          .set(el, {
+            x: () => spawn.x,
+            y: () => spawn.y,
+            rotation: () => s.r * 0.4 + jig(),
+          })
+          // ARRIVE — slide in from the edge, settle into a slot
+          .to(el, { opacity: 1, duration: 0.55, ease: 'sine.out' })
+          .to(
+            el,
+            {
+              x: () => s.x + jig(),
+              y: () => s.y + jig(),
+              rotation: () => s.r + gsap.utils.random(-4, 4),
+              scale: 1,
+              duration: 2.6,
+              ease: 'power2.out',
+            },
+            '<',
+          )
+          // SAVED — sits in the pile, organised
+          .to({}, { duration: () => gsap.utils.random(1.6, 3.4) });
+
+        if (s.revisit) {
+          tl.to(el, { scale: 1.09, x: '-=5', y: '-=12', duration: 0.85, ease: 'power2.out' })
+            .to({}, { duration: 0.8 })
+            // nothing happens — back to the pile
+            .to(el, { scale: 1, x: '+=5', y: '+=12', duration: 1.1, ease: 'power2.inOut' });
+        }
+
+        // AGE — body dims, the marker stays lit, the pile drifts and tilts
+        tl.to(body, { opacity: 0.22, duration: 2.4, ease: 'sine.inOut' }, s.revisit ? '+=0.3' : '+=0.2')
+          .to(
+            el,
+            {
+              x: () => '+=' + gsap.utils.random(-24, 30) * farK,
+              y: () => '+=' + gsap.utils.random(-12, 28) * farK,
+              rotation: () => '+=' + gsap.utils.random(-12, 12),
+              duration: 3.2,
+              ease: 'sine.inOut',
+            },
+            '<',
+          )
+          .to(dot, { opacity: 0.82, duration: 1 }, '<')
+          .to({}, { duration: () => gsap.utils.random(0.6, 2) })
+          // RECYCLE — finally the marker fades too and the card leaves
+          .to(dot, { opacity: 0, duration: 0.9, ease: 'sine.in' })
+          .to([body, el], { opacity: 0, duration: 0.7, ease: 'sine.in' }, '<0.15')
+          .to({}, { duration: () => gsap.utils.random(0.4, 1.6) });
+
+        // desync every card's phase
+        tl.time(gsap.utils.random(0, 9 + i * 3));
       });
-      gsap.set(dots, { opacity: 0.85 });
-
-      const revisitCard = cards[REVISIT_IDX];
-
-      gsap
-        .timeline({ repeat: -1, defaults: { ease: 'power2.inOut' } })
-        // ACCUMULATE — gather into a neat stack
-        .to(cards, {
-          x: (i) => STACK[i].x,
-          y: (i) => STACK[i].y,
-          rotation: (i) => STACK[i].r,
-          opacity: 1,
-          duration: 1.8,
-          stagger: 0.08,
-        })
-        .to({}, { duration: 1 }) // hold, considered
-        // REVISIT — one card breaks toward the empty marker, stops short, returns
-        .to(
-          revisitCard,
-          { x: EMPTY.x - 66, y: EMPTY.y + 34, rotation: 6, duration: 1.1, ease: 'power2.out' },
-          '+=0.1',
-        )
-        .to(revisitCard, {
-          x: STACK[REVISIT_IDX].x,
-          y: STACK[REVISIT_IDX].y,
-          rotation: STACK[REVISIT_IDX].r,
-          duration: 1.2,
-        })
-        // FORGET — the pile comes apart, cards fade more than their markers
-        .to(
-          cards,
-          {
-            x: (i) => SCATTER[i].x,
-            y: (i) => SCATTER[i].y,
-            rotation: (i) => SCATTER[i].r,
-            opacity: (i) => (i % 2 ? 0.32 : 0.58),
-            duration: 2.2,
-            stagger: 0.06,
-          },
-          '+=0.4',
-        )
-        .to(dots, { opacity: 0.85, duration: 0.6 }, '<')
-        .to({}, { duration: 0.8 });
     },
-    { scope: rootRef, dependencies: [reduced] },
+    { scope: rootRef, dependencies: [reduced, desktop, tablet] },
   );
 
   return (
-    <svg
-      ref={rootRef}
-      className={styles.canvas}
-      viewBox={`0 0 ${W} ${H}`}
-      aria-hidden
-      focusable="false"
-    >
-      <circle cx={EMPTY.x} cy={EMPTY.y} r={10} className={styles.markerRing} />
-      {CARD_IDS.map((id, i) => (
-        <Card
-          key={id}
-          withDot
-          ref={(el) => {
-            cardRefs.current[i] = el;
-          }}
-          dotRef={(el) => {
-            dotRefs.current[i] = el;
-          }}
-        />
-      ))}
-    </svg>
+    <FrameViewport>
+      <svg
+        ref={rootRef}
+        className={styles.canvas}
+        viewBox={`0 0 ${W} ${H}`}
+        aria-hidden
+        focusable="false"
+      >
+        {slots.map((_, i) => (
+          <Card
+            key={`c-${i}`}
+            variant={V[i]}
+            withDot
+            halo
+            w={CW}
+            h={CH}
+            ref={(el) => {
+              cardRefs.current[i] = el;
+            }}
+            bodyRef={(el) => {
+              bodyRefs.current[i] = el;
+            }}
+            dotRef={(el) => {
+              dotRefs.current[i] = el;
+            }}
+          />
+        ))}
+      </svg>
+    </FrameViewport>
   );
 }

@@ -1,69 +1,160 @@
 // Shared visual language for the three "what we found" animations —
-// InsightFlow, InsightAccumulate, InsightConnect. Thin strokes, orange only
-// for the accent moment, no fills beyond the paper background, no shadows,
-// no gradients. Each animation owns its own timeline; this file only owns
-// how things look, not how they move.
+// InsightFlow (FLOW), InsightAccumulate (ACCUMULATION), InsightConnect (RESET).
+//
+// Bold-but-minimal editorial diagram: heavier strokes than a UI decoration,
+// orange reserved for the moment of intent, no fills beyond the paper
+// background, no shadows, no gradients on the shapes themselves. Each
+// animation owns its own motion; this file owns only how things look and the
+// invisible viewport they travel through.
+
+// ---------------------------------------------------------------- viewport
+// The animation lives inside an invisible horizontal frame. Cards enter from
+// beyond one edge and leave past the other; the top and bottom gradient bands
+// blend that motion back into the page so it reads as a window onto a larger
+// continuous system. No border — the fades alone imply the frame.
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
 
 .canvas {
   width: 100%;
   height: 100%;
   display: block;
-  overflow: visible; // a card mid-flight is allowed to touch the edge
+  overflow: visible; // a card mid-flight may sit beyond the viewBox
 }
 
+// Cream fading to nothing. Deliberately gentle — a veil, not a white overlay —
+// so a card can be half-swallowed by it and still feel like it continues.
+.edgeFade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.edgeFade[data-edge='top'] {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 62%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+.edgeFade[data-edge='bottom'] {
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 62%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+// ---------------------------------------------------------------- card unit
 .card {
   will-change: transform;
 }
 
 .cardRect {
   fill: var(--bg);
-  stroke: var(--line-strong);
-  stroke-width: 1.25;
+  stroke: color-mix(in oklab, var(--fg) 34%, transparent);
+  stroke-width: 1.75;
 }
 
 .cardLine {
-  stroke: var(--fg-muted);
-  stroke-width: 1.25;
+  stroke: color-mix(in oklab, var(--fg) 26%, transparent);
+  stroke-width: 1.5;
   stroke-linecap: round;
 }
 
+.cardBlock {
+  fill: color-mix(in oklab, var(--fg) 8%, transparent);
+  stroke: color-mix(in oklab, var(--fg) 20%, transparent);
+  stroke-width: 1.25;
+}
+
+.cardStroke {
+  fill: none;
+  stroke: color-mix(in oklab, var(--fg) 30%, transparent);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+// ------------------------------------------------------------ orange accent
 .dot {
   fill: var(--accent);
+}
+
+.dotHalo {
+  fill: color-mix(in oklab, var(--accent) 15%, transparent);
 }
 
 .dotRing {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 1.5;
+  stroke-width: 1.75;
 }
 
+.intent {
+  fill: var(--accent);
+  will-change: transform;
+}
+
+.intentTrail {
+  fill: none;
+  stroke: color-mix(in oklab, var(--accent) 55%, transparent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+// -------------------------------------------------- destination / planning
 .markerRing {
   fill: none;
-  stroke: var(--line-strong);
-  stroke-width: 1.25;
+  stroke: color-mix(in oklab, var(--fg) 30%, transparent);
+  stroke-width: 1.5;
   stroke-dasharray: 3 4;
 }
 
-.pinDot {
-  fill: var(--fg-muted);
-}
-
-.thinLine {
-  stroke: var(--line-strong);
-  stroke-width: 1.25;
+.baseLine {
   fill: none;
+  stroke: color-mix(in oklab, var(--fg) 22%, transparent);
+  stroke-width: 1.75;
   stroke-linecap: round;
 }
 
-.routeLine {
-  stroke: var(--accent);
+.startRing {
+  fill: none;
+  stroke: color-mix(in oklab, var(--fg) 34%, transparent);
   stroke-width: 1.5;
-  fill: none;
-  stroke-linecap: round;
+  stroke-dasharray: 3 4;
+  will-change: transform;
 }
 
-.bookingBar {
-  fill: var(--accent-tint);
-  stroke: var(--accent);
-  stroke-width: 1.25;
+.startDot {
+  fill: color-mix(in oklab, var(--fg) 46%, transparent);
+}
+
+.slotTick {
+  fill: none;
+  stroke: color-mix(in oklab, var(--fg) 28%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+// The JS holds each animation on a composed static frame under reduced motion;
+// nothing is moving, so drop the compositing hints too.
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .intent,
+  .startRing {
+    will-change: auto;
+  }
 }
