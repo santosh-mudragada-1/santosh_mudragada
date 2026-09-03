@@ -39,11 +39,18 @@
 .rig {
   position: absolute;
   top: -24%;
-  left: 46%;
-  width: 62%;
+  left: 40%;
+  width: 68%;
   height: 150%;
   display: flex;
-  gap: clamp(1rem, 2vw, 2.25rem);
+  // Wide horizontal gap on purpose: the compound rotateX/Y/Z below makes a
+  // card's ON-SCREEN bounding box roughly twice its column width (a rotated
+  // rectangle's axis-aligned footprint swells well past its own edges).
+  // Columns scroll at independent speeds, so any two neighbours can land at
+  // the same height at any time — this gap has to clear that footprint on
+  // its own, not just the visual column width, or cards from different
+  // columns collide into a cluster.
+  gap: clamp(3rem, 11vw, 13rem);
 
   // Viewport-aligned vertical dissolve. Safe on .rig because each card
   // self-contains its perspective(), so this mask's flattening never
@@ -67,15 +74,17 @@
 // A column. No overflow / no mask / no transform: the tilted cards
 // must be free to spill past this box.
 .col {
-  flex: 0 0 clamp(104px, 10vw, 156px);
+  flex: 0 0 clamp(88px, 7.5vw, 122px);
   min-width: 0;
 }
 
-// The belt. Movement, looping and spacing only.
+// The belt. Movement, looping and spacing only. Gap is generous for the
+// same reason as .rig's — the rotated card is visually taller/wider than
+// its own box.
 .track {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.4rem, 2.6vw, 2.6rem);
+  gap: clamp(2.25rem, 4.5vw, 4.5rem);
   will-change: transform;
 
   &[data-dir='up'] {
@@ -128,13 +137,13 @@
 @include mq-max('lg') {
   .rig {
     top: -12%;
-    left: 60%;
-    width: 56%;
+    left: 52%;
+    width: 64%;
     height: 128%;
-    gap: 1rem;
+    gap: clamp(2.5rem, 12vw, 9.5rem);
   }
   .col {
-    flex-basis: clamp(78px, 9.5vw, 110px);
+    flex-basis: clamp(70px, 8vw, 96px);
   }
   .col:nth-child(3) {
     display: none;
