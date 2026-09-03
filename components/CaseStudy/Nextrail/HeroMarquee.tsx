@@ -16,16 +16,22 @@ const SCREEN_W = 590;
 const SCREEN_H = 1278;
 
 const SCREENS = Array.from({ length: 17 }, (_, i) => ({
-  src: `${S}/screen-${String(i + 1).padStart(2, '0')}.png`,
+  src: `${S}/screen-${String(i + 1).padStart(2, '0')}.webp`,
   w: SCREEN_W,
   h: SCREEN_H,
 }));
 
-// three diagonal columns, alternating scroll direction, middle a touch slower
+// three diagonal columns, alternating scroll direction, middle a touch slower.
+// `delay` is negative on purpose: a CSS animation with a negative delay
+// starts already that many seconds into its cycle, so on first paint every
+// column is already mid-scroll instead of sitting at its untouched rest
+// position — that "everything at 0%, all at once" moment is what read as
+// the marquee "just getting started". Three different offsets also keep
+// the columns from ever re-syncing into a visible rhythm.
 const COLS = [
-  { dir: 'up' as const, dur: 52, items: SCREENS.filter((_, i) => i % 3 === 0) },
-  { dir: 'down' as const, dur: 60, items: SCREENS.filter((_, i) => i % 3 === 1) },
-  { dir: 'up' as const, dur: 56, items: SCREENS.filter((_, i) => i % 3 === 2) },
+  { dir: 'up' as const, dur: 52, delay: -17, items: SCREENS.filter((_, i) => i % 3 === 0) },
+  { dir: 'down' as const, dur: 60, delay: -38, items: SCREENS.filter((_, i) => i % 3 === 1) },
+  { dir: 'up' as const, dur: 56, delay: -9, items: SCREENS.filter((_, i) => i % 3 === 2) },
 ];
 
 /**
@@ -47,17 +53,27 @@ export function HeroMarquee() {
             <div
               className={styles.track}
               data-dir={col.dir}
-              style={reduced ? undefined : { animationDuration: `${col.dur}s` }}
+              style={
+                reduced
+                  ? undefined
+                  : { animationDuration: `${col.dur}s`, animationDelay: `${col.delay}s` }
+              }
             >
               {[...col.items, ...col.items].map((screen, j) => (
                 <div key={j} className={styles.card}>
+                  {/* Eager on purpose: this belt scrolls every duplicate into
+                      "first time visible" territory continuously, not just
+                      once on scroll-into-viewport, so `loading="lazy"` here
+                      meant new cards popped in mid-loop right as they
+                      arrived — that was the "glitching mid" scroll. Only 17
+                      unique files repeat, so there's nothing to defer. */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={screen.src}
                     width={screen.w}
                     height={screen.h}
                     alt=""
-                    loading="lazy"
+                    loading="eager"
                     decoding="async"
                     draggable={false}
                   />

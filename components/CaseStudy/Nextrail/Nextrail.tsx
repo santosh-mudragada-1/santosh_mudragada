@@ -6,6 +6,9 @@ import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { HeroMarquee } from './HeroMarquee';
 import { Feed2FlyScroll } from './Feed2FlyScroll';
+import { InsightFlow } from './insights/InsightFlow';
+import { InsightAccumulate } from './insights/InsightAccumulate';
+import { InsightConnect } from './insights/InsightConnect';
 import styles from './Nextrail.module.scss';
 
 const U = '/nextrail_casestudy/ui';
@@ -17,16 +20,19 @@ const INSIGHTS = [
     n: '01',
     statement: 'Inspiration lives on social media.',
     body: 'People find where to go through reels, shorts and creator videos far more than through travel sites or blogs. The discovery already happened before any planning tool is opened.',
+    Anim: InsightFlow,
   },
   {
     n: '02',
     statement: 'Saved content rarely becomes action.',
     body: 'Everyone saves with the intention of coming back to it. Almost no one organises those saves, and most are never opened again.',
+    Anim: InsightAccumulate,
   },
   {
     n: '03',
     statement: 'Planning still starts from scratch.',
     body: 'Even with a camera roll full of inspiration, planning means switching between maps, notes and booking tabs and rebuilding everything by hand.',
+    Anim: InsightConnect,
   },
 ];
 
@@ -283,9 +289,12 @@ export function Nextrail() {
           {INSIGHTS.map((it) => (
             <div key={it.n} className={`${styles.insight} ${styles.rise}`}>
               <span className={styles.insightN}>{it.n}</span>
-              <div>
+              <div className={styles.insightText}>
                 <p className={styles.insightStatement}>{it.statement}</p>
                 <p className={styles.insightBody}>{it.body}</p>
+              </div>
+              <div className={styles.insightAnim} aria-hidden>
+                <it.Anim />
               </div>
             </div>
           ))}

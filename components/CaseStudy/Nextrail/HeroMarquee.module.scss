@@ -58,12 +58,6 @@
   z-index: 1;
   pointer-events: none;
   overflow: clip; // the only clip
-
-  // 3D camera
-  perspective: 2000px;
-  perspective-origin: 50% 50%;
-  transform-style: preserve-3d;
-
   // Viewport-aligned vertical dissolve, applied on the untransformed
   // wrapper so it fades against the screen edges, not the tilted sheet's
   // own (now diagonal) local axis.
@@ -100,8 +94,8 @@
   transform-origin: 50% 50%;
 
   transform:
-    rotateX(25deg)
-    rotateY(25deg)
+    rotateX(30deg)
+    rotateY(0deg)
     rotateZ(-50deg);
 }
 

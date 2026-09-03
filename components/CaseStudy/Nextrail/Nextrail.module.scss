@@ -200,17 +200,21 @@
 }
 
 // ------------------------------------------------------ PROBLEM: triad
+// Horizontal row on desktop and tablet — Discover → Save → Forget reads as
+// one line/one flow. Mobile alone reverts to the original vertical stack
+// with the ↓ connector (see the mq-max('sm') override below).
 .triad {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: clamp(0.6rem, 2vw, 1.4rem);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: clamp(0.5rem, 1.8vw, 1rem);
   margin-top: clamp(2.5rem, 6vw, 4.5rem);
 
   li {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: clamp(2rem, 1rem + 5vw, 4.5rem);
+    font-size: clamp(1.4rem, 0.9rem + 2.8vw, 3.2rem);
     line-height: 0.95;
     letter-spacing: -0.04em;
     text-transform: uppercase;
@@ -219,12 +223,13 @@
       opacity 0.5s var(--ease-quart-in-out);
 
     &:not(:last-child)::after {
-      content: '↓';
-      display: block;
-      margin-top: 0.2em;
-      font-size: 0.32em;
+      content: '→';
+      display: inline-block;
+      margin: 0 0.18em;
+      font-size: 0.4em;
       font-weight: 400;
       color: var(--fg-muted);
+      vertical-align: middle;
     }
   }
 }
@@ -258,14 +263,28 @@
 
 .insight {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr);
-  column-gap: clamp(1rem, 3vw, 2.5rem);
+  grid-template-columns: 4rem minmax(0, 26rem) minmax(0, 1fr);
+  column-gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
   padding: clamp(2rem, 5vw, 3.5rem) 0;
   border-top: 1px solid var(--line);
 
   &:last-child {
     border-bottom: 1px solid var(--line);
   }
+}
+
+.insightText {
+  min-width: 0;
+}
+
+// The animation's canvas — fills whatever the grid gives it (≈55-60% of
+// the row on desktop, see the mq-max overrides below for smaller screens).
+.insightAnim {
+  grid-column: 3;
+  align-self: stretch;
+  height: clamp(14rem, 22vw, 20rem);
+  min-width: 0;
 }
 
 .insightN {
@@ -643,6 +662,17 @@
       width: min(16rem, 52vw);
     }
   }
+
+  // insight animation drops below the text as its own full-width row,
+  // shorter than the desktop canvas — "reposition/reduce, don't overflow".
+  .insight {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    row-gap: 1.5rem;
+  }
+  .insightAnim {
+    grid-column: 1 / -1;
+    height: clamp(10rem, 34vw, 14rem);
+  }
 }
 
 @include mq-max('md') {
@@ -680,8 +710,30 @@
   .insightBody {
     grid-column: 1;
   }
+  .insightAnim {
+    height: 9rem;
+  }
   .momentMedia img {
     width: clamp(7rem, 34vw, 9rem);
+  }
+
+  // triad — back to the original vertical stack with the ↓ connector once
+  // there isn't room for Discover → Save → Forget on one line.
+  .triad {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(0.6rem, 2vw, 1.4rem);
+
+    li {
+      font-size: clamp(2rem, 1rem + 5vw, 4.5rem);
+
+      &:not(:last-child)::after {
+        content: '↓';
+        display: block;
+        margin: 0.2em 0 0;
+        font-size: 0.32em;
+      }
+    }
   }
 }
 
