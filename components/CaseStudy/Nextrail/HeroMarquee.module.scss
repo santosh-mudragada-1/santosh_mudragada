@@ -17,11 +17,34 @@
  *            overlap) and every image a true rectangle (nothing to
  *            distort) — rotating 17 separate cards individually was
  *            the bug, not the fix.
+ *
+ *            perspective() is deliberately huge (see below) — rotateX/Y
+ *            tilt this sheet out of the screen plane, so a card's
+ *            distance from camera depends on where it sits in the
+ *            sheet. The tall scrolling track puts cards far apart
+ *            along that tilted axis; a "normal" perspective distance
+ *            (1000–3000px) makes near cards balloon and far ones
+ *            shrink as they scroll past — that per-frame size change
+ *            reads as "stretching". A very large perspective distance
+ *            keeps the near/far divide close to 1 everywhere, so the
+ *            rotation still reads as a clean, uniform tilt (the
+ *            angles are unchanged) without any card growing or
+ *            shrinking as it moves through the loop.
  *   .col     one marquee column — plain flex column, no transform.
  *   .track   the moving belt — translateY keyframes only (loop + dupes).
- *   .card    frame only — border-radius + shadow. No transform.
- *   img      display only — width:100%; height:auto. Ratio is the
- *            image's own and is never forced, rotated or not.
+ *   .card    frame only — border-radius. No transform, no shadow, no
+ *            forced aspect-ratio (screens aren't all the same ratio —
+ *            see HeroMarquee.tsx). Its box comes entirely from the img.
+ *   img      display only — width:100%; height:auto. Each <img> carries
+ *            its OWN real width/height attributes (set per-screen in
+ *            HeroMarquee.tsx, not one guessed-at constant), so the
+ *            browser reserves that exact box from first paint, before
+ *            the (lazy) file has loaded. Without that, a loading image
+ *            changes the track's total height mid-animation, and since
+ *            the loop keyframe is `translateY(-50%)` — relative to that
+ *            height — every late image load shifts the target and the
+ *            belt visibly jumps. Correct size up front = no jump, and
+ *            the displayed ratio is always the image's real one.
  * ------------------------------------------------------------------ */
 
 .wrap {
@@ -61,7 +84,7 @@
   height: 92%;
   display: flex;
   gap: clamp(0.85rem, 1.6vw, 1.5rem);
-  transform: perspective(2600px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg);
+  transform: perspective(16000px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg);
   transform-origin: 50% 50%;
 }
 
@@ -85,17 +108,20 @@
   }
 }
 
-// One screenshot's frame — no transform of its own.
+// One screenshot's frame — no transform, no shadow.
 .card {
   flex: none;
+  width: 100%;
   border-radius: clamp(14px, 1.4vw, 22px);
   overflow: hidden;
-  box-shadow: 0 18px 38px rgba(20, 17, 13, 0.16);
 
   img {
     display: block;
     width: 100%;
-    height: auto; // ratio is the image's own — never forced
+    height: auto; // ratio comes from each image's own width/height attrs
+    // (set per-screen in HeroMarquee.tsx) — never forced or guessed at
+    // a single fixed number, so nothing to stretch and no box to resize
+    // out from under the animation once the real file arrives.
   }
 }
 
