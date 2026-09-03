@@ -72,7 +72,20 @@ const CAL_TODAY = 26;
 // active call. Click a rail item to jump to it.
 function Decisions() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+
+  // keep the active rail item in view as the section scroll-steps
+  useEffect(() => {
+    const rail = railRef.current;
+    const btn = rail?.children[active] as HTMLElement | undefined;
+    if (!rail || !btn || rail.scrollWidth <= rail.clientWidth) return;
+    const railRect = rail.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const target =
+      rail.scrollLeft + (btnRect.left - railRect.left) - rail.clientWidth / 2 + btnRect.width / 2;
+    rail.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+  }, [active]);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -124,7 +137,12 @@ function Decisions() {
   return (
     <div className={styles.drTrack} ref={trackRef}>
       <div className={styles.drReview}>
-        <div className={styles.drRail} role="tablist" aria-label="Product decisions">
+        <div
+          className={styles.drRail}
+          role="tablist"
+          aria-label="Product decisions"
+          ref={railRef}
+        >
           {DECISIONS.map((item, i) => (
             <button
               key={item.n}

@@ -258,6 +258,8 @@
   .frame {
     max-width: none;
     padding: 0.85rem;
+    // fixed height so the sticky card doesn't jump between beats
+    min-height: 27rem;
   }
 
   // just the blunder icon in the header — drop the labels and the coach line

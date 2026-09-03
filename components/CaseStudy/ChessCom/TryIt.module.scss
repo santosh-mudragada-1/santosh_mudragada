@@ -597,6 +597,10 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   .annot {
     display: none;
   }
+  // coach sits above the board card
+  .side {
+    order: -1;
+  }
 }
 
 @include reduced-motion {

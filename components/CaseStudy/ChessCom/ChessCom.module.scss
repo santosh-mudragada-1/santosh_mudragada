@@ -1105,18 +1105,19 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   gap: 7px;
 
   li {
-    display: flex;
-    gap: 9px;
-    align-items: flex-start;
+    position: relative;
+    padding-left: 1.15em;
     font-size: 0.8rem;
     line-height: 1.4;
     color: var(--fg-muted);
 
     &::before {
       content: '+';
+      position: absolute;
+      left: 0;
+      top: 0;
       color: $v-green;
       font-weight: 700;
-      flex: none;
     }
     &[data-con]::before {
       content: '\2212';
@@ -1977,7 +1978,7 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
     display: none;
   }
 
-  // built pieces: a horizontal carousel, every tile the same height
+  // built pieces: a horizontal carousel, every tile the same (shorter) height
   .bento {
     display: flex;
     align-items: stretch;
@@ -2000,7 +2001,26 @@ $v-quint: cubic-bezier(0.22, 1, 0.36, 1);
   .tileRows {
     grid-area: auto;
     flex: 0 0 88%;
+    height: 24rem;
     scroll-snap-align: center;
+  }
+  .tileFrame {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .bPreviewBoard {
+    max-height: 11rem;
+  }
+  .bStack {
+    gap: 9px;
+  }
+  .bBadge {
+    font-size: 0.82rem;
+
+    img {
+      width: 22px;
+      height: 22px;
+    }
   }
   .bDoneRow {
     flex-direction: row;
