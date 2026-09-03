@@ -51,6 +51,11 @@
   }
 }
 
+// the product icon only shows on mobile (see the sm block)
+.frameTagIconAlt {
+  display: none;
+}
+
 .frameMeta {
   color: #a3a19e;
 }
@@ -258,16 +263,47 @@
   .frame {
     max-width: none;
     padding: 0.85rem;
-    // fixed height so the sticky card doesn't jump between beats
-    min-height: 27rem;
+    position: relative; // anchors the status chip, top-right
   }
 
-  // just the blunder icon in the header — drop the labels and the coach line
+  // header: just the product icon, no labels, no coach line
   .frameTagName,
   .frameMeta,
   .frameChip,
-  .frameCoach {
+  .frameCoach,
+  .frameTagIcon {
     display: none;
+  }
+  .frameTagIconAlt {
+    display: block;
+  }
+
+  // the status value ("M1 → −5.0", "is correct!") rides in the top-right corner
+  .frameStatus {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    z-index: 1;
+    margin-top: 0;
+    max-width: 62%;
+    gap: 0.35rem;
+    padding: 0.28rem 0.6rem;
+    border-left: 0;
+    border-radius: 12px;
+    background: #1f1e1c;
+    font-size: 0.68rem;
+    line-height: 1.25;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    row-gap: 1px;
+    text-align: right;
+
+    &[data-tone='loss'] {
+      background: rgba(225, 83, 83, 0.16);
+    }
+    &[data-tone='gain'] {
+      background: rgba(124, 179, 66, 0.18);
+    }
   }
 
   .beatBody {

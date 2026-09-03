@@ -180,7 +180,21 @@ export function JourneyScroll() {
           <div className={styles.frameHead}>
             <span className={styles.frameTag}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/case-study/move-types/blunder.png" alt="" width={24} height={24} />
+              <img
+                className={styles.frameTagIcon}
+                src="/case-study/move-types/blunder.png"
+                alt=""
+                width={24}
+                height={24}
+              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className={styles.frameTagIconAlt}
+                src="/case-study/game-based-puzzles.svg"
+                alt=""
+                width={24}
+                height={24}
+              />
               <span className={styles.frameTagName}>Blunder</span>
             </span>
             <span className={styles.frameMeta}>vs. M. Kowalski · Rapid</span>
