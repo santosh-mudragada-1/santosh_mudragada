@@ -75,10 +75,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 24px;
   gap: 0.8rem;
-  // NB: `start`, not `stretch` — stretching an aspect-ratio grid item collapses
-  // it on iOS Safari when the card height is indefinite. Let the board size
-  // itself; only the eval bar stretches to match it.
-  align-items: start;
+  align-items: stretch;
 
   &[data-noeval] {
     grid-template-columns: minmax(0, 1fr);
@@ -87,7 +84,6 @@
 
 .frameEval {
   display: flex;
-  align-self: stretch;
   align-items: stretch;
 }
 
@@ -268,6 +264,24 @@
     max-width: none;
     padding: 0.85rem;
     position: relative; // anchors the status chip, top-right
+  }
+
+  // grid/flex + aspect-ratio squashes the board on iOS Safari at narrow
+  // widths. Fall back to a plain block: the board is a %-width square (its own
+  // aspect-ratio), and the eval bar is pinned to the board's full height.
+  .frameBoard {
+    display: block;
+  }
+  .frameBoard > :first-child {
+    width: 100%;
+  }
+  .frameBoard:not([data-noeval]) > :first-child {
+    width: calc(100% - 24px - 0.8rem);
+  }
+  .frameEval {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 24px;
   }
 
   // header: just the product icon, no labels, no coach line
