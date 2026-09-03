@@ -38,8 +38,10 @@ export function HeroMarquee() {
               style={reduced ? undefined : { animationDuration: `${col.dur}s` }}
             >
               {[...col.items, ...col.items].map((src, j) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={j} src={src} alt="" loading="lazy" decoding="async" draggable={false} />
+                <div key={j} className={styles.card}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt="" loading="lazy" decoding="async" draggable={false} />
+                </div>
               ))}
             </div>
           </div>

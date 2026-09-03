@@ -1,72 +1,107 @@
 @use 'mixins' as *;
 
+/* ------------------------------------------------------------------ *
+ * Hero marquee — three columns of real Nextrail screens.
+ *
+ * Geometry contract (do not collapse these onto fewer elements):
+ *
+ *   .wrap    scene bounds — the ONLY clip (overflow: clip)
+ *   .rig     layout only — flex row, gap, position, vertical fade mask.
+ *            NO 3D transform, NO scale.
+ *   .col     one marquee column — NO overflow, NO mask, NO transform,
+ *            so a tilted card can spill past the column edge.
+ *   .track   the moving belt — translateY keyframes only (loop + dupes).
+ *   .card    one screenshot's 3D pose — perspective() + rotateX/Y/Z.
+ *            Nothing else. This is the wrapper that was missing.
+ *   img      display only — width:100%; height:auto. Ratio is the
+ *            image's own and is never forced.
+ *
+ * Every asset is ~393x852 (ratio ~0.461). The card is width-driven;
+ * its height comes from the image ratio, so each screenshot stays a
+ * rigid rectangle before and after the 3D pose. perspective() lives
+ * in the card's OWN transform (not an ancestor `perspective` property)
+ * because the mask on .rig forces `transform-style: flat` and would
+ * otherwise kill the 3D context. Per-card perspective() also gives
+ * every screen a centred vanishing point instead of one shared,
+ * off-axis frustum — that shared frustum was the "stretch".
+ * ------------------------------------------------------------------ */
+
 .wrap {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  overflow: clip;
+  overflow: clip; // the only clip — bounds the spilling tilted cards
 }
 
-// The rig fits its columns and is anchored toward the top-right, then rotated
-// so the columns run on a diagonal. `perspective()` inside the same transform
-// gives depth without a `preserve-3d` ancestor (which the clipping wrapper
-// would flatten anyway). A large perspective keeps the near edge from
-// ballooning.
+// Layout + framing only. No rotate, no scale — size is controlled by
+// the column width alone, height always follows the image ratio.
 .rig {
   position: absolute;
-  top: -30%;
-  left: 50%;
-  width: 60%;
-  height: 140%;
+  top: -24%;
+  left: 46%;
+  width: 62%;
+  height: 150%;
   display: flex;
-  gap: clamp(0.9rem, 1.8vw, 2rem);
-  // Figma: Rotate 3D  X 25 · Y 25 · Z -50
-  transform: perspective(3200px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg)
-    scale(0.86);
-  transform-origin: 52% 20%;
-}
+  gap: clamp(1rem, 2vw, 2.25rem);
 
-.col {
-  flex: 0 0 clamp(96px, 9.5vw, 152px);
-  min-width: 0;
-  overflow: hidden;
-  // dissolve both ends so the columns fade into the page rather than hard-cut
+  // Viewport-aligned vertical dissolve. Safe on .rig because each card
+  // self-contains its perspective(), so this mask's flattening never
+  // reaches a 3D pose.
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 22%,
-    #000 78%,
+    #000 16%,
+    #000 82%,
     transparent 100%
   );
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 22%,
-    #000 78%,
+    #000 16%,
+    #000 82%,
     transparent 100%
   );
 }
 
+// A column. No overflow / no mask / no transform: the tilted cards
+// must be free to spill past this box.
+.col {
+  flex: 0 0 clamp(104px, 10vw, 156px);
+  min-width: 0;
+}
+
+// The belt. Movement, looping and spacing only.
 .track {
   display: flex;
   flex-direction: column;
-  gap: clamp(1rem, 2vw, 2rem);
+  gap: clamp(1.4rem, 2.6vw, 2.6rem);
   will-change: transform;
-
-  img {
-    display: block;
-    flex: none; // never a shrink target — keep every screen at its true ratio
-    width: 100%;
-    height: auto;
-    border-radius: clamp(14px, 1.4vw, 24px);
-  }
 
   &[data-dir='up'] {
     animation: nxUp 54s linear infinite;
   }
   &[data-dir='down'] {
     animation: nxDown 54s linear infinite;
+  }
+}
+
+// One screenshot's pose. The ONLY element carrying a 3D transform.
+.card {
+  flex: none; // the belt can never shrink a card's height
+  will-change: transform;
+  // Figma -> Rotate 3D: X 25 · Y 25 · Z -50. perspective() is part of
+  // the card's own transform so it survives the mask above and needs
+  // no preserve-3d chain.
+  transform: perspective(2000px) rotateX(25deg) rotateY(25deg)
+    rotateZ(-50deg);
+  transform-origin: 50% 50%;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto; // ratio is the image's own — never forced
+    border-radius: clamp(14px, 1.4vw, 22px);
   }
 }
 
@@ -88,45 +123,40 @@
   }
 }
 
-// tablet — two columns, same 3D tilt, scaled down toward the top-right
+// tablet — two columns, pushed clear of the copy column on the left.
+// Only column width and rig placement change; the card pose is identical.
 @include mq-max('lg') {
   .rig {
-    top: -22%;
-    left: 46%;
-    width: 62%;
-    height: 118%;
+    top: -12%;
+    left: 60%;
+    width: 56%;
+    height: 128%;
     gap: 1rem;
-    transform: perspective(3200px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg)
-      scale(0.56);
-    transform-origin: 56% 26%;
   }
   .col {
-    flex-basis: clamp(92px, 12vw, 132px);
+    flex-basis: clamp(78px, 9.5vw, 110px);
   }
   .col:nth-child(3) {
     display: none;
   }
 }
 
-// mobile — one faint column, top-right corner accent only
+// mobile — one faint column, top-right corner accent only.
 @include mq-max('md') {
   .rig {
-    top: -28%;
-    left: 44%;
-    width: 120%;
-    height: 128%;
+    top: -20%;
+    left: 62%;
+    width: 90%;
+    height: 108%;
     gap: 0.7rem;
-    opacity: 0.22;
-    transform: perspective(2400px) rotateX(24deg) rotateY(24deg) rotateZ(-48deg)
-      scale(0.7);
-    transform-origin: 58% 16%;
+    opacity: 0.18;
   }
   .col:nth-child(2),
   .col:nth-child(3) {
     display: none;
   }
   .col {
-    flex-basis: 44vw;
+    flex-basis: 42vw;
   }
 }
 
