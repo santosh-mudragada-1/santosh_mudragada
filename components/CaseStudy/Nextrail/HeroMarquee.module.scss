@@ -15,16 +15,16 @@
 // ballooning.
 .rig {
   position: absolute;
-  top: -18%;
-  left: 60%;
+  top: -30%;
+  left: 50%;
   width: 60%;
-  height: 142%;
+  height: 140%;
   display: flex;
   gap: clamp(0.9rem, 1.8vw, 2rem);
-  // Figma: Rotate 3D  X 25 · Y -25 · Z 50
-  transform: perspective(2000px) rotateX(25deg) rotateY(-25deg) rotateZ(50deg)
+  // Figma: Rotate 3D  X 25 · Y 25 · Z -50
+  transform: perspective(3200px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg)
     scale(0.86);
-  transform-origin: 34% 26%;
+  transform-origin: 52% 20%;
 }
 
 .col {
@@ -56,10 +56,10 @@
 
   img {
     display: block;
+    flex: none; // never a shrink target — keep every screen at its true ratio
     width: 100%;
     height: auto;
     border-radius: clamp(14px, 1.4vw, 24px);
-    filter: drop-shadow(0 20px 40px rgba(20, 17, 13, 0.16));
   }
 
   &[data-dir='up'] {
@@ -92,13 +92,13 @@
 @include mq-max('lg') {
   .rig {
     top: -22%;
-    left: 68%;
-    width: 58%;
-    height: 112%;
+    left: 46%;
+    width: 62%;
+    height: 118%;
     gap: 1rem;
-    transform: perspective(2000px) rotateX(25deg) rotateY(-25deg) rotateZ(50deg)
-      scale(0.58);
-    transform-origin: 40% 26%;
+    transform: perspective(3200px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg)
+      scale(0.56);
+    transform-origin: 56% 26%;
   }
   .col {
     flex-basis: clamp(92px, 12vw, 132px);
@@ -111,15 +111,15 @@
 // mobile — one faint column, top-right corner accent only
 @include mq-max('md') {
   .rig {
-    top: -30%;
-    left: 60%;
+    top: -28%;
+    left: 44%;
     width: 120%;
-    height: 130%;
+    height: 128%;
     gap: 0.7rem;
     opacity: 0.22;
-    transform: perspective(1600px) rotateX(22deg) rotateY(-22deg) rotateZ(48deg)
+    transform: perspective(2400px) rotateX(24deg) rotateY(24deg) rotateZ(-48deg)
       scale(0.7);
-    transform-origin: 30% 16%;
+    transform-origin: 58% 16%;
   }
   .col:nth-child(2),
   .col:nth-child(3) {

@@ -152,7 +152,6 @@
 }
 
 .heroTitle {
-  position: relative;
   display: inline-block;
   margin: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(1.1rem, 2.5vw, 1.6rem);
   font-family: var(--font-heading);
@@ -160,27 +159,6 @@
   font-size: clamp(3rem, 2rem + 6vw, 6rem);
   line-height: 0.92;
   letter-spacing: -0.045em;
-}
-
-// the Nextrail paper-plane mark, floating off the title's upper-right
-.mark {
-  position: absolute;
-  top: -0.15em;
-  right: -1.15em;
-  width: clamp(26px, 1rem + 1.8vw, 44px);
-  height: auto;
-  color: var(--accent);
-  animation: nxMark 6s ease-in-out infinite;
-}
-
-@keyframes nxMark {
-  0%,
-  100% {
-    transform: translateY(-3px) rotate(-4deg);
-  }
-  50% {
-    transform: translateY(3px) rotate(4deg);
-  }
 }
 
 .tl {
@@ -713,8 +691,5 @@
   }
   .oppQ {
     will-change: auto;
-  }
-  .mark {
-    animation: none;
   }
 }

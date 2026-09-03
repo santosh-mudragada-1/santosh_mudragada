@@ -227,14 +227,6 @@ export function Nextrail() {
             <span className={styles.tl}>
               <span>Nextrail</span>
             </span>
-            <svg className={styles.mark} viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path
-                d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
           </h1>
 
           <p className={styles.heroSay}>
