@@ -75,7 +75,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 24px;
   gap: 0.8rem;
-  align-items: stretch;
+  // NB: `start`, not `stretch` — stretching an aspect-ratio grid item collapses
+  // it on iOS Safari when the card height is indefinite. Let the board size
+  // itself; only the eval bar stretches to match it.
+  align-items: start;
 
   &[data-noeval] {
     grid-template-columns: minmax(0, 1fr);
@@ -84,6 +87,7 @@
 
 .frameEval {
   display: flex;
+  align-self: stretch;
   align-items: stretch;
 }
 
