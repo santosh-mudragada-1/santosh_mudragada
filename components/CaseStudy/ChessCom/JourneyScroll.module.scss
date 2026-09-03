@@ -263,7 +263,11 @@
   .frame {
     max-width: none;
     padding: 0.85rem;
-    position: relative; // anchors the status chip, top-right
+    // `relative` (to anchor the status chip) re-activates the base `top:` used
+    // for the desktop sticky offset — cancel it or the frame is shoved down
+    // past the sticky bar and the fade covers the board.
+    position: relative;
+    top: 0;
   }
 
   // grid/flex + aspect-ratio squashes the board on iOS Safari at narrow
