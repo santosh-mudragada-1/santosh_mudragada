@@ -58,8 +58,12 @@
 }
 
 // ---------------------------------------------------------------- card unit
+// `fill-box` keeps percentage transform-origins locked to each element's own
+// geometry (not the whole SVG), so scale / rotate stay jitter-free in Safari.
 .card {
   will-change: transform;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .cardRect {
@@ -101,11 +105,15 @@
   fill: none;
   stroke: var(--accent);
   stroke-width: 1.75;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .intent {
   fill: var(--accent);
   will-change: transform;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .intentTrail {
@@ -136,6 +144,8 @@
   stroke-width: 1.5;
   stroke-dasharray: 3 4;
   will-change: transform;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .startDot {
@@ -147,6 +157,8 @@
   stroke: color-mix(in oklab, var(--fg) 28%, transparent);
   stroke-width: 1.5;
   stroke-dasharray: 4 4;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 // The JS holds each animation on a composed static frame under reduced motion;

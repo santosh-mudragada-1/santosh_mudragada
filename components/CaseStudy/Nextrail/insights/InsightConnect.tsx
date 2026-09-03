@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
-import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { useMediaQueryLayout } from '@/lib/hooks/useMediaQueryLayout';
 import { Card } from './Card';
 import { FrameViewport } from './FrameViewport';
 import styles from './InsightAnim.module.scss';
@@ -24,6 +24,15 @@ const STACK = [
   { x: 82, y: 148, r: 10 },
   { x: 50, y: 168, r: -5 },
 ];
+// fixed settle nudge and fall tilt per card — deterministic, nothing to jitter
+const JITTER = [
+  { x: 3, y: -2 },
+  { x: -3, y: 3 },
+  { x: 2, y: 4 },
+  { x: -2, y: -3 },
+  { x: 4, y: 2 },
+];
+const FALL_ROT = [-15, 13, -21, 11, -7];
 
 const V: Array<'media' | 'lines' | 'pin'> = ['media', 'pin', 'lines', 'media', 'pin'];
 
@@ -47,8 +56,8 @@ const SLOT_H = 24;
  * it happens again. You already found everything — and planning still starts
  * from zero.
  *
- * One shared timeline whose end state is identical to its start state, so the
- * loop never visibly jumps.
+ * One shared, fully deterministic timeline whose end state is identical to its
+ * start state, so the loop never visibly jumps.
  */
 export function InsightConnect() {
   const rootRef = useRef<SVGSVGElement>(null);
@@ -59,14 +68,14 @@ export function InsightConnect() {
   const trailRef = useRef<SVGLineElement>(null);
   const slotRefs = useRef<(SVGRectElement | null)[]>([]);
   const reduced = usePrefersReducedMotion();
-  const desktop = useMediaQuery('(min-width: 1024px)');
-  const tablet = useMediaQuery('(min-width: 640px)');
+  const desktop = useMediaQueryLayout('(min-width: 1024px)');
+  const tablet = useMediaQueryLayout('(min-width: 640px)');
 
   const count = desktop ? STACK.length : tablet ? 4 : 3;
-  const stack = STACK.slice(0, count);
 
   useGSAP(
     () => {
+      const stack = STACK.slice(0, count);
       const cards = cardRefs.current.slice(0, count);
       const bodies = bodyRefs.current.slice(0, count);
       const slots = slotRefs.current.slice(0, SLOTS.length);
@@ -93,9 +102,9 @@ export function InsightConnect() {
         return;
       }
 
-      const reset = () => {
+      const land = () => {
         gsap.set(cards, {
-          x: -CW - 40,
+          x: -CW - 44,
           y: (i) => stack[i].y,
           rotation: (i) => stack[i].r * 0.5,
           opacity: 0,
@@ -108,9 +117,9 @@ export function InsightConnect() {
         gsap.set(slots, { opacity: 0, scale: 0.9, transformOrigin: '50% 50%' });
       };
 
-      reset();
+      land();
 
-      const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'power2.inOut' } });
+      const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'sine.inOut' } });
 
       // A — the inspiration is already there: the pile slides in from the left
       tl.to(
@@ -120,69 +129,69 @@ export function InsightConnect() {
           y: (i) => stack[i].y,
           rotation: (i) => stack[i].r,
           opacity: 1,
-          duration: 1.5,
-          stagger: 0.16,
+          duration: 1.7,
+          stagger: 0.18,
           ease: 'power2.out',
         },
         0,
       )
-        .fromTo(intentRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.5)
+        .fromTo(intentRef.current, { opacity: 0 }, { opacity: 1, duration: 0.6 }, 0.55)
         // B — it accumulates: a small settle, "I already have all of this"
         .to(
           cards,
           {
-            x: (i) => stack[i].x + gsap.utils.random(-4, 4),
-            y: (i) => stack[i].y + gsap.utils.random(-3, 5),
-            duration: 0.9,
-            stagger: 0.05,
+            x: (i) => stack[i].x + JITTER[i].x,
+            y: (i) => stack[i].y + JITTER[i].y,
+            duration: 1.0,
+            stagger: 0.06,
           },
-          '>-0.1',
+          '>-0.15',
         )
-        .to({}, { duration: 0.7 })
+        .to({}, { duration: 0.8 })
         .addLabel('plan')
         // C — trying to plan: the intent leaves for the start point, the pile leans after it
-        .to(intentRef.current, { x: toStart.x, y: toStart.y, duration: 2.1, ease: 'power1.inOut' }, 'plan')
-        .to(cards, { x: '+=32', duration: 1.5, stagger: 0.05, ease: 'power1.in' }, 'plan+=0.35')
+        .to(intentRef.current, { x: toStart.x, y: toStart.y, duration: 2.4 }, 'plan')
+        .to(cards, { x: '+=30', duration: 1.7, stagger: 0.06, ease: 'power1.inOut' }, 'plan+=0.4')
         .fromTo(
           trailRef.current,
           { attr: { x2: START.x }, opacity: 0 },
-          { attr: { x2: START.x + 46 }, opacity: 1, duration: 1.1, ease: 'power1.out' },
-          'plan+=1.05',
+          { attr: { x2: START.x + 46 }, opacity: 1, duration: 1.2, ease: 'power1.out' },
+          'plan+=1.2',
         )
         // D — the inspiration is left behind: it drops away and fades, never arriving
         .to(
           cards,
           {
             y: '+=120',
-            rotation: (i) => stack[i].r + gsap.utils.random(-18, 18),
+            rotation: (i) => stack[i].r + FALL_ROT[i],
             opacity: 0,
-            duration: 1.8,
-            stagger: 0.09,
+            duration: 2.0,
+            stagger: 0.1,
             ease: 'power1.in',
           },
-          'plan+=1.75',
+          'plan+=1.9',
         )
-        .addLabel('empty', 'plan+=2.7')
-        // E — the empty reset: the start point pulses, blank slots appear, hold on the emptiness
-        .to(startRingRef.current, { scale: 1.45, opacity: 0.95, duration: 0.4, ease: 'sine.out' }, 'empty')
-        .to(startRingRef.current, { scale: 1, opacity: 1, duration: 0.7, ease: 'sine.inOut' }, '>')
-        .to(slots, { opacity: 1, scale: 1, duration: 0.6, stagger: 0.12, ease: 'power2.out' }, 'empty+=0.15')
-        .to({}, { duration: 1.5 }) // hold — planning is empty; you start from zero
+        .addLabel('empty', 'plan+=3.0')
+        // E — the empty reset: the start point pulses, blank slots appear, hold on it
+        .to(startRingRef.current, { scale: 1.4, opacity: 0.95, duration: 0.5, ease: 'sine.out' }, 'empty')
+        .to(startRingRef.current, { scale: 1, opacity: 1, duration: 0.8 }, '>')
+        .to(slots, { opacity: 1, scale: 1, duration: 0.7, stagger: 0.14, ease: 'power2.out' }, 'empty+=0.2')
+        .to({}, { duration: 1.9 }) // hold — planning is empty; you start from zero
         .addLabel('back')
         // F — the intent goes all the way back; the empty route and slots clear
-        .to(trailRef.current, { attr: { x2: START.x }, opacity: 0, duration: 0.6 }, 'back')
-        .to(slots, { opacity: 0, scale: 0.9, duration: 0.5, stagger: 0.08 }, 'back')
-        .to(intentRef.current, { x: 0, y: 0, duration: 1.9, ease: 'power1.inOut' }, 'back+=0.05')
-        .to(intentRef.current, { opacity: 0, duration: 0.4 }, '>-0.05')
+        .to(trailRef.current, { attr: { x2: START.x }, opacity: 0, duration: 0.7 }, 'back')
+        .to(slots, { opacity: 0, scale: 0.9, duration: 0.6, stagger: 0.09 }, 'back')
+        .to(intentRef.current, { x: 0, y: 0, duration: 2.1 }, 'back+=0.1')
+        .to(intentRef.current, { opacity: 0, duration: 0.5 }, '>-0.1')
         // land exactly on the start state so the repeat is seamless
         .set(cards, {
-          x: -CW - 40,
+          x: -CW - 44,
           y: (i) => stack[i].y,
           rotation: (i) => stack[i].r * 0.5,
           opacity: 0,
         })
         .set(bodies, { opacity: 1 })
-        .to({}, { duration: 0.6 });
+        .to({}, { duration: 0.7 });
     },
     { scope: rootRef, dependencies: [reduced, desktop, tablet] },
   );
@@ -227,7 +236,7 @@ export function InsightConnect() {
         <circle ref={startRingRef} cx={START.x} cy={START.y} r={9} className={styles.startRing} />
         <circle cx={START.x} cy={START.y} r={3} className={styles.startDot} />
 
-        {stack.map((_, i) => (
+        {STACK.slice(0, count).map((_, i) => (
           <Card
             key={`c-${i}`}
             variant={V[i]}
