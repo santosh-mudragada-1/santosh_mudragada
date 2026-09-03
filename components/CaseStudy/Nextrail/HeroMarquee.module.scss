@@ -3,27 +3,25 @@
 /* ------------------------------------------------------------------ *
  * Hero marquee — three columns of real Nextrail screens.
  *
- * Geometry contract (do not collapse these onto fewer elements):
+ * The whole rig is ONE flat sheet, rotated ONCE. Nothing inside it
+ * carries its own transform:
  *
- *   .wrap    scene bounds — the ONLY clip (overflow: clip)
- *   .rig     layout only — flex row, gap, position, vertical fade mask.
- *            NO 3D transform, NO scale.
- *   .col     one marquee column — NO overflow, NO mask, NO transform,
- *            so a tilted card can spill past the column edge.
+ *   .wrap    scene bounds — clip + the vertical fade mask.
+ *   .rig     the flat, unrotated layout (flex row of columns) AND the
+ *            single 3D pose (perspective + rotateX/Y/Z). A CSS
+ *            transform never affects how its own flex children are
+ *            laid out — they're measured and positioned as a normal
+ *            flat sheet first, and only the finished, already-spaced
+ *            sheet gets tilted in space for paint. That's what keeps
+ *            every card's relative spacing intact (nothing to
+ *            overlap) and every image a true rectangle (nothing to
+ *            distort) — rotating 17 separate cards individually was
+ *            the bug, not the fix.
+ *   .col     one marquee column — plain flex column, no transform.
  *   .track   the moving belt — translateY keyframes only (loop + dupes).
- *   .card    one screenshot's 3D pose — perspective() + rotateX/Y/Z.
- *            Nothing else. This is the wrapper that was missing.
+ *   .card    frame only — border-radius + shadow. No transform.
  *   img      display only — width:100%; height:auto. Ratio is the
- *            image's own and is never forced.
- *
- * Every asset is ~393x852 (ratio ~0.461). The card is width-driven;
- * its height comes from the image ratio, so each screenshot stays a
- * rigid rectangle before and after the 3D pose. perspective() lives
- * in the card's OWN transform (not an ancestor `perspective` property)
- * because the mask on .rig forces `transform-style: flat` and would
- * otherwise kill the 3D context. Per-card perspective() also gives
- * every screen a centred vanishing point instead of one shared,
- * off-axis frustum — that shared frustum was the "stretch".
+ *            image's own and is never forced, rotated or not.
  * ------------------------------------------------------------------ */
 
 .wrap {
@@ -31,60 +29,52 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  overflow: clip; // the only clip — bounds the spilling tilted cards
-}
+  overflow: clip; // the only clip
 
-// Layout + framing only. No rotate, no scale — size is controlled by
-// the column width alone, height always follows the image ratio.
-.rig {
-  position: absolute;
-  top: -24%;
-  left: 40%;
-  width: 68%;
-  height: 150%;
-  display: flex;
-  // Wide horizontal gap on purpose: the compound rotateX/Y/Z below makes a
-  // card's ON-SCREEN bounding box roughly twice its column width (a rotated
-  // rectangle's axis-aligned footprint swells well past its own edges).
-  // Columns scroll at independent speeds, so any two neighbours can land at
-  // the same height at any time — this gap has to clear that footprint on
-  // its own, not just the visual column width, or cards from different
-  // columns collide into a cluster.
-  gap: clamp(3rem, 11vw, 13rem);
-
-  // Viewport-aligned vertical dissolve. Safe on .rig because each card
-  // self-contains its perspective(), so this mask's flattening never
-  // reaches a 3D pose.
+  // Viewport-aligned vertical dissolve, applied on the untransformed
+  // wrapper so it fades against the screen edges, not the tilted sheet's
+  // own (now diagonal) local axis.
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 16%,
-    #000 82%,
+    #000 18%,
+    #000 84%,
     transparent 100%
   );
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 16%,
-    #000 82%,
+    #000 18%,
+    #000 84%,
     transparent 100%
   );
 }
 
-// A column. No overflow / no mask / no transform: the tilted cards
-// must be free to spill past this box.
+// The rig is a plain flex sheet — columns side by side, ordinary gap.
+// Figma -> Rotate 3D: X 25 · Y 25 · Z -50, applied once, here, to the
+// whole sheet after layout. Nothing downstream repeats it.
+.rig {
+  position: absolute;
+  top: 6%;
+  left: 58%;
+  width: 46%;
+  height: 92%;
+  display: flex;
+  gap: clamp(0.85rem, 1.6vw, 1.5rem);
+  transform: perspective(2600px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg);
+  transform-origin: 50% 50%;
+}
+
 .col {
-  flex: 0 0 clamp(88px, 7.5vw, 122px);
+  flex: 0 0 clamp(126px, 12vw, 176px);
   min-width: 0;
 }
 
-// The belt. Movement, looping and spacing only. Gap is generous for the
-// same reason as .rig's — the rotated card is visually taller/wider than
-// its own box.
+// The belt. Movement, looping and spacing only.
 .track {
   display: flex;
   flex-direction: column;
-  gap: clamp(2.25rem, 4.5vw, 4.5rem);
+  gap: clamp(0.85rem, 1.6vw, 1.5rem);
   will-change: transform;
 
   &[data-dir='up'] {
@@ -95,22 +85,17 @@
   }
 }
 
-// One screenshot's pose. The ONLY element carrying a 3D transform.
+// One screenshot's frame — no transform of its own.
 .card {
-  flex: none; // the belt can never shrink a card's height
-  will-change: transform;
-  // Figma -> Rotate 3D: X 25 · Y 25 · Z -50. perspective() is part of
-  // the card's own transform so it survives the mask above and needs
-  // no preserve-3d chain.
-  transform: perspective(2000px) rotateX(25deg) rotateY(25deg)
-    rotateZ(-50deg);
-  transform-origin: 50% 50%;
+  flex: none;
+  border-radius: clamp(14px, 1.4vw, 22px);
+  overflow: hidden;
+  box-shadow: 0 18px 38px rgba(20, 17, 13, 0.16);
 
   img {
     display: block;
     width: 100%;
     height: auto; // ratio is the image's own — never forced
-    border-radius: clamp(14px, 1.4vw, 22px);
   }
 }
 
@@ -133,17 +118,16 @@
 }
 
 // tablet — two columns, pushed clear of the copy column on the left.
-// Only column width and rig placement change; the card pose is identical.
+// Only column width and rig placement change; the sheet's pose is identical.
 @include mq-max('lg') {
   .rig {
-    top: -12%;
-    left: 52%;
-    width: 64%;
-    height: 128%;
-    gap: clamp(2.5rem, 12vw, 9.5rem);
+    top: -2%;
+    left: 80%;
+    width: 40%;
+    height: 92%;
   }
   .col {
-    flex-basis: clamp(70px, 8vw, 96px);
+    flex-basis: clamp(84px, 10vw, 116px);
   }
   .col:nth-child(3) {
     display: none;
@@ -153,19 +137,18 @@
 // mobile — one faint column, top-right corner accent only.
 @include mq-max('md') {
   .rig {
-    top: -20%;
-    left: 62%;
-    width: 90%;
-    height: 108%;
-    gap: 0.7rem;
-    opacity: 0.18;
+    top: -6%;
+    left: 82%;
+    width: 46%;
+    height: 60%;
+    opacity: 0.2;
   }
   .col:nth-child(2),
   .col:nth-child(3) {
     display: none;
   }
   .col {
-    flex-basis: 42vw;
+    flex-basis: 34vw;
   }
 }
 
