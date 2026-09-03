@@ -6,24 +6,20 @@ import styles from './HeroMarquee.module.scss';
 const S = '/nextrail_casestudy/screens';
 
 // Real Nextrail screens (frameless) — order only matters for the diagonal
-// spread. Native pixel size travels with each screen: most are 393x852, but
-// a few (08, 14, 15, 17) are genuinely a different size/ratio. Carrying the
-// real numbers as <img width height> lets the browser reserve each card's
-// exact box before the (lazy) file has loaded, off a single fixed guess —
-// that mismatch was what made the belt's height drift as images arrived,
-// which is what read as the marquee "resetting" mid-loop.
-const SCREEN_SIZE: Record<number, [number, number]> = {
-  8: [402, 852],
-  14: [460, 997],
-  15: [460, 997],
-  17: [460, 997],
-};
+// spread. All 17 are a uniform 590x1278. Carrying that as <img width
+// height> lets the browser reserve every card's exact box before the
+// (lazy) file has loaded — without it, each image arriving nudges the
+// track's total height mid-animation, and since the loop keyframe is
+// `translateY(-50%)` (relative to that height), every late load shifts
+// the target and the belt visibly jumps.
+const SCREEN_W = 590;
+const SCREEN_H = 1278;
 
-const SCREENS = Array.from({ length: 17 }, (_, i) => {
-  const n = i + 1;
-  const [w, h] = SCREEN_SIZE[n] ?? [393, 852];
-  return { src: `${S}/screen-${String(n).padStart(2, '0')}.png`, w, h };
-});
+const SCREENS = Array.from({ length: 17 }, (_, i) => ({
+  src: `${S}/screen-${String(i + 1).padStart(2, '0')}.png`,
+  w: SCREEN_W,
+  h: SCREEN_H,
+}));
 
 // three diagonal columns, alternating scroll direction, middle a touch slower
 const COLS = [

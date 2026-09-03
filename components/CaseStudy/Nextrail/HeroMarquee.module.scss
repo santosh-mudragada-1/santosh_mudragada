@@ -18,18 +18,23 @@
  *            distort) — rotating 17 separate cards individually was
  *            the bug, not the fix.
  *
- *            perspective() is deliberately huge (see below) — rotateX/Y
- *            tilt this sheet out of the screen plane, so a card's
- *            distance from camera depends on where it sits in the
- *            sheet. The tall scrolling track puts cards far apart
- *            along that tilted axis; a "normal" perspective distance
- *            (1000–3000px) makes near cards balloon and far ones
- *            shrink as they scroll past — that per-frame size change
- *            reads as "stretching". A very large perspective distance
- *            keeps the near/far divide close to 1 everywhere, so the
- *            rotation still reads as a clean, uniform tilt (the
- *            angles are unchanged) without any card growing or
- *            shrinking as it moves through the loop.
+ *            There is deliberately NO perspective() in this transform.
+ *            perspective() makes rotateX/Y a projective transform: it
+ *            adds a near/far divide, so a card's rendered size depends
+ *            on where it sits in the (tall, scrolling) sheet — corners
+ *            further from centre balloon or shrink relative to nearer
+ *            ones, turning each card into a visible trapezoid instead
+ *            of a clean tilted rectangle. That trapezoid — cells wider
+ *            at one edge than the other — is what actually reads as
+ *            "stretched", and it doesn't go away by raising the
+ *            perspective distance, only shrinks slowly. Dropping
+ *            perspective() entirely makes this a pure affine rotation
+ *            (an orthographic projection): the sheet still tilts by
+ *            the exact angles below, but every card keeps parallel
+ *            edges and a constant size everywhere in the sheet and
+ *            through the whole scroll loop — confirmed by rendering
+ *            both side by side (a squared-grid test box) and comparing
+ *            cell shape across the box.
  *   .col     one marquee column — plain flex column, no transform.
  *   .track   the moving belt — translateY keyframes only (loop + dupes).
  *   .card    frame only — border-radius. No transform, no shadow, no
@@ -78,13 +83,13 @@
 // whole sheet after layout. Nothing downstream repeats it.
 .rig {
   position: absolute;
-  top: 6%;
-  left: 58%;
+  top: -14%;
+  left: 66%;
   width: 46%;
   height: 92%;
   display: flex;
   gap: clamp(0.85rem, 1.6vw, 1.5rem);
-  transform: perspective(16000px) rotateX(25deg) rotateY(25deg) rotateZ(-50deg);
+  transform: rotateX(25deg) rotateY(25deg) rotateZ(-50deg);
   transform-origin: 50% 50%;
 }
 
