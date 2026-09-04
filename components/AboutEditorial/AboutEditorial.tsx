@@ -4,7 +4,6 @@ import { useRef, type CSSProperties } from 'react';
 import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useMediaQueryLayout } from '@/lib/hooks/useMediaQueryLayout';
-import { AboutWindow } from './AboutWindow';
 import { EditorialTypography } from './EditorialTypography';
 import { EditorialCopy } from './EditorialCopy';
 import { Collage } from './Collage';
@@ -24,14 +23,14 @@ import {
 import styles from './AboutEditorial.module.scss';
 
 /**
- * /about — a scroll-driven editorial collage.
+ * /about — a full-bleed, scroll-driven editorial collage on the site's paper.
  *
- * A pinned cream window holds a wide canvas of four STOPS. Scrolling pans a
- * camera across it: an oversized red word travels fastest and is clipped by the
- * window edges, a scattered set of printed-photo cards trails behind it at 0.6x
- * with independent per-card drift, and a short paragraph fades in beneath each
- * stop. The camera dips and climbs between stops so it reads like panning over
- * a map. One master timeline, scrubbed to scroll — tune it from data.ts.
+ * A sticky stage clips a wide canvas of four STOPS. Scrolling pans a camera
+ * across it: an oversized red word travels fastest and is clipped by the
+ * viewport edges, a scattered set of printed-photo cards trails behind it at
+ * 0.72x with independent per-card drift, and a short paragraph fades in beneath
+ * each stop. The camera dips and climbs between stops so it reads like panning
+ * over a map. One master timeline, scrubbed to scroll — tune it from data.ts.
  */
 export function AboutEditorial() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -80,7 +79,7 @@ export function AboutEditorial() {
 
       const stopBlocks = copyL.querySelectorAll<HTMLElement>('[data-copy-stop]');
       const wordEls = Array.from(wordL.children) as HTMLElement[];
-      const WORD_DIM = 0.14; // opacity of a word that isn't the current stop
+      const WORD_DIM = 0.08; // opacity of a word that isn't the current stop
 
       // --- reduced motion: hold the first stop, no scroll rig -----------
       if (reduced) {
@@ -217,18 +216,20 @@ export function AboutEditorial() {
       </div>
 
       <div className={styles.sticky}>
-        <div className={styles.stage}>
-          <AboutWindow clipRef={clipRef}>
-            <EditorialTypography ref={wordLayerRef} stops={STOPS} />
-            <EditorialCopy ref={copyLayerRef} stops={STOPS} />
-            <Collage
-              cards={cards}
-              layerRef={cardLayerRef}
-              registerCard={(id, el) => {
-                cardsRef.current[id] = el;
-              }}
-            />
-          </AboutWindow>
+        <div ref={clipRef} className={styles.stage}>
+          <EditorialTypography ref={wordLayerRef} stops={STOPS} />
+          <EditorialCopy ref={copyLayerRef} stops={STOPS} />
+          <Collage
+            cards={cards}
+            layerRef={cardLayerRef}
+            registerCard={(id, el) => {
+              cardsRef.current[id] = el;
+            }}
+          />
+          <p className={styles.scrollHint} aria-hidden>
+            <i />
+            Scroll to continue
+          </p>
         </div>
       </div>
     </section>

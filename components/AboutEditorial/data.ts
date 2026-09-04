@@ -43,17 +43,17 @@ export const STOP_TIME = (() => {
 // enough that a giant letterform is always crossing the window mid-pan (no
 // hollow centre); the words are oversized enough that a settled one is still
 // clipped hard on both edges.
-export const GAP_FACTOR = 1.08;
+export const GAP_FACTOR = 1.15;
 export const LAYER_RATE = { word: 1, copy: 0.86, card: 0.72 } as const;
 
 // Cluster width knob — scales every card's horizontal scatter (dx). Lower =
 // tighter clusters that stay separated even with the short word gap above.
-export const SPREAD_X = 0.78;
+export const SPREAD_X = 0.92;
 
 // Vertical offset of each stop on the map path, as a fraction of clip height.
 // Baked into each element's authored `top`; the layer animates by -offset*rate
 // to re-centre it. Alternating sign => the camera dips then climbs => "map".
-export const STOP_SY = [0, 0.15, -0.1, 0.13] as const;
+export const STOP_SY = [0, 0.16, -0.11, 0.14] as const;
 
 // How many viewport-heights of scroll drive the whole sequence.
 export const SCROLL_SCREENS = { base: 7, compact: 5 } as const;
@@ -95,7 +95,7 @@ export const STOPS: Stop[] = [
   {
     id: 's2',
     word: 'MESSY',
-    size: 1.5,
+    size: 1.3,
     paragraph: [
       'Most good ideas start messy,',
       'well before they start',
