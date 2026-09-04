@@ -262,11 +262,13 @@
 }
 
 .insight {
+  --insight-pad: clamp(2rem, 5vw, 3.5rem);
+  // the row's height, unchanged: the old canvas height + the old row padding
+  --insight-row: calc(clamp(14rem, 22vw, 20rem) + var(--insight-pad) * 2);
   display: grid;
   grid-template-columns: 4rem minmax(0, 26rem) minmax(0, 1fr);
   column-gap: clamp(1.5rem, 4vw, 3rem);
   align-items: center;
-  padding: clamp(2rem, 5vw, 3.5rem) 0;
   border-top: 1px solid var(--line);
 
   &:last-child {
@@ -274,16 +276,22 @@
   }
 }
 
+// The row's vertical rhythm lives on the text side now (its own padding, plus
+// a min-height that keeps rows exactly as tall as before). That frees the
+// canvas to fill the whole row — divider to divider — with no dead space
+// above or below it. Section height is unchanged.
 .insightText {
   min-width: 0;
+  min-height: var(--insight-row);
+  padding-block: var(--insight-pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: center; // keep the statement + body vertically centred in the row
 }
 
-// The animation's canvas — fills whatever the grid gives it (≈55-60% of
-// the row on desktop, see the mq-max overrides below for smaller screens).
 .insightAnim {
   grid-column: 3;
   align-self: stretch;
-  height: clamp(14rem, 22vw, 20rem);
   min-width: 0;
 }
 
@@ -663,15 +671,20 @@
     }
   }
 
-  // insight animation drops below the text as its own full-width row,
-  // shorter than the desktop canvas — "reposition/reduce, don't overflow".
+  // insight animation drops below the text as its own full-width row — the
+  // side-bleed trick doesn't apply, so the row owns its padding again.
   .insight {
     grid-template-columns: 4rem minmax(0, 1fr);
     row-gap: 1.5rem;
+    padding-block: var(--insight-pad);
+  }
+  .insightText {
+    padding-block: 0;
+    min-height: 0;
   }
   .insightAnim {
     grid-column: 1 / -1;
-    height: clamp(10rem, 34vw, 14rem);
+    height: clamp(12rem, 36vw, 17rem);
   }
 }
 
@@ -711,7 +724,7 @@
     grid-column: 1;
   }
   .insightAnim {
-    height: 9rem;
+    height: 11rem;
   }
   .momentMedia img {
     width: clamp(7rem, 34vw, 9rem);

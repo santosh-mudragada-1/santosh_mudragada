@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1300" viewBox="0 0 1000 1300">
+  <defs>
+    <linearGradient id="bg20" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#8f7f77"/>
+      <stop offset="1" stop-color="#e8e2da"/>
+    </linearGradient>
+    <radialGradient id="soft20" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.25"/>
+    </radialGradient>
+    <radialGradient id="vig20" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.34"/>
+    </radialGradient>
+    <filter id="grain20" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1000" height="1300" fill="url(#bg20)"/>
+  <rect x="80" y="616" width="154" height="684" fill="#43392f" opacity="0.53"/>
+    <rect x="250" y="594" width="167" height="706" fill="#43392f" opacity="0.57"/>
+    <rect x="420" y="769" width="158" height="531" fill="#43392f" opacity="0.54"/>
+    <rect x="590" y="530" width="196" height="770" fill="#43392f" opacity="0.67"/>
+    <rect x="760" y="872" width="126" height="428" fill="#43392f" opacity="0.44"/>
+  <rect width="1000" height="1300" fill="url(#vig20)"/>
+  <rect width="1000" height="1300" filter="url(#grain20)" opacity="0.12"/>
+  <rect x="14" y="14" width="972" height="1272" fill="none" stroke="#e8e2da" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="30" y="1266" font-family="ui-monospace, Menlo, monospace" font-size="26" fill="#1e1913" opacity="0.6" letter-spacing="3">PLACEHOLDER 20</text>
+  <text x="970" y="52" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="24" fill="#1e1913" opacity="0.5" letter-spacing="2">ROOFTOP</text>
+</svg>

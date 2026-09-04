@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="950" height="1200" viewBox="0 0 950 1200">
+  <defs>
+    <linearGradient id="bg8" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#b98d8d"/>
+      <stop offset="1" stop-color="#e8e2df"/>
+    </linearGradient>
+    <radialGradient id="soft8" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.25"/>
+    </radialGradient>
+    <radialGradient id="vig8" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.34"/>
+    </radialGradient>
+    <filter id="grain8" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0"/>
+    </filter>
+  </defs>
+
+  <rect width="950" height="1200" fill="url(#bg8)"/>
+  
+    <rect x="290" y="248" width="418" height="528" rx="38" fill="#5f3d3d" opacity="0.7" transform="rotate(1.6 499 440)"/>
+    <circle cx="613" cy="560" r="114" fill="#b98d8d" opacity="0.8"/>
+  <rect width="950" height="1200" fill="url(#vig8)"/>
+  <rect width="950" height="1200" filter="url(#grain8)" opacity="0.12"/>
+  <rect x="14" y="14" width="922" height="1172" fill="none" stroke="#e8e2df" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="30" y="1166" font-family="ui-monospace, Menlo, monospace" font-size="26" fill="#241717" opacity="0.6" letter-spacing="3">PLACEHOLDER 08</text>
+  <text x="920" y="52" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="24" fill="#241717" opacity="0.5" letter-spacing="2">TEXTURE</text>
+</svg>

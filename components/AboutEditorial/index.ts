@@ -1,0 +1,1 @@
+export { AboutEditorial } from './AboutEditorial';

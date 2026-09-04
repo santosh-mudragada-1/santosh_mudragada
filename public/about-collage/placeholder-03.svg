@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#5f7186"/>
+      <stop offset="1" stop-color="#e9e7df"/>
+    </linearGradient>
+    <radialGradient id="soft3" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.25"/>
+    </radialGradient>
+    <radialGradient id="vig3" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.34"/>
+    </radialGradient>
+    <filter id="grain3" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1000" height="1000" fill="url(#bg3)"/>
+  <rect x="80" y="600" width="124" height="400" fill="#2c3846" opacity="0.43"/>
+    <rect x="250" y="321" width="217" height="679" fill="#2c3846" opacity="0.74"/>
+    <rect x="420" y="267" width="191" height="733" fill="#2c3846" opacity="0.65"/>
+    <rect x="590" y="608" width="201" height="392" fill="#2c3846" opacity="0.69"/>
+    <rect x="760" y="651" width="204" height="349" fill="#2c3846" opacity="0.70"/>
+  <rect width="1000" height="1000" fill="url(#vig3)"/>
+  <rect width="1000" height="1000" filter="url(#grain3)" opacity="0.12"/>
+  <rect x="14" y="14" width="972" height="972" fill="none" stroke="#e9e7df" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="30" y="966" font-family="ui-monospace, Menlo, monospace" font-size="26" fill="#141a20" opacity="0.6" letter-spacing="3">PLACEHOLDER 03</text>
+  <text x="970" y="52" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="24" fill="#141a20" opacity="0.5" letter-spacing="2">STRUCTURE</text>
+</svg>

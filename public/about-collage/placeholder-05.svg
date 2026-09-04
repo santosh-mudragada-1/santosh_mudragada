@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg5" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#8a5a72"/>
+      <stop offset="1" stop-color="#efe1e4"/>
+    </linearGradient>
+    <radialGradient id="soft5" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.25"/>
+    </radialGradient>
+    <radialGradient id="vig5" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.34"/>
+    </radialGradient>
+    <filter id="grain5" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#bg5)"/>
+  <rect x="-120" y="120" width="1440" height="40" fill="#8a5a72" opacity="0.55"/>
+    <rect x="-120" y="200" width="1440" height="40" fill="#472637" opacity="0.59"/>
+    <rect x="-120" y="280" width="1440" height="40" fill="#8a5a72" opacity="0.60"/>
+    <rect x="-120" y="360" width="1440" height="40" fill="#472637" opacity="0.48"/>
+    <rect x="-120" y="440" width="1440" height="40" fill="#8a5a72" opacity="0.32"/>
+    <rect x="-120" y="520" width="1440" height="40" fill="#472637" opacity="0.57"/>
+    <rect x="-120" y="600" width="1440" height="40" fill="#8a5a72" opacity="0.29"/>
+  <rect width="1200" height="800" fill="url(#vig5)"/>
+  <rect width="1200" height="800" filter="url(#grain5)" opacity="0.12"/>
+  <rect x="14" y="14" width="1172" height="772" fill="none" stroke="#efe1e4" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="30" y="766" font-family="ui-monospace, Menlo, monospace" font-size="26" fill="#241019" opacity="0.6" letter-spacing="3">PLACEHOLDER 05</text>
+  <text x="1170" y="52" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="24" fill="#241019" opacity="0.5" letter-spacing="2">MOTION</text>
+</svg>

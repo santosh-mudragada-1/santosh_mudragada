@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#a9865f"/>
+      <stop offset="1" stop-color="#efe4d2"/>
+    </linearGradient>
+    <radialGradient id="soft4" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.25"/>
+    </radialGradient>
+    <radialGradient id="vig4" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.34"/>
+    </radialGradient>
+    <filter id="grain4" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="1200" fill="url(#bg4)"/>
+  
+    <rect x="380" y="465" width="396" height="528" rx="36" fill="#5c4327" opacity="0.7" transform="rotate(9.5 578 657)"/>
+    <circle cx="686" cy="777" r="108" fill="#a9865f" opacity="0.8"/>
+  <rect width="900" height="1200" fill="url(#vig4)"/>
+  <rect width="900" height="1200" filter="url(#grain4)" opacity="0.12"/>
+  <rect x="14" y="14" width="872" height="1172" fill="none" stroke="#efe4d2" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="30" y="1166" font-family="ui-monospace, Menlo, monospace" font-size="26" fill="#2b1e0e" opacity="0.6" letter-spacing="3">PLACEHOLDER 04</text>
+  <text x="870" y="52" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="24" fill="#2b1e0e" opacity="0.5" letter-spacing="2">STILL LIFE</text>
+</svg>

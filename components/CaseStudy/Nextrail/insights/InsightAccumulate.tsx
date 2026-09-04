@@ -4,184 +4,138 @@ import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useMediaQueryLayout } from '@/lib/hooks/useMediaQueryLayout';
-import { Card } from './Card';
 import { FrameViewport } from './FrameViewport';
 import styles from './InsightAnim.module.scss';
 
-const W = 560;
-const H = 280;
-const CW = 60;
-const CH = 44;
+const B = '/nextrail_casestudy/insights/collage';
 
-type Beat = {
-  enter: { x: number; y: number }; // fixed off-frame origin (some via the gradient bands)
-  slot: { x: number; y: number; r: number }; // resting place in the pile
-  age: { x: number; y: number; r: number }; // drift applied as it ages
-  dur: { in: number; hold: number; age: number; linger: number; gap: number };
-  revisit?: boolean; // lifts forward once, holds, nothing happens, sinks back
-  dims?: boolean; // ages to a fainter state — "visible but inactive"
-  off: number; // starting phase within its own loop
+type Shot = {
+  src: string;
+  left: number; // % — left edge
+  top: number; // % — top edge (may be negative; it's clipped + faded)
+  h: number; // % of the frame height
+  rot: number; // resting tilt (hover owns rotation; float only bobs)
+  z: number;
+  fy: number; // float amplitude, px
+  dur: number; // seconds
+  delay: number;
 };
 
-// Every value hand-tuned and fixed — no per-cycle randomness, so nothing can
-// pop. Variety comes from seven distinct periods drifting out of phase.
-const BEATS: Beat[] = [
-  { enter: { x: -104, y: 92 }, slot: { x: 248, y: 110, r: -8 }, age: { x: -24, y: 10, r: -10 }, dur: { in: 2.8, hold: 3.2, age: 3.8, linger: 1.4, gap: 2.0 }, off: 0.08 },
-  { enter: { x: 652, y: 82 }, slot: { x: 292, y: 126, r: 7 }, age: { x: 22, y: 16, r: 9 }, dur: { in: 3.0, hold: 2.4, age: 4.2, linger: 1.0, gap: 1.6 }, revisit: true, off: 0.52 },
-  { enter: { x: 236, y: 352 }, slot: { x: 230, y: 150, r: -14 }, age: { x: -30, y: 18, r: -12 }, dur: { in: 3.2, hold: 2.8, age: 3.6, linger: 1.8, gap: 1.4 }, dims: true, off: 0.3 },
-  { enter: { x: -116, y: 168 }, slot: { x: 304, y: 146, r: 11 }, age: { x: 26, y: 12, r: 10 }, dur: { in: 2.6, hold: 3.6, age: 4.0, linger: 1.2, gap: 2.2 }, off: 0.74 },
-  { enter: { x: 300, y: -72 }, slot: { x: 262, y: 172, r: -4 }, age: { x: -14, y: 22, r: -8 }, dur: { in: 3.4, hold: 2.2, age: 3.8, linger: 1.6, gap: 1.8 }, revisit: true, off: 0.18 },
-  { enter: { x: 640, y: 206 }, slot: { x: 286, y: 102, r: 15 }, age: { x: 30, y: -14, r: 13 }, dur: { in: 2.9, hold: 3.0, age: 4.4, linger: 1.0, gap: 1.5 }, dims: true, off: 0.62 },
-  { enter: { x: 198, y: 346 }, slot: { x: 244, y: 190, r: -11 }, age: { x: -20, y: 20, r: -10 }, dur: { in: 3.1, hold: 2.6, age: 3.4, linger: 1.4, gap: 2.0 }, off: 0.4 },
+// Saved at every size, overlapping edge to edge so the frame is covered.
+// Order = paint order; `z` only nudges the lower row forward. Two layers: a
+// big upper band and a smaller, more tilted foreground row. Hand-placed and
+// fixed — nothing random.
+const SHOTS: Shot[] = [
+  { src: `${B}/beach.jpg`, left: -7, top: -11, h: 88, rot: -4, z: 1, fy: 10, dur: 6.6, delay: 0.0 },
+  { src: `${B}/falls.jpg`, left: 22, top: -13, h: 92, rot: 3, z: 1, fy: 12, dur: 8.0, delay: 1.5 },
+  { src: `${B}/autumn.jpg`, left: 50, top: -8, h: 80, rot: -3, z: 1, fy: 9, dur: 6.1, delay: 0.6 },
+  { src: `${B}/dock.jpg`, left: 80, top: -15, h: 120, rot: -6, z: 2, fy: 13, dur: 8.9, delay: 0.9 },
+  { src: `${B}/towers.jpg`, left: -6, top: 40, h: 78, rot: 4, z: 3, fy: 11, dur: 7.3, delay: 2.0 },
+  { src: `${B}/travelers.jpg`, left: 26, top: 46, h: 64, rot: 5, z: 4, fy: 8, dur: 5.4, delay: 1.1 },
+  { src: `${B}/road.jpg`, left: 52, top: 41, h: 72, rot: -5, z: 3, fy: 14, dur: 7.7, delay: 2.4 },
+  { src: `${B}/lake.jpg`, left: 71, top: 47, h: 60, rot: 7, z: 4, fy: 10, dur: 6.4, delay: 0.4 },
 ];
 
-const V: Array<'media' | 'lines' | 'pin'> = ['media', 'lines', 'pin', 'media', 'lines', 'pin', 'media'];
-
 /**
- * ANIMATION 02 — ACCUMULATION. Cards arrive from every edge and settle into a
- * loose central pile: saved, briefly organised. Then attention moves on — the
- * card body fades back while its orange save-marker stays lit (the intent to
- * return outlives the content), the card drifts and tilts, and eventually
- * recycles in again from a fresh edge. Now and then one card is revisited: it
- * lifts forward, holds, nothing happens, and it sinks back.
+ * ANIMATION 02 — ACCUMULATION. Travel photos saved at every size, scattered
+ * and overlapping until they cover the frame, each bobbing on its own gentle
+ * float. The headline is knocked through the pile with a luminosity blend so
+ * it takes its colour from whatever it's lying on. The whole block feathers
+ * away on all four edges. Saved for later; lost forever.
  *
- * Seven fully deterministic loops with different periods and phases, so the
- * pile is always part-built and always churning — it rebuilds itself with no
- * single reset frame and nothing to stutter.
+ * Hovering the pile tilts every photo a random touch and lifts it slightly —
+ * the saved stuff stirs, but still goes nowhere. Float is vertical-only so
+ * hover can own rotation without fighting a tween. Deterministic; no reset.
  */
 export function InsightAccumulate() {
-  const rootRef = useRef<SVGSVGElement>(null);
-  const cardRefs = useRef<(SVGGElement | null)[]>([]);
-  const bodyRefs = useRef<(SVGGElement | null)[]>([]);
-  const dotRefs = useRef<(SVGCircleElement | null)[]>([]);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const shotRefs = useRef<(HTMLImageElement | null)[]>([]);
   const reduced = usePrefersReducedMotion();
-  const desktop = useMediaQueryLayout('(min-width: 1024px)');
-  const tablet = useMediaQueryLayout('(min-width: 640px)');
+  const mobile = useMediaQueryLayout('(max-width: 640px)');
 
-  const count = desktop ? BEATS.length : tablet ? 5 : 4;
+  const shots = mobile ? SHOTS.filter((_, i) => i % 3 !== 2).slice(0, 5) : SHOTS;
 
   useGSAP(
     () => {
-      const beats = BEATS.slice(0, count);
-      const cards = cardRefs.current.slice(0, count);
-      const bodies = bodyRefs.current.slice(0, count);
-      const dots = dotRefs.current.slice(0, count);
-      if (cards.some((c) => !c)) return;
+      const imgs = shotRefs.current.slice(0, shots.length).filter(Boolean) as HTMLImageElement[];
+      const root = rootRef.current;
 
-      if (reduced) {
-        cards.forEach((el, i) => {
-          const b = beats[i];
-          gsap.set(el, {
-            x: b.slot.x,
-            y: b.slot.y,
-            rotation: b.slot.r,
-            scale: b.revisit ? 1.06 : 1,
-            opacity: 1,
-            transformOrigin: '50% 50%',
-          });
-          gsap.set(bodies[i], { opacity: b.dims ? 0.16 : 1 });
-          gsap.set(dots[i], { opacity: 0.9 });
-        });
-        return;
-      }
+      imgs.forEach((el, i) => gsap.set(el, { rotation: shots[i].rot, x: 0, y: 0 }));
+      if (reduced) return;
 
-      cards.forEach((el, i) => {
-        const b = beats[i];
-        const body = bodies[i];
-        const dot = dots[i];
-        const p = b.dur;
-
-        const tl = gsap.timeline({ repeat: -1 });
-
-        tl.set(el, {
-          x: b.enter.x,
-          y: b.enter.y,
-          rotation: b.slot.r * 0.5,
-          scale: 0.92,
-          opacity: 0,
-          transformOrigin: '50% 50%',
-        })
-          .set(body, { opacity: 1 })
-          .set(dot, { opacity: 0.9 })
-          // ARRIVE — one smooth glide in from the edge, settle into the slot
-          .to(el, { opacity: 1, duration: Math.min(0.9, p.in * 0.45), ease: 'sine.out' }, 0)
-          .to(
-            el,
-            {
-              x: b.slot.x,
-              y: b.slot.y,
-              rotation: b.slot.r,
-              scale: 1,
-              duration: p.in,
-              ease: 'power2.out',
-            },
-            0,
-          )
-          // SAVED — sits in the pile, organised
-          .to({}, { duration: p.hold });
-
-        if (b.revisit) {
-          tl.to(el, { x: b.slot.x - 5, y: b.slot.y - 13, scale: 1.07, duration: 1.0, ease: 'power2.out' })
-            .to({}, { duration: 0.9 })
-            // nothing happens — sinks back into the pile
-            .to(el, { x: b.slot.x, y: b.slot.y, scale: 1, duration: 1.3, ease: 'power2.inOut' });
-        }
-
-        // AGE — one calm move; the body dims, the marker stays lit
-        tl.to(
+      // idle — a gentle vertical bob only; rotation is reserved for hover
+      imgs.forEach((el, i) => {
+        const s = shots[i];
+        gsap.fromTo(
           el,
-          {
-            x: b.slot.x + b.age.x,
-            y: b.slot.y + b.age.y,
-            rotation: b.slot.r + b.age.r,
-            duration: p.age,
-            ease: 'sine.inOut',
-          },
-          '>0.25',
-        )
-          .to(body, { opacity: b.dims ? 0.14 : 0.3, duration: p.age * 0.8, ease: 'sine.inOut' }, '<')
-          .to({}, { duration: p.linger })
-          // RECYCLE — the marker fades last, then the whole card eases away
-          .to(dot, { opacity: 0, duration: 1.1, ease: 'sine.inOut' })
-          .to(el, { opacity: 0, duration: 1.0, ease: 'sine.inOut' }, '<0.25')
-          .to({}, { duration: p.gap });
-
-        // one-time phase offset — a clean seek, no repeatRefresh
-        tl.progress(b.off);
+          { y: -s.fy },
+          { y: s.fy, duration: s.dur, delay: s.delay, ease: 'sine.inOut', repeat: -1, yoyo: true },
+        );
       });
+
+      if (!root) return;
+
+      const enter = () => {
+        imgs.forEach((el, i) => {
+          gsap.to(el, {
+            rotation: shots[i].rot + gsap.utils.random(-9, 9),
+            scale: 1.035,
+            duration: 0.5,
+            ease: 'power3.out',
+            overwrite: 'auto',
+            delay: i * 0.02,
+          });
+        });
+      };
+      const leave = () => {
+        imgs.forEach((el, i) => {
+          gsap.to(el, {
+            rotation: shots[i].rot,
+            scale: 1,
+            duration: 0.6,
+            ease: 'power3.out',
+            overwrite: 'auto',
+          });
+        });
+      };
+
+      root.addEventListener('mouseenter', enter);
+      root.addEventListener('mouseleave', leave);
+      return () => {
+        root.removeEventListener('mouseenter', enter);
+        root.removeEventListener('mouseleave', leave);
+        gsap.killTweensOf(imgs);
+      };
     },
-    { scope: rootRef, dependencies: [reduced, desktop, tablet] },
+    { scope: rootRef, dependencies: [reduced, mobile] },
   );
 
   return (
-    <FrameViewport>
-      <svg
-        ref={rootRef}
-        className={styles.canvas}
-        viewBox={`0 0 ${W} ${H}`}
-        aria-hidden
-        focusable="false"
-      >
-        {BEATS.slice(0, count).map((_, i) => (
-          <Card
-            key={`c-${i}`}
-            variant={V[i]}
-            withDot
-            halo
-            w={CW}
-            h={CH}
+    <FrameViewport variant="collage" sides>
+      <div className={styles.collage} ref={rootRef}>
+        {shots.map((s, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={s.src}
+            src={s.src}
+            alt=""
+            className={styles.collageShot}
+            style={{ left: `${s.left}%`, top: `${s.top}%`, height: `${s.h}%`, zIndex: s.z }}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
             ref={(el) => {
-              cardRefs.current[i] = el;
-            }}
-            bodyRef={(el) => {
-              bodyRefs.current[i] = el;
-            }}
-            dotRef={(el) => {
-              dotRefs.current[i] = el;
+              shotRefs.current[i] = el;
             }}
           />
         ))}
-      </svg>
+
+        <p className={styles.collageText}>
+          Saved for later.
+          <br />
+          Lost forever.
+        </p>
+      </div>
     </FrameViewport>
   );
 }

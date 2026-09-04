@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { About } from '@/components/About';
+import { AboutEditorial } from '@/components/AboutEditorial';
 import { Footer } from '@/components/Footer';
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export default function AboutPage() {
   return (
     <>
       <main>
-        <About />
+        <AboutEditorial />
       </main>
       <Footer />
     </>

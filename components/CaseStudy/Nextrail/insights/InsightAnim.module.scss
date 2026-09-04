@@ -19,22 +19,25 @@
   overflow: hidden;
 }
 
-.canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  overflow: visible; // a card mid-flight may sit beyond the viewBox
-}
-
 // Cream fading to nothing. Deliberately gentle — a veil, not a white overlay —
-// so a card can be half-swallowed by it and still feel like it continues.
+// so content can be half-swallowed by it and still feel like it continues.
 .edgeFade {
   position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.edgeFade[data-edge='top'],
+.edgeFade[data-edge='bottom'] {
   left: 0;
   right: 0;
   height: 28%;
-  pointer-events: none;
-  z-index: 2;
+}
+.edgeFade[data-edge='left'],
+.edgeFade[data-edge='right'] {
+  top: 0;
+  bottom: 0;
+  width: 15%;
 }
 
 .edgeFade[data-edge='top'] {
@@ -46,7 +49,6 @@
     transparent 100%
   );
 }
-
 .edgeFade[data-edge='bottom'] {
   bottom: 0;
   background: linear-gradient(
@@ -55,6 +57,283 @@
     color-mix(in oklab, var(--bg) 62%, transparent) 38%,
     transparent 100%
   );
+}
+.edgeFade[data-edge='left'] {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 60%, transparent) 40%,
+    transparent 100%
+  );
+}
+.edgeFade[data-edge='right'] {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 60%, transparent) 40%,
+    transparent 100%
+  );
+}
+
+// Over real footage / photos the fade has to work harder so the media
+// dissolves into the page instead of ending on a seam.
+.viewport[data-variant='media'] .edgeFade[data-edge='top'],
+.viewport[data-variant='media'] .edgeFade[data-edge='bottom'] {
+  height: 32%;
+}
+.viewport[data-variant='media'] .edgeFade[data-edge='left'],
+.viewport[data-variant='media'] .edgeFade[data-edge='right'] {
+  width: 17%;
+}
+
+.viewport[data-variant='media'] .edgeFade[data-edge='top'] {
+  background: linear-gradient(
+    to bottom,
+    var(--bg) 0%,
+    var(--bg) 3%,
+    color-mix(in oklab, var(--bg) 66%, transparent) 34%,
+    transparent 100%
+  );
+}
+.viewport[data-variant='media'] .edgeFade[data-edge='bottom'] {
+  background: linear-gradient(
+    to top,
+    var(--bg) 0%,
+    var(--bg) 3%,
+    color-mix(in oklab, var(--bg) 66%, transparent) 34%,
+    transparent 100%
+  );
+}
+.viewport[data-variant='media'] .edgeFade[data-edge='left'] {
+  background: linear-gradient(
+    to right,
+    var(--bg) 0%,
+    var(--bg) 2%,
+    color-mix(in oklab, var(--bg) 64%, transparent) 38%,
+    transparent 100%
+  );
+}
+.viewport[data-variant='media'] .edgeFade[data-edge='right'] {
+  background: linear-gradient(
+    to left,
+    var(--bg) 0%,
+    var(--bg) 2%,
+    color-mix(in oklab, var(--bg) 64%, transparent) 38%,
+    transparent 100%
+  );
+}
+
+// The photo collage has its own gaps, so four overlapping veils would fog it.
+// Keep every edge feathered but light — just enough that no photo ends on a
+// hard rectangle.
+.viewport[data-variant='collage'] .edgeFade[data-edge='top'],
+.viewport[data-variant='collage'] .edgeFade[data-edge='bottom'] {
+  height: 24%;
+}
+.viewport[data-variant='collage'] .edgeFade[data-edge='left'],
+.viewport[data-variant='collage'] .edgeFade[data-edge='right'] {
+  width: 11%;
+}
+.viewport[data-variant='collage'] .edgeFade[data-edge='top'] {
+  background: linear-gradient(
+    to bottom,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 52%, transparent) 32%,
+    transparent 100%
+  );
+}
+.viewport[data-variant='collage'] .edgeFade[data-edge='bottom'] {
+  background: linear-gradient(
+    to top,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 52%, transparent) 32%,
+    transparent 100%
+  );
+}
+.viewport[data-variant='collage'] .edgeFade[data-edge='left'] {
+  background: linear-gradient(
+    to right,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 48%, transparent) 36%,
+    transparent 100%
+  );
+}
+.viewport[data-variant='collage'] .edgeFade[data-edge='right'] {
+  background: linear-gradient(
+    to left,
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 48%, transparent) 36%,
+    transparent 100%
+  );
+}
+
+// ------------------------------------------------------------- media + route
+// Animation 01 — a small grid of looping travel clips with a hand-drawn route
+// threading through them; the inspiration you already scroll past.
+.mediaGrid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  background: var(--bg);
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-elev);
+}
+
+.panel video,
+.panel img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  // a touch of warmth + slight mute so the footage sits under the page palette
+  filter: saturate(0.92) contrast(1.02);
+}
+
+// A faint white path connecting the markers — the line itself, with no
+// bright trail drawn over it.
+.routeOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.routeBase {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.42);
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+}
+
+// A marker on each clip, sitting on the path.
+.node {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 5px rgba(255, 255, 255, 0.18);
+  z-index: 1;
+}
+
+.node[data-dest] {
+  background: var(--accent);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 5px color-mix(in oklab, var(--accent) 28%, transparent);
+}
+
+.nodePulse {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  z-index: 1;
+}
+
+.nodePulse[data-dest] {
+  border-color: var(--accent);
+}
+
+// ----------------------------------------------------------- photo collage
+// Animation 02 — travel photos saved at every size, scattered and drifting,
+// with the headline knocked through them. `isolation` keeps the luminosity
+// blend contained to the collage (not the page behind it).
+.collage {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+}
+
+.collageShot {
+  position: absolute;
+  width: auto;
+  max-width: none;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 44px rgba(20, 17, 13, 0.24),
+    0 5px 14px rgba(20, 17, 13, 0.16);
+  will-change: transform;
+  filter: saturate(1.03) contrast(1.03);
+}
+
+.collageText {
+  position: absolute;
+  inset: 0;
+  z-index: 9; // above every photo, below the edge fades (z-index 2 on .viewport)
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 6%;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 0.9rem + 3.4vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: #fff;
+  mix-blend-mode: luminosity;
+  pointer-events: none;
+  text-wrap: balance;
+}
+
+// ---------------------------------------------------------- empty map (03)
+// A full-bleed map sits behind everything — the planning surface you start
+// from, with nothing plotted on it. Saved travel photos scatter across it on
+// every side. Hover tilts the photos and zooms the map a little. No markers.
+.mapScene {
+  position: absolute;
+  inset: 0;
+}
+
+.mapStage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #93a3a8; // roughly the map's ocean tone, in case it loads slow
+  will-change: transform;
+  z-index: 0;
+}
+
+.mapImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// a whisper of the page palette so it doesn't feel bolted on
+.mapStage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--bg) 7%, transparent);
+  pointer-events: none;
 }
 
 // ---------------------------------------------------------------- card unit
@@ -101,72 +380,10 @@
   fill: color-mix(in oklab, var(--accent) 15%, transparent);
 }
 
-.dotRing {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.75;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.intent {
-  fill: var(--accent);
-  will-change: transform;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.intentTrail {
-  fill: none;
-  stroke: color-mix(in oklab, var(--accent) 55%, transparent);
-  stroke-width: 1.5;
-  stroke-linecap: round;
-}
-
-// -------------------------------------------------- destination / planning
-.markerRing {
-  fill: none;
-  stroke: color-mix(in oklab, var(--fg) 30%, transparent);
-  stroke-width: 1.5;
-  stroke-dasharray: 3 4;
-}
-
-.baseLine {
-  fill: none;
-  stroke: color-mix(in oklab, var(--fg) 22%, transparent);
-  stroke-width: 1.75;
-  stroke-linecap: round;
-}
-
-.startRing {
-  fill: none;
-  stroke: color-mix(in oklab, var(--fg) 34%, transparent);
-  stroke-width: 1.5;
-  stroke-dasharray: 3 4;
-  will-change: transform;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.startDot {
-  fill: color-mix(in oklab, var(--fg) 46%, transparent);
-}
-
-.slotTick {
-  fill: none;
-  stroke: color-mix(in oklab, var(--fg) 28%, transparent);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 4;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
 // The JS holds each animation on a composed static frame under reduced motion;
 // nothing is moving, so drop the compositing hints too.
 @media (prefers-reduced-motion: reduce) {
-  .card,
-  .intent,
-  .startRing {
+  .card {
     will-change: auto;
   }
 }
