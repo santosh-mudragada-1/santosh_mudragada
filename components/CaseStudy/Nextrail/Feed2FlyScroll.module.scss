@@ -4,39 +4,82 @@
   position: relative;
 }
 
+// ===========================================================================
+// Desktop (≥lg) — a sticky stage centred in the viewport. Invisible beats
+// behind it provide the scroll length and drive the active step; the copy and
+// the phone clip cross-fade to match. Nothing is pinned or scroll-hijacked.
+// ===========================================================================
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
-  gap: clamp(2rem, 7vw, 7rem);
-  align-items: start; // let the device column actually stick
+  grid-template-columns: minmax(0, 1fr);
 }
 
-// ------------------------------------------------------------- copy column
-.step {
-  min-height: 72vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-block: clamp(2rem, 5vh, 4rem);
-  transition: opacity 0.5s var(--ease-quart-in-out);
+.track,
+.stage {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
 
-  &:not([data-active]) {
-    opacity: 0.34;
-  }
+// invisible scroll spacers — one per beat. First is short so beat 1 is active
+// on entry and holds; last trails out before the stage releases.
+.track {
+  z-index: 0;
+}
+
+.beat {
+  min-height: 94vh;
 
   &:first-child {
-    min-height: 44vh;
-    justify-content: flex-start;
-    padding-top: 0;
+    min-height: 64vh;
   }
-
   &:last-child {
-    min-height: 54vh;
+    min-height: 82vh;
   }
 }
 
-.stepText {
-  min-width: 0; // grid child — allow the title to wrap instead of overflowing
+.stage {
+  z-index: 1;
+  align-self: start;
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100svh - var(--header-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.25rem, 3.4vh, 2.5rem);
+  padding-block: clamp(1rem, 3vh, 2rem);
+  text-align: center;
+  // same colour as the page — quietly masks the section heading as it scrolls
+  // up behind the stage, with no card edge.
+  background: var(--bg);
+}
+
+// ---- step copy: all four stacked in one cell, cross-faded ----
+.copy {
+  display: grid;
+  width: min(46ch, 90vw);
+}
+
+.copy .copyItem {
+  grid-area: 1 / 1;
+}
+
+.copyItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.55s var(--ease-quart-in-out),
+    transform 0.55s var(--ease-quart-in-out);
+
+  &[data-active] {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .stepN {
@@ -46,7 +89,7 @@
   letter-spacing: 0.06em;
   color: var(--fg-muted);
   font-variant-numeric: tabular-nums;
-  margin-bottom: 1.1em;
+  margin-bottom: 1em;
 
   span {
     color: var(--nx-violet);
@@ -56,33 +99,25 @@
 .stepTitle {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(1.9rem, 1rem + 4vw, 3.6rem);
-  line-height: 0.98;
+  font-size: clamp(1.7rem, 1rem + 2.6vw, 2.9rem);
+  line-height: 1;
   letter-spacing: -0.035em;
   text-transform: uppercase;
 }
 
 .stepCopy {
-  margin-top: 1.1em;
-  max-width: 38ch;
+  margin-top: 0.95em;
+  max-width: 42ch;
   color: var(--fg-muted);
-  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.15rem);
+  font-size: clamp(0.98rem, 0.95rem + 0.25vw, 1.1rem);
   line-height: 1.55;
 }
 
-// ---------------------------------------------------------- sticky device
-.deviceCol {
-  position: sticky;
-  top: calc(var(--header-h) + 8vh);
-  height: 84vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.device {
+// ---- the phone: four media layers, cross-faded ----
+.phone {
   position: relative;
-  width: min(17.5rem, 30vw);
+  width: clamp(10rem, 15vw, 13rem);
+  flex: none;
 }
 
 .stack {
@@ -94,7 +129,7 @@
   position: absolute;
   inset: 0;
   opacity: 0;
-  transform: translateY(14px) scale(0.975);
+  transform: scale(0.98);
   transition:
     opacity 0.6s var(--ease-quart-in-out),
     transform 0.6s var(--ease-quart-in-out);
@@ -113,182 +148,92 @@
   filter: drop-shadow(0 34px 62px rgba(20, 17, 13, 0.22));
 }
 
-// --------------------------------------------------------------- device HUD
-.hud {
-  position: absolute;
-  left: 6%;
-  right: 6%;
-  bottom: 5.5%;
-  z-index: 2;
+// ---- progress dots ----
+.dots {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.9rem 1rem;
-  border-radius: 16px;
-  background: color-mix(in oklab, var(--bg) 92%, transparent);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in oklab, var(--nx-violet) 38%, var(--line));
-  box-shadow: 0 18px 40px rgba(20, 17, 13, 0.22);
-  pointer-events: none;
+  gap: 0.6rem;
 
-  opacity: 0;
-  transform: translateY(10px);
-  transition:
-    opacity 0.5s var(--ease-quart-in-out),
-    transform 0.5s var(--ease-quart-in-out);
-
-  &[data-show] {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-// staggered children reveal
-.hudRow,
-.hudStep {
-  opacity: 0;
-  transform: translateX(-6px);
-  transition:
-    opacity 0.45s var(--ease-quart-in-out),
-    transform 0.45s var(--ease-quart-in-out);
-}
-
-.hud[data-show] .hudRow,
-.hud[data-show] .hudStep {
-  opacity: 1;
-  transform: none;
-}
-
-@for $i from 1 through 5 {
-  .hud[data-show] .hudRow:nth-child(#{$i}),
-  .hud[data-show] .hudStep:nth-child(#{$i}) {
-    transition-delay: #{0.05 + $i * 0.08}s;
-  }
-}
-
-.hudRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.hudKey {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--nx-violet);
-}
-
-.hudVal {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: -0.01em;
-  color: var(--fg);
-  text-align: right;
-}
-
-.hudStep {
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: -0.01em;
-  color: var(--fg);
-
-  i {
-    flex: none;
+  span {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--nx-violet);
-  }
+    background: var(--line-strong);
+    transition:
+      background-color 0.4s var(--ease-quart-in-out),
+      transform 0.4s var(--ease-quart-in-out);
 
-  &[data-last] {
-    color: var(--nx-violet);
-    font-weight: 700;
+    &[data-active] {
+      background: var(--nx-violet);
+      transform: scale(1.35);
+    }
   }
 }
 
-// ------------------------------------------- mobile inline media (< lg only)
+// tight viewports: pull the phone in, and let the number + title carry the beat
+@media (min-width: 1024px) and (max-height: 860px) {
+  .phone {
+    width: clamp(8.5rem, 12vw, 10.5rem);
+  }
+  .stepCopy {
+    display: none;
+  }
+}
+
+// ===========================================================================
+// Below lg — no sticky. Each beat stacks with its copy and clip inline.
+// ===========================================================================
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: clamp(2rem, 5vw, 3.5rem);
+  align-items: center;
+  padding-block: clamp(2.5rem, 8vw, 4rem);
+
+  & + & {
+    border-top: 1px solid var(--line);
+  }
+
+  .copyItem {
+    align-items: flex-start;
+    text-align: left;
+    opacity: 1;
+    transform: none;
+  }
+
+  .stepTitle {
+    font-size: clamp(1.9rem, 1rem + 4vw, 3rem);
+  }
+}
+
 .inlineMedia {
-  align-self: flex-start;
-  width: min(15rem, 62vw);
-  margin-top: clamp(1.75rem, 6vw, 2.75rem);
+  width: min(15rem, 34vw);
+  flex: none;
 
   .media {
     width: 100%;
     height: auto;
   }
-
-  // HUD sits static beneath the phone, fully revealed
-  .hud {
-    position: static;
-    margin-top: 0.9rem;
-    opacity: 1;
-    transform: none;
-
-    .hudRow,
-    .hudStep {
-      opacity: 1;
-      transform: none;
-    }
-  }
-}
-
-@include mq-max('lg') {
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-  }
-  .step {
-    padding-block: clamp(2.5rem, 8vw, 4rem);
-
-    &,
-    &:first-child,
-    &:last-child {
-      min-height: 0;
-      justify-content: center;
-    }
-    &:first-child {
-      padding-top: clamp(2.5rem, 8vw, 4rem);
-    }
-    &:not([data-active]) {
-      opacity: 1;
-    }
-  }
-  .step + .step {
-    border-top: 1px solid var(--line);
-  }
-
-  // tablet — copy and screen sit side by side
-  .step {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    column-gap: clamp(2rem, 5vw, 3.5rem);
-    align-items: start;
-  }
-  .inlineMedia {
-    align-self: start;
-    margin-top: 0;
-    width: min(15rem, 34vw);
-  }
-  .inlineMedia .hud {
-    margin-inline: -8%;
-  }
 }
 
 @include mq-max('md') {
-  .step {
+  .item {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 0;
+    row-gap: clamp(1.75rem, 6vw, 2.5rem);
   }
   .inlineMedia {
     width: min(15rem, 62vw);
-    margin-top: clamp(1.75rem, 6vw, 2.5rem);
+  }
+}
+
+@include reduced-motion {
+  .copyItem,
+  .layer,
+  .dots span {
+    transition: none;
   }
 }

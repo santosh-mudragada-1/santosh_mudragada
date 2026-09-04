@@ -19,8 +19,32 @@
   overflow: hidden;
 }
 
-// Cream fading to nothing. Deliberately gentle — a veil, not a white overlay —
-// so content can be half-swallowed by it and still feel like it continues.
+// Cream fading to nothing. A multi-stop ease-in-out curve (a "scrim") rather
+// than a 2–3 stop linear ramp, so the blend has no visible start or end line —
+// it just melts into the page. Strength is tuned per variant purely by how far
+// the band reaches, not by changing the curve.
+@mixin scrim($dir) {
+  background: linear-gradient(
+    #{$dir},
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 98.7%, transparent) 8.1%,
+    color-mix(in oklab, var(--bg) 95.1%, transparent) 15.5%,
+    color-mix(in oklab, var(--bg) 89.6%, transparent) 22.5%,
+    color-mix(in oklab, var(--bg) 82.5%, transparent) 29%,
+    color-mix(in oklab, var(--bg) 74.1%, transparent) 35.3%,
+    color-mix(in oklab, var(--bg) 64.8%, transparent) 41.2%,
+    color-mix(in oklab, var(--bg) 55%, transparent) 47.1%,
+    color-mix(in oklab, var(--bg) 45%, transparent) 52.9%,
+    color-mix(in oklab, var(--bg) 35.2%, transparent) 58.8%,
+    color-mix(in oklab, var(--bg) 25.9%, transparent) 64.7%,
+    color-mix(in oklab, var(--bg) 17.5%, transparent) 71%,
+    color-mix(in oklab, var(--bg) 10.4%, transparent) 77.5%,
+    color-mix(in oklab, var(--bg) 4.9%, transparent) 84.5%,
+    color-mix(in oklab, var(--bg) 1.6%, transparent) 92%,
+    transparent 100%
+  );
+}
+
 .edgeFade {
   position: absolute;
   pointer-events: none;
@@ -31,7 +55,7 @@
 .edgeFade[data-edge='bottom'] {
   left: 0;
   right: 0;
-  height: 28%;
+  height: 30%;
 }
 .edgeFade[data-edge='left'],
 .edgeFade[data-edge='right'] {
@@ -42,131 +66,41 @@
 
 .edgeFade[data-edge='top'] {
   top: 0;
-  background: linear-gradient(
-    to bottom,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 62%, transparent) 38%,
-    transparent 100%
-  );
+  @include scrim(to bottom);
 }
 .edgeFade[data-edge='bottom'] {
   bottom: 0;
-  background: linear-gradient(
-    to top,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 62%, transparent) 38%,
-    transparent 100%
-  );
+  @include scrim(to top);
 }
 .edgeFade[data-edge='left'] {
   left: 0;
-  background: linear-gradient(
-    to right,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 60%, transparent) 40%,
-    transparent 100%
-  );
+  @include scrim(to right);
 }
 .edgeFade[data-edge='right'] {
   right: 0;
-  background: linear-gradient(
-    to left,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 60%, transparent) 40%,
-    transparent 100%
-  );
+  @include scrim(to left);
 }
 
-// Over real footage / photos the fade has to work harder so the media
-// dissolves into the page instead of ending on a seam.
+// Over real footage the band reaches a little further so a solid rectangle of
+// video dissolves fully; the curve is unchanged.
 .viewport[data-variant='media'] .edgeFade[data-edge='top'],
 .viewport[data-variant='media'] .edgeFade[data-edge='bottom'] {
-  height: 32%;
+  height: 34%;
 }
 .viewport[data-variant='media'] .edgeFade[data-edge='left'],
 .viewport[data-variant='media'] .edgeFade[data-edge='right'] {
-  width: 17%;
+  width: 18%;
 }
 
-.viewport[data-variant='media'] .edgeFade[data-edge='top'] {
-  background: linear-gradient(
-    to bottom,
-    var(--bg) 0%,
-    var(--bg) 3%,
-    color-mix(in oklab, var(--bg) 66%, transparent) 34%,
-    transparent 100%
-  );
-}
-.viewport[data-variant='media'] .edgeFade[data-edge='bottom'] {
-  background: linear-gradient(
-    to top,
-    var(--bg) 0%,
-    var(--bg) 3%,
-    color-mix(in oklab, var(--bg) 66%, transparent) 34%,
-    transparent 100%
-  );
-}
-.viewport[data-variant='media'] .edgeFade[data-edge='left'] {
-  background: linear-gradient(
-    to right,
-    var(--bg) 0%,
-    var(--bg) 2%,
-    color-mix(in oklab, var(--bg) 64%, transparent) 38%,
-    transparent 100%
-  );
-}
-.viewport[data-variant='media'] .edgeFade[data-edge='right'] {
-  background: linear-gradient(
-    to left,
-    var(--bg) 0%,
-    var(--bg) 2%,
-    color-mix(in oklab, var(--bg) 64%, transparent) 38%,
-    transparent 100%
-  );
-}
-
-// The photo collage has its own gaps, so four overlapping veils would fog it.
-// Keep every edge feathered but light — just enough that no photo ends on a
-// hard rectangle.
+// The photo collage has its own gaps, so the band stays short — just enough
+// that no photo ends on a hard rectangle.
 .viewport[data-variant='collage'] .edgeFade[data-edge='top'],
 .viewport[data-variant='collage'] .edgeFade[data-edge='bottom'] {
-  height: 24%;
+  height: 22%;
 }
 .viewport[data-variant='collage'] .edgeFade[data-edge='left'],
 .viewport[data-variant='collage'] .edgeFade[data-edge='right'] {
-  width: 11%;
-}
-.viewport[data-variant='collage'] .edgeFade[data-edge='top'] {
-  background: linear-gradient(
-    to bottom,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 52%, transparent) 32%,
-    transparent 100%
-  );
-}
-.viewport[data-variant='collage'] .edgeFade[data-edge='bottom'] {
-  background: linear-gradient(
-    to top,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 52%, transparent) 32%,
-    transparent 100%
-  );
-}
-.viewport[data-variant='collage'] .edgeFade[data-edge='left'] {
-  background: linear-gradient(
-    to right,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 48%, transparent) 36%,
-    transparent 100%
-  );
-}
-.viewport[data-variant='collage'] .edgeFade[data-edge='right'] {
-  background: linear-gradient(
-    to left,
-    var(--bg) 0%,
-    color-mix(in oklab, var(--bg) 48%, transparent) 36%,
-    transparent 100%
-  );
+  width: 10%;
 }
 
 // ------------------------------------------------------------- media + route

@@ -6,7 +6,6 @@ import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './Feed2FlyScroll.module.scss';
 
 const V = '/nextrail_casestudy/video';
-const U = '/nextrail_casestudy/ui';
 
 type Media =
   | { kind: 'video'; src: string; poster: string }
@@ -17,10 +16,10 @@ type Step = {
   lines: [string, string];
   copy: string;
   media: Media;
-  /** what the device HUD shows while this step is active */
-  hud?: 'labels' | 'chain';
 };
 
+// One clip per beat. Steps 3–4 currently reuse the nearest existing captures as
+// placeholders — final videos get dropped in later; the shape and order stay.
 const STEPS: Step[] = [
   {
     n: '01',
@@ -38,47 +37,15 @@ const STEPS: Step[] = [
     n: '03',
     lines: ['We organise', 'the inspiration'],
     copy: 'Nextrail gathers everything you’ve sent and groups it by destination, so a scattered pile of links becomes one place you can work from.',
-    media: { kind: 'image', src: `${U}/feed2fly-grid.png` },
-    hud: 'labels',
+    media: { kind: 'video', src: `${V}/share-organize.mp4`, poster: `${V}/share-organize-poster.png` },
   },
   {
     n: '04',
     lines: ['Turn it into', 'a trip'],
     copy: 'From there it’s a guided path — who’s going, when, and your budget — and the content you saved becomes a day-by-day plan.',
-    media: { kind: 'image', src: `${U}/trip-summary.png` },
-    hud: 'chain',
+    media: { kind: 'video', src: `${V}/share-onboard.mp4`, poster: `${V}/share-onboard-poster.png` },
   },
 ];
-
-// Grounded in what Feed2Fly actually does — group shared content by
-// destination, vibe and source. Not invented AI extraction.
-const LABELS: Array<[string, string]> = [
-  ['Destination', 'Bali, Indonesia'],
-  ['Vibe', 'Adventurous'],
-  ['Source', 'Instagram reel'],
-];
-
-const CHAIN = ['Saved content', 'Destination', 'Places', 'Experiences', 'Your trip'];
-
-function Hud({ kind, show }: { kind: 'labels' | 'chain'; show: boolean }) {
-  return (
-    <div className={styles.hud} data-kind={kind} data-show={show || undefined}>
-      {kind === 'labels'
-        ? LABELS.map(([k, v]) => (
-            <div key={k} className={styles.hudRow}>
-              <span className={styles.hudKey}>{k}</span>
-              <span className={styles.hudVal}>{v}</span>
-            </div>
-          ))
-        : CHAIN.map((c, i) => (
-            <div key={c} className={styles.hudStep} data-last={i === CHAIN.length - 1 || undefined}>
-              <i aria-hidden />
-              {c}
-            </div>
-          ))}
-    </div>
-  );
-}
 
 function Frame({ media, active }: { media: Media; active: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
@@ -118,15 +85,31 @@ function Frame({ media, active }: { media: Media; active: boolean }) {
   );
 }
 
+function StepCopy({ step }: { step: Step }) {
+  return (
+    <>
+      <p className={styles.stepN}>
+        <span>{step.n}</span> / 04
+      </p>
+      <h3 className={styles.stepTitle}>
+        {step.lines[0]}
+        <br />
+        {step.lines[1]}.
+      </h3>
+      <p className={styles.stepCopy}>{step.copy}</p>
+    </>
+  );
+}
+
 /**
  * "How Feed2Fly works" — four beats, one path.
  *
- * Desktop (≥lg): the copy scrolls past a sticky device; an IntersectionObserver
- * flips the active beat as each step crosses the viewport middle, and the device
- * cross-fades between screens. Steps 3–4 add a small HUD on the device.
+ * Desktop (≥lg): a sticky stage sits centred in the viewport with the step
+ * copy above the phone and progress dots below. Invisible scroll-beats behind
+ * it set the active step as their centre passes the viewport middle; the copy
+ * and the phone clip cross-fade to match. Native scroll — nothing is pinned.
  *
- * Below lg: no sticky. Each beat stacks with its own screen inline. Same
- * component, layout swapped purely by media query — nothing is scroll-hijacked.
+ * Below lg: no sticky. Each beat stacks with its own copy and clip inline.
  */
 export function Feed2FlyScroll() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -134,62 +117,67 @@ export function Feed2FlyScroll() {
   const wide = useMediaQuery('(min-width: 1024px)');
   const [active, setActive] = useState(0);
 
+  // whichever beat's centre is nearest the viewport centre wins — one
+  // deterministic winner, no observer double-fires or skipped beats.
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const steps = Array.from(root.querySelectorAll<HTMLElement>('[data-step]'));
-    if (!steps.length) return;
+    const beats = Array.from(root.querySelectorAll<HTMLElement>('[data-step]'));
+    if (!beats.length) return;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (!e.isIntersecting) return;
-          const i = Number((e.target as HTMLElement).dataset.step);
-          if (!Number.isNaN(i)) setActive(i);
-        });
-      },
-      { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
-    );
-    steps.forEach((s) => io.observe(s));
-    return () => io.disconnect();
-  }, []);
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const mid = window.innerHeight / 2;
+      let best = 0;
+      let bestDist = Infinity;
+      beats.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const dist = Math.abs(r.top + r.height / 2 - mid);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = Number(el.dataset.step) || 0;
+        }
+      });
+      setActive((prev) => (prev === best ? prev : best));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [wide]);
 
   return (
     <div ref={rootRef} className={styles.root}>
-      <div className={styles.grid}>
-        <div className={styles.copyCol}>
-          {STEPS.map((s, i) => (
-            <div
-              key={s.n}
-              className={styles.step}
-              data-step={i}
-              data-active={active === i || undefined}
-            >
-              <div className={styles.stepText}>
-                <p className={styles.stepN}>
-                  <span>{s.n}</span> / 04
-                </p>
-                <h3 className={styles.stepTitle}>
-                  {s.lines[0]}
-                  <br />
-                  {s.lines[1]}.
-                </h3>
-                <p className={styles.stepCopy}>{s.copy}</p>
-              </div>
+      {wide ? (
+        <div className={styles.grid}>
+          <div className={styles.track} aria-hidden>
+            {STEPS.map((s, i) => (
+              <div key={s.n} className={styles.beat} data-step={i} />
+            ))}
+          </div>
 
-              {!wide && (
-                <div className={styles.inlineMedia}>
-                  <Frame media={s.media} active={!reduced && active === i} />
-                  {s.hud && <Hud kind={s.hud} show />}
+          <div className={styles.stage}>
+            <div className={styles.copy}>
+              {STEPS.map((s, i) => (
+                <div
+                  key={s.n}
+                  className={styles.copyItem}
+                  data-active={active === i || undefined}
+                >
+                  <StepCopy step={s} />
                 </div>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
 
-        {wide && (
-          <div className={styles.deviceCol} aria-hidden>
-            <div className={styles.device}>
+            <div className={styles.phone}>
               <div className={styles.stack}>
                 {STEPS.map((s, i) => (
                   <div
@@ -201,16 +189,29 @@ export function Feed2FlyScroll() {
                   </div>
                 ))}
               </div>
-              {STEPS.map(
-                (s, i) =>
-                  s.hud && (
-                    <Hud key={s.n} kind={s.hud} show={active === i} />
-                  ),
-              )}
+            </div>
+
+            <div className={styles.dots} aria-hidden>
+              {STEPS.map((s, i) => (
+                <span key={s.n} data-active={active === i || undefined} />
+              ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className={styles.list}>
+          {STEPS.map((s, i) => (
+            <div key={s.n} className={styles.item} data-step={i}>
+              <div className={styles.copyItem} data-active>
+                <StepCopy step={s} />
+              </div>
+              <div className={styles.inlineMedia}>
+                <Frame media={s.media} active={!reduced && active === i} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { gsap, useGSAP, ScrollTrigger } from '@/lib/gsap/gsap';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { HeroMarquee } from './HeroMarquee';
 import { Feed2FlyScroll } from './Feed2FlyScroll';
+import { QuantResearch } from './QuantResearch';
 import { InsightFlow } from './insights/InsightFlow';
 import { InsightAccumulate } from './insights/InsightAccumulate';
 import { InsightConnect } from './insights/InsightConnect';
@@ -33,6 +34,45 @@ const INSIGHTS = [
     statement: 'Planning still starts from scratch.',
     body: 'Even with a camera roll full of inspiration, planning means switching between maps, notes and booking tabs and rebuilding everything by hand.',
     Anim: InsightConnect,
+  },
+];
+
+// Recurring themes from the secondary scan + interviews — the raw material the
+// three headline insights are distilled from.
+const OBSERVATIONS: Array<[string, string]> = [
+  ['Scattered planning', 'Maps in one tab, notes in another, bookings in a third — nothing talks to anything.'],
+  ['Info overload', 'Endless “top 10” lists, none of them yours. More reading than deciding.'],
+  ['Hard to find inspiration', 'The ideas worth acting on sit in feeds and DMs, not on travel sites.'],
+  ['Personalisation & vibe', 'People want a trip that matches their mood — not a generic itinerary.'],
+  ['Budget stress', 'Cost stays a guess until the booking screen. No running total anywhere.'],
+  ['One-stop booking', 'Hopping apps to compare stays, flights and activities kills the momentum.'],
+  ['Safety is critical', 'Families want verified stays and a read on crowds before they commit.'],
+  ['On-the-go changes', 'Plans shift mid-trip; a fixed itinerary can’t keep up.'],
+  ['Wants an AI planner', 'People already expect something to turn their inputs into a real plan.'],
+];
+
+const PERSONAS = [
+  {
+    initials: 'RM',
+    name: 'Riya Mehta',
+    meta: '24 · Mumbai · Solo traveller · UX designer',
+    quote: 'I save reels all the time. They never turn into an actual trip.',
+    traits: [
+      'Travels for local culture, not the landmark checklist',
+      'Wants verified stays and a plan that fits her mood',
+    ],
+    needs: 'One app, information she can trust, and planning that starts from what already inspired her.',
+  },
+  {
+    initials: 'RS',
+    name: 'Rajiv Sharma',
+    meta: '35 · Pune · Family traveller · Runs a business',
+    quote: 'A family trip needs more than bookings. We need peace of mind.',
+    traits: [
+      'Plans kid-friendly trips around safety and comfort',
+      'Travels to spend unhurried time with family',
+    ],
+    needs: 'Clean verified stays, crowd and safety cues, and one place to plan the whole thing.',
   },
 ];
 
@@ -276,6 +316,94 @@ export function Nextrail() {
         </p>
       </section>
 
+      {/* ==================================================== RESEARCH BLOCK */}
+      <section className={styles.section} aria-labelledby="research-lead">
+        <div className={styles.head}>
+          <p className={`${styles.kick} ${styles.rise}`}>Research</p>
+          <h2 id="research-lead" className={`${styles.h2} ${styles.rise}`}>
+            We looked before we built.
+          </h2>
+        </div>
+
+        <p className={`${styles.lede} ${styles.rise}`}>
+          Before sketching a single screen, we scanned 40+ travel platforms, followed how
+          travel spreads on social, pulled threads from travel communities on Reddit, and
+          sat down with real travellers — solo adventurers, weekend groups and families.
+          The trips were different. The frustration was identical.
+        </p>
+
+        {/* ---- observations ---- */}
+        <div className={styles.block}>
+          <p className={`${styles.blockKick} ${styles.rise}`}>What kept coming up</p>
+          <h3 className={`${styles.blockTitle} ${styles.rise}`}>Nine patterns, over and over.</h3>
+
+          <ol className={`${styles.obs} ${styles.rise}`}>
+            {OBSERVATIONS.map(([h, p], i) => (
+              <li key={h} className={styles.ob}>
+                <span className={styles.obN}>{String(i + 1).padStart(2, '0')}</span>
+                <h4 className={styles.obH}>{h}</h4>
+                <p className={styles.obP}>{p}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* ---- quantitative ---- */}
+        <div className={styles.block}>
+          <p className={`${styles.blockKick} ${styles.rise}`}>By the numbers</p>
+          <h3 className={`${styles.blockTitle} ${styles.rise}`}>What the survey said.</h3>
+          <QuantResearch />
+        </div>
+
+        {/* ---- personas ---- */}
+        <div className={styles.block}>
+          <p className={`${styles.blockKick} ${styles.rise}`}>Who we built for</p>
+          <h3 className={`${styles.blockTitle} ${styles.rise}`}>
+            Two travellers we kept in the room.
+          </h3>
+          <p className={`${styles.blockLede} ${styles.rise}`}>
+            Our audience runs 16–50 and loves to travel. Two of them stood in for the rest
+            through every design decision.
+          </p>
+
+          <div className={`${styles.personas} ${styles.rise}`}>
+            {PERSONAS.map((p, i) => (
+              <article key={p.name} className={styles.persona} data-i={i + 1}>
+                <header className={styles.personaHead}>
+                  <span className={styles.personaMono} aria-hidden>
+                    {p.initials}
+                  </span>
+                  <div>
+                    <h4 className={styles.personaName}>{p.name}</h4>
+                    <p className={styles.personaMeta}>{p.meta}</p>
+                  </div>
+                </header>
+
+                <blockquote className={styles.personaQuote}>
+                  <span aria-hidden>“</span>
+                  {p.quote}
+                  <span aria-hidden>”</span>
+                </blockquote>
+
+                <ul className={styles.personaTraits}>
+                  {p.traits.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+
+                <p className={styles.personaNeeds}>
+                  <span>Needs</span> {p.needs}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <p className={`${styles.micro} ${styles.rise}`}>
+          A small, directional sample — enough to point the design, not to prove a market.
+        </p>
+      </section>
+
       {/* ======================================================== RESEARCH */}
       <section className={styles.section} aria-labelledby="research">
         <div className={styles.head}>
@@ -326,7 +454,7 @@ export function Nextrail() {
         <div className={styles.revealInner}>
           <p className={`${styles.revealKick} ${styles.rise}`}>Introducing</p>
           <h2 id="feed2fly-h" className={`${styles.revealTitle} ${styles.rise}`}>
-            Feed2Fly.
+            Feed<span className={styles.revealTwo}>2</span>Fly.
           </h2>
           <p className={`${styles.revealSay} ${styles.rise}`}>
             Your saved travel content, turned into your next trip.

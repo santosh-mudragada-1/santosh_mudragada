@@ -321,6 +321,253 @@
   line-height: 1.55;
 }
 
+// ------------------------------------------------ RESEARCH BLOCK
+// A dedicated research chapter (methods → observations → survey numbers →
+// personas) that sits directly after the problem statement. Sub-blocks share a
+// small violet kicker + heading; each part owns its own layout.
+.block {
+  margin-top: clamp(3.5rem, 8vw, 6rem);
+}
+
+.blockKick {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--nx-violet);
+  margin-bottom: 0.9em;
+
+  &::before {
+    content: '';
+    width: 1.6em;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.55;
+  }
+}
+
+.blockTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: 20ch;
+}
+
+.blockLede {
+  margin-top: 0.9em;
+  max-width: 46ch;
+  color: var(--fg-muted);
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.15rem);
+  line-height: 1.55;
+}
+
+// ---- observations: a hairline table of recurring themes ----
+.obs {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+
+.ob {
+  background: var(--bg);
+  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: background-color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      background: color-mix(in oklab, var(--accent) 5%, var(--bg));
+    }
+  }
+}
+
+.obN {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.obH {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 0.9rem + 0.7vw, 1.35rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.obP {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+@include mq-max('md') {
+  .obs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@include mq-max('sm') {
+  .obs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ---- personas: quote-led cards with a big ghost index ----
+.personas {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.5rem, 4vw, 2.75rem);
+}
+
+.persona {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.75rem, 3.5vw, 2.75rem);
+  overflow: clip;
+
+  &::before {
+    content: attr(data-i);
+    position: absolute;
+    top: clamp(-0.75rem, -1vw, 0rem);
+    right: clamp(0.75rem, 2vw, 1.75rem);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(6rem, 4rem + 8vw, 11rem);
+    line-height: 1;
+    color: color-mix(in oklab, var(--nx-violet) 12%, transparent);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  // second card drops a little for an editorial two-up rhythm
+  &:nth-child(2) {
+    margin-top: clamp(0rem, 4vw, 3rem);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.personaHead {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.personaMono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--nx-violet) 55%, var(--line));
+  color: var(--nx-violet);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.personaName {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.6rem);
+  letter-spacing: -0.02em;
+}
+
+.personaMeta {
+  margin-top: 0.2em;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+.personaQuote {
+  margin: clamp(1.5rem, 3vw, 2rem) 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-style: italic;
+  font-size: clamp(1.35rem, 1rem + 1.8vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+
+  span {
+    color: var(--nx-violet);
+  }
+}
+
+.personaTraits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  li {
+    position: relative;
+    padding-left: 1.1em;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--nx-violet);
+    }
+  }
+}
+
+.personaNeeds {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--fg);
+
+  span {
+    display: inline-block;
+    margin-right: 0.5em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--nx-violet);
+  }
+}
+
+@include mq-max('md') {
+  .personas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .persona:nth-child(2) {
+    margin-top: 0;
+  }
+}
+
 // -------------------------------------------------- OPPORTUNITY moment
 .opp {
   overflow: clip;
@@ -411,6 +658,10 @@
   line-height: 0.88;
   letter-spacing: -0.05em;
   text-transform: uppercase;
+}
+
+.revealTwo {
+  color: var(--accent);
 }
 
 .revealSay {
@@ -647,6 +898,20 @@
 // ===========================================================================
 // Responsive
 // ===========================================================================
+// On wide screens the 1fr text column leaves a big void before the device.
+// Size the text column to its content and centre the pair so the whitespace
+// splits evenly and the device sits closer in.
+@media (min-width: 1440px) {
+  .reveal {
+    grid-template-columns: minmax(0, max-content) minmax(0, 25rem);
+    justify-content: center;
+    column-gap: clamp(3rem, 7vw, 8rem);
+  }
+  .revealDevice img {
+    width: min(23rem, 60vw);
+  }
+}
+
 @media (min-width: 1600px) {
   .root {
     --sect: clamp(9rem, 6rem + 10vh, 15rem);
