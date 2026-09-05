@@ -1,0 +1,287 @@
+@use 'mixins' as *;
+
+// ===========================================================================
+// "What we found" — a single pinned card stage that runs through three
+// scroll-scrubbed scenes (flow / scroll-expand / fan) while three plain text
+// points scroll past normally, one per scene. At `lg` and up the stage sits
+// in its own column to the right of the text, sticky for the full height of
+// `.track`. Below `lg` there's no room for that side-by-side layout, so the
+// two stack instead — the stage is reordered (not reparented; DOM/reading
+// order keeps the text first) to sit visually first and pins at a reduced
+// height, with the point text scrolling beneath it in the same viewport.
+// ===========================================================================
+.reveal {
+  position: relative;
+  // Shared between `.stage`'s stacked-layout height and `.point`'s matching
+  // top offset below `lg`, so the two stay in sync if either is retuned.
+  --found-stage-h: clamp(16rem, 46vh, 24rem);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+  column-gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+
+  @include mq-max('lg') {
+    display: flex;
+    flex-direction: column;
+    // Override the grid rule's `align-items: start` above — a column flex
+    // reads that as "shrink to content width" on the cross axis, which would
+    // stop `.track`/`.stage` from filling the available width.
+    align-items: stretch;
+  }
+}
+
+.track {
+  min-width: 0;
+}
+
+// CSS `sticky` can only engage once `.stage`'s own natural (static) position
+// (~the top of `.track`) has scrolled up to the `top` offset — it can never
+// stick *before* that. Point 1's trigger now starts 50vh before point 1's own
+// top (see the `-=` offset in FoundReveal.tsx), so this lead-in is exactly
+// 50vh: just enough scroll room for stickiness to engage right as that
+// trigger starts, with zero dead space between the heading above and the
+// first frame of the animation. Shrink further and the animation would start
+// playing before the stage is pinned (the panel would visibly jump into
+// place mid-motion); the two figures must stay in lockstep.
+.leadIn {
+  height: 50vh;
+
+  // Below `lg` the stage is reordered to sit visually first (see `.stage`),
+  // so it's already at the very top of the stacked column and engages
+  // sticky almost immediately — no pre-roll needed before point 1's trigger.
+  @include mq-max('lg') {
+    height: 0;
+  }
+}
+
+.point {
+  min-height: 100vh;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+
+  & + & {
+    border-top: 1px solid var(--line);
+  }
+
+  // Below `lg`, `.pointInner` (sticky) takes over vertical placement — plain
+  // top-alignment here keeps flexbox's own centring from fighting with
+  // sticky's static-position calculation (see `.pointInner`).
+  @include mq-max('lg') {
+    justify-content: flex-start;
+  }
+}
+
+// A plain wrapper on desktop (no layout effect — `.point`'s flex centres it
+// exactly as it centred these children directly before). Below `lg` it's
+// what actually holds the text in place: a one-off top offset (what this
+// used to be) only clears the stage at the very start of a point's scroll —
+// as scrolling continues, text centred in a static box still drifts upward
+// through the stage's fixed band like any other scrolling content. `sticky`
+// is a hard constraint instead: it cannot render above `top`, so it holds
+// the caption in the readable band below the stage for as long as this
+// point's own (100vh) box has room to hold it there — the same mechanism
+// `.stage` uses to hold within the taller `.track`.
+.pointInner {
+  @include mq-max('lg') {
+    position: sticky;
+    top: calc(var(--header-h) + var(--found-stage-h));
+    padding-block: 2rem;
+  }
+}
+
+.pointN {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.6em;
+}
+
+.pointStatement {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+.pointBody {
+  margin-top: 0.8em;
+  max-width: 40ch;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+// ---------------------------------------------------------------- the stage
+// Sticky, not GSAP-pinned: it holds at `top` for exactly as long as `.track`
+// has extra scroll room (its full height minus this element's own height),
+// then releases — the same mechanism Feed2FlyScroll's phone column uses.
+.stage {
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100svh - var(--header-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 1400px;
+
+  // The flow scene's cards travel flush to this box's right edge (no
+  // padding, by design) so `overflow: hidden` clips them with a hard,
+  // straight edge instead of a natural fade. This overlay blends that cut
+  // into the page background instead of masking it outright.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent 72%, var(--bg) 100%);
+    z-index: 1;
+  }
+
+  // Stacked below `lg` (see `.grid`): sit first, at a much shorter height —
+  // just enough for the scene to read clearly — so the point text below it
+  // is still visible in the same viewport instead of the stage claiming the
+  // whole screen the way it does side-by-side on desktop.
+  @include mq-max('lg') {
+    order: -1;
+    height: var(--found-stage-h);
+    // Flex items paint in `order` order, not positioned-vs-static order —
+    // without this, `.track`'s scrolling point text (order: 0, later) paints
+    // *over* this sticky, order: -1 stage instead of scrolling in underneath
+    // it, since they're siblings in the same flex container.
+    z-index: 2;
+  }
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  height: min(64vh, 38rem);
+  transform-style: preserve-3d;
+}
+
+.card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(12.5rem, 17.5vw, 18.75rem);
+  aspect-ratio: 3 / 4;
+  margin: 0;
+  transform: translate3d(-50%, -50%, 0);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  border-radius: 1.5rem;
+  border: 1.5px solid var(--accent);
+  background: var(--accent-tint);
+  padding: 0.65rem 0.65rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 26px 54px rgba(20, 17, 13, 0.24);
+  will-change: transform;
+
+  // static resting fan — shows with no JS and under reduced motion. `left`
+  // stays a plain 50% on every card (JS positioning is transform-only, so a
+  // per-card `left` here would silently offset every scene's math on top of
+  // it); the spread lives entirely in `transform`, which GSAP fully replaces
+  // with its own inline transform the moment motion runs.
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      transform: translate3d(calc(-50% + #{($i - 4.5) * 55%}), -50%, 0) rotate(#{($i - 4.5) * 3}deg);
+    }
+  }
+
+  // Smaller floor and a steeper vw coefficient than the desktop formula
+  // above — at `lg`'s own width the desktop clamp is already close to its
+  // floor, but skip straight to `17.5vw` on a narrow phone stage and a card
+  // would be wider than the stage's own travel path, so consecutive cards'
+  // near-full-scale poses overlap ("merging") instead of clearing each
+  // other. This scales down together with the stage's reduced mobile height
+  // (see `.stage`) instead of overflowing it.
+  @include mq-max('lg') {
+    width: clamp(6rem, 32vw, 11rem);
+  }
+}
+
+.cardPhoto {
+  flex: 1;
+  min-height: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.cardLabel {
+  padding: 0.7rem 0.2rem 0.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.cardCity {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
+  letter-spacing: -0.01em;
+  color: #1b1712;
+}
+
+.cardCountry {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(27, 23, 18, 0.6);
+}
+
+// A plain photo used only by the scroll scene — no label/chrome, just the
+// image. `left` stays a plain 50% for the same reason as `.card` above: JS
+// positioning is transform-only. Width is a fixed base; each instance's own
+// aspect-ratio (inline style) sets its height, and GSAP's per-item `scale`
+// is what actually varies its on-screen size for the depth effect.
+.extraImg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9rem;
+  margin: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 20px 44px rgba(20, 17, 13, 0.22);
+  will-change: transform;
+  opacity: 0; // JS-driven only; stays hidden with no JS / reduced motion
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  // Same rationale as `.card`'s override above — shrinks with the stage.
+  @include mq-max('lg') {
+    width: clamp(4.5rem, 20vw, 7rem);
+  }
+}
+
+@include reduced-motion {
+  .card {
+    will-change: auto;
+  }
+}

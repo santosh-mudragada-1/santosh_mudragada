@@ -1,0 +1,243 @@
+@use 'mixins' as *;
+
+/* Deck cards keep a fixed near-black ink on a saturated ground in every theme,
+   like the sticky notes elsewhere in the study. */
+
+.rail {
+  display: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: 1rem;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include mq('md') {
+    display: block;
+  }
+  @include mq('lg') {
+    overflow-x: hidden;
+  }
+}
+
+.row {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  padding: 2.5rem var(--gutter) 1.5rem;
+  --ov: 150px;
+  perspective: 1200px;
+
+  @include mq('lg') {
+    margin-inline: auto;
+    padding-inline: 0;
+  }
+  @include mq('xl') {
+    --ov: 196px;
+  }
+}
+
+.rowItem {
+  flex-shrink: 0;
+}
+
+/* ---- phone: shuffling stack ------------------------------------------------ */
+.stackFlat {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem var(--gutter) 1rem;
+
+  @include mq('md') {
+    display: none;
+  }
+}
+
+.stackWrap {
+  @include mq('md') {
+    display: none;
+  }
+}
+
+.stackArena {
+  position: relative;
+  margin-inline: auto;
+  height: 356px;
+  width: 248px;
+  perspective: 1000px;
+}
+
+.dots {
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+.dot,
+.dotOn {
+  height: 6px;
+  border-radius: 999px;
+  transition: all 0.3s ease;
+}
+.dot {
+  width: 6px;
+  background: color-mix(in oklab, var(--fg) 25%, transparent);
+}
+.dotOn {
+  width: 1.25rem;
+  background: color-mix(in oklab, var(--fg) 70%, transparent);
+}
+
+/* ---- card shells --------------------------------------------------------- */
+.stackCardFlat,
+.stackCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(0 0 0 / 0.1);
+  padding: 1.25rem;
+  color: #111111;
+}
+
+.stackCardFlat {
+  position: relative;
+  height: 310px;
+  box-shadow: var(--cs-shadow-md);
+}
+
+.stackCard {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  transform: translateZ(0);
+  will-change: transform;
+}
+.stackCardFront {
+  box-shadow: var(--cs-shadow-xl);
+}
+.stackCardBack {
+  box-shadow: var(--cs-shadow-md);
+}
+
+.deckCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(0 0 0 / 0.1);
+  padding: 1.25rem;
+  color: #111111;
+  transform: translateZ(0);
+  will-change: transform;
+  height: 310px;
+  width: 248px;
+  border-radius: 0.75rem;
+  outline: none;
+  transition: box-shadow 0.3s ease, opacity 0.3s ease;
+
+  @include mq('md') {
+    padding: 1.5rem;
+    height: 340px;
+    width: 272px;
+  }
+  @include mq('xl') {
+    height: 368px;
+    width: 296px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+.deckCardHovered {
+  box-shadow: var(--cs-shadow-xl);
+}
+.deckCardRest {
+  box-shadow: var(--cs-shadow-md);
+}
+.deckCardRecede {
+  opacity: 0.94;
+}
+
+/* ---- card body --------------------------------------------------------- */
+.cardN {
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.cardStatement {
+  margin-top: 1rem;
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.cardStatementLg {
+  @include mq('md') {
+    font-size: 21px;
+  }
+}
+
+.cardFoot {
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.cardRule {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: rgb(0 0 0 / 0.2);
+}
+
+.cardMeta {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cardIcon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+.cardMetaText {
+  min-width: 0;
+}
+
+.cardAspect {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.cardNote {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--cs-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}

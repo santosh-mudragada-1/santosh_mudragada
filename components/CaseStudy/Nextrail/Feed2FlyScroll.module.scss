@@ -5,41 +5,34 @@
 }
 
 // ===========================================================================
-// Desktop (≥lg) — a sticky stage centred in the viewport. Invisible beats
-// behind it provide the scroll length and drive the active step; the copy and
-// the phone clip cross-fade to match. Nothing is pinned or scroll-hijacked.
+// Desktop (≥lg) — two real columns. The copy is normal, visible, scrolling
+// content — one 100vh beat per step, centred left, nothing fading in or out.
+// Only the phone is sticky, in its own column; it cross-fades to whichever
+// beat's centre is nearest the viewport middle as that beat scrolls past.
 // ===========================================================================
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, max-content) minmax(0, auto);
+  justify-content: center;
+  column-gap: clamp(3rem, 6vw, 7rem);
+  align-items: start;
 }
 
-.track,
-.stage {
-  grid-column: 1;
-  grid-row: 1;
+.track {
   min-width: 0;
 }
 
-// invisible scroll spacers — one per beat. First is short so beat 1 is active
-// on entry and holds; last trails out before the stage releases.
-.track {
-  z-index: 0;
-}
-
 .beat {
-  min-height: 94vh;
-
-  &:first-child {
-    min-height: 64vh;
-  }
-  &:last-child {
-    min-height: 82vh;
-  }
+  min-height: 100vh;
+  max-width: 44ch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .stage {
-  z-index: 1;
   align-self: start;
   position: sticky;
   top: var(--header-h);
@@ -49,37 +42,6 @@
   align-items: center;
   justify-content: center;
   gap: clamp(1rem, 2.6vh, 2rem);
-  padding-block: clamp(0.75rem, 2.4vh, 1.75rem);
-  text-align: center;
-  // same colour as the page — quietly masks the section heading as it scrolls
-  // up behind the stage, with no card edge.
-  background: var(--bg);
-}
-
-// ---- step copy: all four stacked in one cell, cross-faded ----
-.copy {
-  display: grid;
-  width: min(46ch, 90vw);
-}
-
-.copy .copyItem {
-  grid-area: 1 / 1;
-}
-
-.copyItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity 0.55s var(--ease-quart-in-out),
-    transform 0.55s var(--ease-quart-in-out);
-
-  &[data-active] {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 .stepN {
@@ -92,14 +54,14 @@
   margin-bottom: 0.8em;
 
   span {
-    color: var(--nx-violet);
+    color: var(--accent);
   }
 }
 
 .stepTitle {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(1.6rem, 1rem + 2.3vw, 2.6rem);
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 3rem);
   line-height: 1;
   letter-spacing: -0.035em;
   text-transform: uppercase;
@@ -113,10 +75,21 @@
   line-height: 1.5;
 }
 
+// ---- boxed frame around the phone — its own surface against the section's
+// deeper background, echoing the light paper the rest of the page sits on ----
+.phoneFrame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.75rem, 3.5vw, 2.75rem);
+  border-radius: var(--radius-lg);
+  background: #f7f3ed;
+}
+
 // ---- the phone: four media layers, cross-faded ----
 .phone {
   position: relative;
-  width: clamp(9rem, 13vw, 11.5rem);
+  width: clamp(14rem, 18vw, 20rem);
   flex: none;
 }
 
@@ -163,75 +136,91 @@
       transform 0.4s var(--ease-quart-in-out);
 
     &[data-active] {
-      background: var(--nx-violet);
+      background: var(--accent);
       transform: scale(1.35);
     }
   }
 }
 
-// short viewports: pull the phone in, and let the number + title carry the beat
-@media (min-width: 1024px) and (max-height: 740px) {
-  .phone {
-    width: clamp(8rem, 11vw, 10rem);
-  }
-  .stepCopy {
-    display: none;
-  }
-}
-
 // ===========================================================================
-// Below lg — no sticky. Each beat stacks with its copy and clip inline.
+// Below lg — same sticky/cross-fade phone, stacked instead of side-by-side.
+// The phone (order: -1) sticks near the top of the section while the beats
+// scroll past underneath it, cross-fading exactly as it does on desktop.
 // ===========================================================================
-.list {
-  display: flex;
-  flex-direction: column;
-}
-
-.item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: clamp(2rem, 5vw, 3.5rem);
-  align-items: center;
-  padding-block: clamp(2.5rem, 8vw, 4rem);
-
-  & + & {
-    border-top: 1px solid var(--line);
-  }
-
-  .copyItem {
-    align-items: flex-start;
-    text-align: left;
-    opacity: 1;
-    transform: none;
-  }
-
-  .stepTitle {
-    font-size: clamp(1.9rem, 1rem + 4vw, 3rem);
-  }
-}
-
-.inlineMedia {
-  width: min(15rem, 34vw);
-  flex: none;
-
-  .media {
-    width: 100%;
-    height: auto;
-  }
-}
-
-@include mq-max('md') {
-  .item {
+@include mq-max('lg') {
+  .grid {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: clamp(1.75rem, 6vw, 2.5rem);
   }
-  .inlineMedia {
-    width: min(15rem, 62vw);
+
+  .track {
+    order: 1;
+  }
+
+  // a compact pin, not the desktop-sized phone — it needs to leave real
+  // room below it for the beat's own text to be legible as it scrolls by,
+  // not just a sliver between the phone and the viewport edge.
+  //
+  // Sticks from the very top (not `--header-h`) so its opaque background
+  // also covers the strip behind the site's transparent nav — otherwise a
+  // beat's heading peeks through there for a moment as it scrolls past.
+  // `padding-top` pushes the actual phone back down below the nav.
+  .stage {
+    order: -1;
+    position: sticky;
+    top: 0;
+    height: auto;
+    gap: 1rem;
+    padding-top: calc(var(--header-h) + clamp(1.25rem, 5vw, 1.75rem));
+    padding-bottom: clamp(1.25rem, 5vw, 1.75rem);
+    // opaque so the sticky phone fully masks whatever beat is scrolling
+    // past underneath it — same shade as .howSection in Nextrail.module.scss
+    background: #fee2d7;
+    z-index: 1;
+  }
+
+  .phoneFrame {
+    padding: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  // scales further with viewport than the old fixed 10rem cap, which read
+  // as a tiny phone adrift in all the extra width a bigger tablet gives it.
+  .phone {
+    width: clamp(8rem, 34vw, 17rem);
+  }
+
+  // centred, not left-aligned — with the phone pinned dead-centre above it,
+  // a left-aligned block of text (especially once it's free to stretch
+  // edge-to-edge below `md`) reads as lopsided rather than intentional.
+  // Text sits at the *top* of its box, not the middle — centring vertically
+  // would land it right behind the pinned phone (its box is much taller
+  // than the gap left below the stage), invisible the whole time it's
+  // "active". Top-aligned, it's readable in that gap for most of its scroll.
+  .beat {
+    min-height: 58vh;
+    max-width: 32rem;
+    margin-inline: auto;
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
+    padding-block: clamp(2rem, 8vw, 3rem);
+
+    & + & {
+      border-top: 1px solid var(--line);
+    }
+
+    .stepTitle {
+      font-size: clamp(1.9rem, 1rem + 4vw, 3rem);
+    }
+  }
+}
+
+@include mq-max('sm') {
+  .beat {
+    min-height: 50vh;
   }
 }
 
 @include reduced-motion {
-  .copyItem,
   .layer,
   .dots span {
     transition: none;

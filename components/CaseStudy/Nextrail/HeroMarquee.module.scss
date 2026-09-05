@@ -154,20 +154,22 @@
   }
 }
 
-// tablet — two columns, pushed clear of the copy column on the left.
-// Only column width and rig placement change; the sheet's pose is identical.
+// tablet — same three columns as desktop, scaled down and pulled tighter
+// to the corner so the sheet stays clear of the copy column instead of
+// sprawling the full height of a taller, narrower viewport.
 @include mq-max('lg') {
   .rig {
-    top: -2%;
-    left: 80%;
-    width: 40%;
-    height: 92%;
+    top: -20%;
+    left: 96%;
+    width: 60%;
+    height: 100%;
+    gap: clamp(1.1rem, 2.6vw, 1.8rem);
   }
   .col {
-    flex-basis: clamp(84px, 10vw, 116px);
+    flex-basis: clamp(112px, 14.6vw, 176px);
   }
-  .col:nth-child(3) {
-    display: none;
+  .track {
+    gap: clamp(1.1rem, 2.6vw, 1.8rem);
   }
 }
 

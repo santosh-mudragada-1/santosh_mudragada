@@ -1,0 +1,1197 @@
+@use 'mixins' as *;
+
+/* ===========================================================================
+   ClearHost case study — ported from the source project into the portfolio's
+   paper / ink / orange shell. The source is a light+dark Tailwind theme with a
+   parametric `--primary`; here every token resolves to this portfolio's own
+   custom properties, and the sticky-note / deck / notebook palettes stay fixed
+   (they are photographed / branded objects, theme-independent by design).
+   =========================================================================== */
+
+.root {
+  /* --- token map: source (Tailwind) role  ->  portfolio value --- */
+  --cs-card: color-mix(in oklab, var(--accent) 3%, #fff);
+  --cs-card-2: color-mix(in oklab, var(--accent) 6%, #fff);
+  --cs-marker: #ffd84d;
+  --cs-marker-ink: #2a2410;
+  --cs-pop: #3f6fd8;
+  --cs-ok: #3fa06b;
+
+  // Small-caps meta/label text (chapter tabs, eyebrows, tags, facet labels) reads
+  // as the portfolio's own UI face, not a borrowed system-monospace stack.
+  --cs-mono: var(--font-ui);
+  // Handwritten notes — only the portfolio's own accent face (see About), never a
+  // system cursive fallback chain.
+  --cs-hand: var(--font-accent);
+
+  --cs-shadow-2xs: 0 1px 2px 0 hsl(40 20% 40% / 0.06);
+  --cs-shadow-xs: 0 1px 3px 0 hsl(40 20% 40% / 0.09);
+  --cs-shadow-sm: 0 2px 8px -2px hsl(40 20% 40% / 0.12);
+  --cs-shadow-md: 0 8px 24px -6px hsl(40 20% 40% / 0.16);
+  --cs-shadow-lg: 0 16px 40px -12px hsl(40 20% 40% / 0.2);
+  --cs-shadow-xl: 0 28px 60px -16px hsl(40 20% 40% / 0.24);
+
+  --sect: clamp(3.5rem, 2rem + 6vh, 7rem);
+  --edge: var(--gutter);
+  --cs-measure: 46ch;
+
+  background: var(--bg);
+  color: var(--fg);
+  overflow: clip;
+
+  :global(section) {
+    scroll-margin-top: calc(var(--header-h) + 3.5rem);
+  }
+}
+
+/* ---- layout primitives (source Container/Section) ------------------------ */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: var(--edge);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--sect);
+}
+
+.sectionTint {
+  background: color-mix(in oklab, var(--cs-card) 55%, var(--bg));
+}
+
+.fullBleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* ---- shared type helpers ------------------------------------------------- */
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+
+.h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 1rem + 6vw, 6rem);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  max-width: 22ch;
+
+  em,
+  .accent {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+.lede {
+  margin-top: 1.25rem;
+  max-width: var(--cs-measure);
+  font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.4rem);
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.rvFull {
+  height: 100%;
+}
+
+.marker {
+  background-image: linear-gradient(
+    transparent 58%,
+    var(--cs-marker) 58%,
+    var(--cs-marker) 92%,
+    transparent 92%
+  );
+  padding-inline: 0.1em;
+  color: var(--cs-marker-ink);
+}
+
+.poster {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.mono {
+  font-family: var(--cs-mono);
+}
+
+/* ===========================================================================
+   1 · OVERVIEW
+   =========================================================================== */
+.overview {
+  overflow: clip;
+  // .hero below owns its own top clearance (it needs it before paint, for
+  // the video-bleed math) — don't double up on .section's padding-block.
+  padding-top: 0;
+  padding-bottom: 2rem;
+}
+
+// The hero proper — tags, title and description on the left; the video
+// bleeds off the top-right. Same shape as every other case study's hero
+// (compare Nextrail's .hero/.heroInner/HeroMarquee): a full-bleed absolute
+// visual layer sits *behind* a z-lifted text column, `isolation: isolate`
+// on the hero keeps that stacking local instead of leaking into the rest of
+// the page.
+.hero {
+  // How far the fixed site header needs the *text column* clear of the
+  // hero's own top edge. Padding gives that to .heroInner for free, but an
+  // absolutely positioned child (.heroVisualWrap) ignores its parent's
+  // padding entirely — which is what we want here: the site nav has no
+  // background (position:fixed, fully transparent) and a z-index above
+  // this whole section, so the video is meant to run underneath it, not
+  // stop short of it. Only the text needs this clearance; the video reads
+  // its own position straight off .hero's raw top instead (see below).
+  --hero-clear: clamp(8rem, 5rem + 5vh, 9.5rem);
+
+  position: relative;
+  min-height: 88svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: var(--hero-clear);
+  padding-bottom: clamp(2.5rem, 5vh, 4rem);
+  isolation: isolate;
+
+  // the video (this section's whole reason for min-height:88svh) is hidden
+  // below `lg` — don't force the same tall, empty-feeling hero around three
+  // lines of text and no visual.
+  @include mq-max('lg') {
+    min-height: 0;
+  }
+}
+
+.heroInner {
+  position: relative;
+  z-index: 2;
+}
+
+.heroVisualWrap {
+  position: absolute;
+  // Deliberately *not* var(--hero-clear) — the video is meant to run behind
+  // the transparent, high-z-index site header, not stop short of it the way
+  // the text column has to.
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: clip;
+
+  @include mq-max('lg') {
+    display: none;
+  }
+}
+
+// Big and bleeding off the hero's own top/right edges — not a small corner
+// decoration. `.heroVisualWrap` above is the only clip; the video/mask group
+// inside can spill past its own box freely up to that (and in turn up under
+// the site header, which stays legible on top via its own z-index).
+.heroVisual {
+  position: absolute;
+  // anchored at top+right — that corner stays fixed, and width/height
+  // growing from there extends the box toward the bottom-left.
+  top: clamp(-2rem, -3vh, 0rem);
+  right: clamp(-3rem, -3vw, -0.5rem);
+  width: clamp(30rem, 75vw, 78rem);
+  height: clamp(26rem, 75vh, 58rem);
+}
+
+// Short scan-tags above the title — same pill treatment as every other case
+// study's hero (Nextrail's .pills).
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 1em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    background: color-mix(in oklab, var(--bg) 70%, transparent);
+    backdrop-filter: blur(6px);
+  }
+
+  li[data-accent] {
+    border-color: color-mix(in oklab, var(--accent) 50%, transparent);
+    color: var(--accent);
+
+    i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+  }
+}
+
+.ovHeadRow {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.ovLogo {
+  width: clamp(5rem, 4rem + 3vw, 6rem);
+  height: clamp(5rem, 4rem + 3vw, 6rem);
+  border-radius: 1.4rem;
+  box-shadow: var(--cs-shadow-md);
+  outline: 1px solid var(--line);
+}
+
+.ovWordmark {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(2.8rem, 7.5vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: lowercase;
+}
+
+.ovHeadline {
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+  max-width: 20ch;
+  font-family: var(--font-heading);
+  font-size: clamp(2.4rem, 1rem + 6vw, 6rem);
+  font-weight: 700;
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.ovSub {
+  margin-top: 1rem;
+  max-width: 36rem;
+  font-size: clamp(1rem, 0.9rem + 0.8vw, 1.4rem);
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.ovMeta {
+  margin-top: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 3rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+
+  @include mq-max('sm') {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 2rem;
+  }
+}
+
+.ovMetaItem {
+  max-width: 15rem;
+
+  dt {
+    font-family: var(--cs-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+  }
+  dd {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+}
+
+.ovLive {
+  margin-left: auto;
+  align-self: center;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--cs-mono);
+    font-size: 0.75rem;
+    color: var(--accent-strong);
+    transition: transform 0.2s ease;
+  }
+  @include hover {
+    a:hover {
+      transform: translateX(2px);
+    }
+  }
+}
+
+.ownedEyebrow {
+  margin: 2.5rem 0 1rem;
+}
+
+/* "What I owned" marquee — full-bleed solid strip, tilted */
+.marquee {
+  display: flex;
+  overflow: hidden;
+  transform: rotate(-1deg);
+  border-block: 2px solid var(--fg);
+  background: var(--accent);
+  padding-block: 1rem;
+  user-select: none;
+}
+
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  flex-shrink: 0;
+
+  @include motion-ok {
+    animation: cs-marquee 32s linear infinite;
+  }
+}
+
+.marqueeItem {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-right: 1.5rem;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 1rem + 1.6vw, 1.9rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--on-accent);
+
+  i {
+    font-style: normal;
+    color: color-mix(in oklab, var(--on-accent) 60%, transparent);
+  }
+}
+
+@keyframes cs-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ovFragments {
+  margin-top: clamp(4rem, 8vw, 5rem);
+}
+
+/* ===========================================================================
+   2 · OPPORTUNITY
+   =========================================================================== */
+.opportunity {
+  padding-block: var(--sect);
+}
+
+.workspaceWrap {
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.notebookWrap {
+  margin-top: clamp(4rem, 9vw, 6rem);
+}
+
+/* ===========================================================================
+   4 · DEFINING
+   =========================================================================== */
+.defining {
+  padding-top: 3.5rem;
+  padding-bottom: var(--sect);
+}
+
+.problemQuote {
+  margin-top: 2.5rem;
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--cs-card) 60%, var(--bg));
+  padding: clamp(1.5rem, 3vw, 2rem);
+
+  p:first-child {
+    font-family: var(--cs-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  p:last-child {
+    margin-top: 0.75rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.35rem, 3vw, 1.9rem);
+    font-weight: 600;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+}
+
+.deckStage {
+  position: relative;
+  overflow: hidden;
+  margin-top: 3.5rem;
+  border-block: 1px solid var(--line);
+  background: var(--cs-card);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--fg) 11%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  padding-block: clamp(3.5rem, 3rem + 3vw, 5rem);
+}
+
+.deckStageHead {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.deckStageHint {
+  font-family: var(--cs-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.deckMount {
+  position: relative;
+  z-index: 10;
+  margin-top: 1.5rem;
+}
+
+.twoCol {
+  margin-top: 3.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+
+  @include mq('lg') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1.5rem;
+}
+
+.cardVision {
+  justify-content: center;
+  border: 2px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  background: color-mix(in oklab, var(--accent) 5%, transparent);
+  padding: clamp(1.5rem, 3vw, 2rem);
+}
+
+.cardTitle {
+  margin-top: 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.pillRow {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  li {
+    border-radius: 999px;
+    background: var(--bg-elev);
+    padding: 0.25rem 0.75rem;
+    font-family: var(--cs-mono);
+    font-size: 0.68rem;
+    color: var(--fg-muted);
+  }
+}
+
+.cardBody {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.cardNot {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-family: var(--cs-mono);
+  font-size: 0.68rem;
+  color: var(--accent);
+}
+
+.visionText {
+  margin-top: 0.75rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+.blockHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.blockNote {
+  font-family: var(--cs-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fg-muted) 75%, transparent);
+}
+
+.statGrid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+
+  @include mq('lg') {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.statBlock {
+  margin-top: 4rem;
+}
+
+.statItem {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1.25rem;
+}
+
+.statItemDashed {
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--accent) 40%, transparent);
+}
+
+.statValue {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3.5vw, 2.35rem);
+  line-height: 1;
+  color: var(--accent);
+}
+
+.statValueSm {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+}
+
+.statLabel {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.gtmSignal {
+  margin-top: 1.25rem;
+  max-width: 46rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+.gtmGrid {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+
+  @include mq('sm') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include mq('lg') {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.gtmItem {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--cs-card) 55%, var(--bg));
+  padding: 1.25rem;
+
+  span:nth-child(1) {
+    font-family: var(--cs-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    color: var(--accent-strong);
+  }
+  span:nth-child(2) {
+    margin-top: 0.5rem;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  span:nth-child(3) {
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--fg-muted);
+    text-wrap: pretty;
+  }
+}
+
+.subBlock {
+  margin-top: 4rem;
+}
+
+/* ===========================================================================
+   5 · STRATEGY
+   =========================================================================== */
+.decisionGrid {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+
+  @include mq('lg') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ===========================================================================
+   6 · EXECUTION
+   =========================================================================== */
+.moduleList {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.moduleRow {
+  display: flex;
+  gap: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1rem;
+}
+
+.moduleNum {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 0.65rem;
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  font-family: var(--cs-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.modulePhase {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  span {
+    font-family: var(--cs-mono);
+    font-size: 0.68rem;
+    font-weight: 400;
+    color: var(--fg-muted);
+  }
+}
+
+.moduleWhy {
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.execNote {
+  margin-top: 2.5rem;
+  max-width: 40rem;
+  font-family: var(--cs-mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+/* ===========================================================================
+   7 · VALIDATION
+   =========================================================================== */
+.qaLoopHead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qaGrid {
+  margin-top: 1.25rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+
+  @include mq('sm') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include mq('lg') {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.qaItem {
+  position: relative;
+  height: 100%;
+}
+
+.qaCard {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1.25rem;
+
+  span:nth-child(1) {
+    font-family: var(--cs-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  span:nth-child(2) {
+    margin-top: 0.35rem;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  span:nth-child(3) {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--fg-muted);
+    text-wrap: pretty;
+  }
+}
+
+.qaArrow {
+  position: absolute;
+  right: -0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: none;
+  color: color-mix(in oklab, var(--accent) 50%, transparent);
+
+  @include mq('lg') {
+    display: block;
+  }
+}
+
+/* ===========================================================================
+   8 · OUTCOME
+   =========================================================================== */
+.readyGrid {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+
+  @include mq('sm') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.readyRow {
+  display: flex;
+  height: 100%;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1.25rem;
+}
+
+.readyRowDone {
+  border-color: color-mix(in oklab, var(--cs-ok) 40%, transparent);
+  background: color-mix(in oklab, var(--cs-ok) 6%, transparent);
+}
+
+.readyDot {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--cs-marker) 22%, transparent);
+  color: var(--fg);
+}
+
+.readyDotDone {
+  background: var(--cs-ok);
+  color: #fff;
+}
+
+.readyLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.readyNote {
+  margin-top: 0.15rem;
+  font-family: var(--cs-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.betLine {
+  margin-top: 3rem;
+  max-width: 46rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+/* ===========================================================================
+   9 · LEARNINGS
+   =========================================================================== */
+.learnGrid {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+
+  @include mq('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.learnCard {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1.5rem;
+}
+
+.learnBefore {
+  font-size: 0.85rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.learnArrow {
+  margin: 0.75rem 0;
+  color: var(--accent);
+}
+
+.learnAfter {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.close {
+  margin-top: 3.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--bg) 60%, transparent);
+  padding: clamp(2rem, 4vw, 2.5rem);
+
+  @include mq('sm') {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.closeTitle {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.closeSub {
+  margin-top: 0.25rem;
+  color: var(--fg-muted);
+}
+
+.closeActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.85rem 1.4rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.btnPrimary {
+  background: var(--accent);
+  color: var(--on-accent);
+
+  @include hover {
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.btnGhost {
+  border: 1px solid var(--line);
+  color: var(--fg);
+
+  @include hover {
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+}
+
+/* ---- generic grids reused across discovery ------------------------------- */
+.qGrid {
+  margin-top: 1.25rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+
+  @include mq('sm') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include mq('lg') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.qCard {
+  display: flex;
+  height: 100%;
+  gap: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1rem;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-wrap: pretty;
+
+  svg {
+    flex: none;
+    color: var(--accent);
+  }
+}
+
+.qDot {
+  margin-top: 0.4rem;
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--cs-marker);
+}
+
+.demoWrap {
+  margin-top: 3.5rem;
+  display: grid;
+  gap: 1.5rem;
+
+  @include mq('lg') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+  }
+}
+
+.demoTitle {
+  margin-top: 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.demoCopy {
+  margin-top: 0.75rem;
+  max-width: 28rem;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.demoList {
+  display: grid;
+  gap: 0.65rem;
+
+  @include mq('sm') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include mq('lg') {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.demoItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 0.75rem 1rem;
+
+  span:first-child {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
+    color: var(--accent);
+  }
+  span:last-child {
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+}
+
+.insightList {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+
+  @include mq('md') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.insightWide {
+  @include mq('md') {
+    grid-column: span 2;
+  }
+}
+
+.insightCard {
+  display: flex;
+  height: 100%;
+  gap: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1.5rem;
+}
+
+.insightN {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--accent-strong);
+}
+
+.insightH {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.insightB {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.sectionSub {
+  margin-top: 2.5rem;
+}
+
+.sectionSubTitle {
+  margin-top: 0.75rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 1rem + 1.6vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 20ch;
+}
+
+@include reduced-motion {
+  .marqueeTrack {
+    animation: none;
+  }
+}

@@ -7,6 +7,7 @@ import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { HeroMarquee } from './HeroMarquee';
 import { Feed2FlyScroll } from './Feed2FlyScroll';
 import { QuantResearch } from './QuantResearch';
+import { FoundReveal } from './found/FoundReveal';
 import { InsightFlow } from './insights/InsightFlow';
 import { InsightAccumulate } from './insights/InsightAccumulate';
 import { InsightConnect } from './insights/InsightConnect';
@@ -40,10 +41,10 @@ const INSIGHTS = [
 // Recurring themes from the secondary scan + interviews — the raw material the
 // three headline insights are distilled from.
 const OBSERVATIONS: Array<[string, string]> = [
-  ['Scattered planning', 'Maps in one tab, notes in another, bookings in a third — nothing talks to anything.'],
+  ['Scattered planning', 'Maps in one tab, notes in another, bookings in a third: nothing talks to anything.'],
   ['Info overload', 'Endless “top 10” lists, none of them yours. More reading than deciding.'],
   ['Hard to find inspiration', 'The ideas worth acting on sit in feeds and DMs, not on travel sites.'],
-  ['Personalisation & vibe', 'People want a trip that matches their mood — not a generic itinerary.'],
+  ['Personalisation & vibe', 'People want a trip that matches their mood, not a generic itinerary.'],
   ['Budget stress', 'Cost stays a guess until the booking screen. No running total anywhere.'],
   ['One-stop booking', 'Hopping apps to compare stays, flights and activities kills the momentum.'],
   ['Safety is critical', 'Families want verified stays and a read on crowds before they commit.'],
@@ -53,7 +54,8 @@ const OBSERVATIONS: Array<[string, string]> = [
 
 const PERSONAS = [
   {
-    initials: 'RM',
+    photo: '/nextrail_casestudy/people/traveler.png',
+    photoPos: '50% 20%',
     name: 'Riya Mehta',
     meta: '24 · Mumbai · Solo traveller · UX designer',
     quote: 'I save reels all the time. They never turn into an actual trip.',
@@ -64,7 +66,8 @@ const PERSONAS = [
     needs: 'One app, information she can trust, and planning that starts from what already inspired her.',
   },
   {
-    initials: 'RS',
+    photo: '/nextrail_casestudy/people/friends.jpg',
+    photoPos: '44% 26%',
     name: 'Rajiv Sharma',
     meta: '35 · Pune · Family traveller · Runs a business',
     quote: 'A family trip needs more than bookings. We need peace of mind.',
@@ -76,25 +79,15 @@ const PERSONAS = [
   },
 ];
 
-const EXPERIENCE = [
-  {
-    label: 'Discover',
-    title: 'Everything you sent, in one place.',
-    copy: 'The content you shared into Nextrail, gathered and grouped by destination instead of scattered across apps.',
-    media: [`${U}/feed2fly-grid.png`, `${U}/organize-reels.png`],
-  },
-  {
-    label: 'Explore',
-    title: 'Go deeper on the places that caught your eye.',
-    copy: 'Open a destination to see the exact clips behind it, filter by vibe, platform or creator, and keep only what still feels right.',
-    media: [`${U}/organize-reels-2.png`, `${U}/organize-filter.png`],
-  },
-  {
-    label: 'Plan',
-    title: 'A day-by-day trip, built from your feed.',
-    copy: 'Who’s going, when and your budget turn the saved inspiration into an itinerary with places, stays and a map — editable end to end.',
-    media: [`${U}/trip-summary.png`, `${U}/itinerary-map.png`],
-  },
+// Verbatim lines pulled from interview notes — its own subsection of the
+// research, not a rewrite of the personas or the nine patterns above.
+const INTERVIEW_QUOTES = [
+  'I keep saving reels and videos, but I never know how to turn them into an actual trip.',
+  'Every app gives me pieces, but none of them give me everything I need in one place.',
+  'I spend so much time planning, only to realize I’ve gone way over my budget.',
+  'Why can’t I just drop my vibe or mood, and get a trip plan built around that?',
+  'Sometimes I just want quick, local experiences without the usual tourist chaos.',
+  'I use Google Maps, Booking.com, and ChatGPT, but I still end up feeling confused and unprepared.',
 ];
 
 const CONTRIB = [
@@ -120,7 +113,7 @@ const CONTRIB = [
 const LESSONS = [
   {
     h: 'Start with behaviour, not features.',
-    p: 'Feed2Fly came from something people already do — save and share travel content. The work wasn’t teaching a new habit; it was making an existing one pay off.',
+    p: 'Feed2Fly came from something people already do: save and share travel content. The work wasn’t teaching a new habit; it was making an existing one pay off.',
   },
   {
     h: 'Inspiration needs structure.',
@@ -277,7 +270,7 @@ export function Nextrail() {
 
           <p className={styles.heroSay}>
             A group exploration of how AI can take you{' '}
-            <b>from travel inspiration to an actual trip</b> — starting from the content
+            <b>from travel inspiration to an actual trip</b>, starting from the content
             you already save, not a blank search.
           </p>
 
@@ -299,21 +292,70 @@ export function Nextrail() {
         </div>
 
         <p className={`${styles.lede} ${styles.rise}`}>
-          We find places through Instagram, TikTok and YouTube every day — a reel here, a
+          We find places through Instagram, TikTok and YouTube every day: a reel here, a
           saved video there, a link sent to a friend. The saving is effortless. The problem
           is what happens next: when it’s time to plan, all of it is scattered across apps,
           and planning starts from zero.
         </p>
 
         <ul ref={triadRef} className={styles.triad} data-cold={cold || undefined} aria-hidden>
-          <li>Discover</li>
-          <li>Save</li>
-          <li data-lost>Forget</li>
+          {['Discover', 'Save', 'Forget'].map((s, i) => (
+            <li key={s} data-lost={i === 2 || undefined}>
+              <span>{String(i + 1).padStart(2, '0')}</span>
+              {s}
+            </li>
+          ))}
         </ul>
+      </section>
 
-        <p className={`${styles.turn} ${styles.rise}`}>
-          What if saved inspiration could <em>become the trip?</em>
+      {/* ======================================================== RESEARCH */}
+      <section className={styles.section} aria-labelledby="research">
+        <div className={styles.head}>
+          <p className={`${styles.kick} ${styles.rise}`}>What we found</p>
+          <h2 id="research" className={`${styles.h2} ${styles.rise}`}>
+            Three things kept coming up.
+          </h2>
+        </div>
+
+        <FoundReveal points={INSIGHTS} />
+      </section>
+
+      {/* ===================================================== OPPORTUNITY */}
+      <section className={`${styles.section} ${styles.opp}`} aria-labelledby="opportunity">
+        <p className={`${styles.oppLead} ${styles.rise}`}>We stopped asking</p>
+        <p id="opportunity" className={styles.oppQ} data-old>
+          “Where do you want to go?”
         </p>
+        <p className={`${styles.oppLead} ${styles.rise}`}>and started asking</p>
+        <p className={styles.oppQ} data-new>
+          “What already inspired you?”
+        </p>
+      </section>
+
+      {/* ================================================ INTRODUCING FEED2FLY */}
+      <section className={styles.reveal} id="feed2fly" aria-labelledby="feed2fly-h">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={styles.revealMap} src="/nextrail_casestudy/worldmap.png" alt="" />
+
+        <div className={styles.revealInner}>
+          <p className={`${styles.revealKick} ${styles.rise}`}>Introducing</p>
+          <h2 id="feed2fly-h" className={`${styles.revealTitle} ${styles.rise}`}>
+            Feed<span className={styles.revealTwo}>2</span>Fly.
+          </h2>
+          <p className={`${styles.revealSay} ${styles.rise}`}>
+            Your saved travel content, turned into your next trip.
+          </p>
+          <p className={`${styles.revealBody} ${styles.rise}`}>
+            Feed2Fly lets you share the travel content you find on social platforms straight
+            into Nextrail. From there, Nextrail organises that inspiration by destination and
+            turns it into something you can act on.
+          </p>
+        </div>
+
+        <figure className={styles.revealDevice}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`${U}/trip-summary.png`} alt="A Nextrail trip summary built from Feed2Fly" />
+        </figure>
       </section>
 
       {/* ==================================================== RESEARCH BLOCK */}
@@ -321,14 +363,14 @@ export function Nextrail() {
         <div className={styles.head}>
           <p className={`${styles.kick} ${styles.rise}`}>Research</p>
           <h2 id="research-lead" className={`${styles.h2} ${styles.rise}`}>
-            We looked before we built.
+            The work behind it.
           </h2>
         </div>
 
         <p className={`${styles.lede} ${styles.rise}`}>
-          Before sketching a single screen, we scanned 40+ travel platforms, followed how
+          Before any of this took shape, we scanned 40+ travel platforms, followed how
           travel spreads on social, pulled threads from travel communities on Reddit, and
-          sat down with real travellers — solo adventurers, weekend groups and families.
+          sat down with real travellers: solo adventurers, weekend groups and families.
           The trips were different. The frustration was identical.
         </p>
 
@@ -370,9 +412,16 @@ export function Nextrail() {
             {PERSONAS.map((p, i) => (
               <article key={p.name} className={styles.persona} data-i={i + 1}>
                 <header className={styles.personaHead}>
-                  <span className={styles.personaMono} aria-hidden>
-                    {p.initials}
-                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    className={styles.personaPhoto}
+                    src={p.photo}
+                    alt=""
+                    style={{ objectPosition: p.photoPos }}
+                    loading="lazy"
+                    decoding="async"
+                    draggable={false}
+                  />
                   <div>
                     <h4 className={styles.personaName}>{p.name}</h4>
                     <p className={styles.personaMeta}>{p.meta}</p>
@@ -399,156 +448,36 @@ export function Nextrail() {
           </div>
         </div>
 
-        <p className={`${styles.micro} ${styles.rise}`}>
-          A small, directional sample — enough to point the design, not to prove a market.
-        </p>
-      </section>
+        {/* ---- interview insights ---- */}
+        <div className={styles.block}>
+          <p className={`${styles.blockKick} ${styles.rise}`}>Interview insights</p>
+          <h3 className={`${styles.blockTitle} ${styles.rise}`}>In their own words.</h3>
 
-      {/* ======================================================== RESEARCH */}
-      <section className={styles.section} aria-labelledby="research">
-        <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>What we found</p>
-          <h2 id="research" className={`${styles.h2} ${styles.rise}`}>
-            Three things kept coming up.
-          </h2>
+          <div className={`${styles.quoteWall} ${styles.rise}`}>
+            <ul className={styles.quoteGrid}>
+              {INTERVIEW_QUOTES.map((q, i) => (
+                <li key={q} className={styles.quoteCard} data-i={i}>
+                  <span className={styles.quoteMark} aria-hidden>
+                    “
+                  </span>
+                  <p>{q}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-
-        <div className={styles.insights}>
-          {INSIGHTS.map((it) => (
-            <div key={it.n} className={`${styles.insight} ${styles.rise}`}>
-              <span className={styles.insightN}>{it.n}</span>
-              <div className={styles.insightText}>
-                <p className={styles.insightStatement}>{it.statement}</p>
-                <p className={styles.insightBody}>{it.body}</p>
-              </div>
-              <div className={styles.insightAnim} aria-hidden>
-                <it.Anim />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <p className={`${styles.micro} ${styles.rise}`}>
-          From the team’s interviews and our own saved folders. A small sample —
-          directional, not definitive.
-        </p>
-      </section>
-
-      {/* ===================================================== OPPORTUNITY */}
-      <section className={`${styles.section} ${styles.opp}`} aria-labelledby="opportunity">
-        <p className={`${styles.oppLead} ${styles.rise}`}>We stopped asking</p>
-        <p id="opportunity" className={styles.oppQ} data-old>
-          “Where do you want to go?”
-        </p>
-        <p className={`${styles.oppLead} ${styles.rise}`}>and started asking</p>
-        <p className={styles.oppQ} data-new>
-          “What already inspired you?”
-        </p>
-      </section>
-
-      {/* ================================================ INTRODUCING FEED2FLY */}
-      <section className={styles.reveal} id="feed2fly" aria-labelledby="feed2fly-h">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={styles.revealMap} src="/nextrail_casestudy/worldmap.png" alt="" />
-
-        <div className={styles.revealInner}>
-          <p className={`${styles.revealKick} ${styles.rise}`}>Introducing</p>
-          <h2 id="feed2fly-h" className={`${styles.revealTitle} ${styles.rise}`}>
-            Feed<span className={styles.revealTwo}>2</span>Fly.
-          </h2>
-          <p className={`${styles.revealSay} ${styles.rise}`}>
-            Your saved travel content, turned into your next trip.
-          </p>
-          <p className={`${styles.revealBody} ${styles.rise}`}>
-            Feed2Fly lets you share the travel content you find on social platforms straight
-            into Nextrail. From there, Nextrail organises that inspiration by destination and
-            turns it into something you can act on.
-          </p>
-        </div>
-
-        <figure className={styles.revealDevice}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${U}/trip-summary.png`} alt="A Nextrail trip summary built from Feed2Fly" />
-        </figure>
       </section>
 
       {/* ==================================================== HOW IT WORKS */}
-      <section className={styles.section} id="how" aria-labelledby="how-h">
+      <section className={`${styles.section} ${styles.howSection}`} id="how" aria-labelledby="how-h">
         <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`} data-violet>
-            How it works
-          </p>
+          <p className={`${styles.kick} ${styles.rise}`}>How it works</p>
           <h2 id="how-h" className={`${styles.h2} ${styles.rise}`}>
             Four beats, one path.
           </h2>
         </div>
 
         <Feed2FlyScroll />
-      </section>
-
-      {/* =================================================== THE EXPERIENCE */}
-      <section className={styles.section} aria-labelledby="experience">
-        <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`} data-violet>
-            The experience
-          </p>
-          <h2 id="experience" className={`${styles.h2} ${styles.rise}`}>
-            What it feels like to use.
-          </h2>
-        </div>
-
-        <div className={styles.moments}>
-          {EXPERIENCE.map((m) => (
-            <div key={m.label} className={`${styles.moment} ${styles.rise}`}>
-              <div>
-                <p className={styles.momentLabel}>{m.label}</p>
-                <h3 className={styles.momentTitle}>{m.title}</h3>
-                <p className={styles.momentCopy}>{m.copy}</p>
-              </div>
-              <div className={styles.momentMedia}>
-                {m.media.map((src) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={src} src={src} alt="" loading="lazy" decoding="async" draggable={false} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <p className={`${styles.micro} ${styles.rise}`}>
-          Only the screens that carry the Feed2Fly story. Booking and other flows stayed
-          exploratory and are left out here.
-        </p>
-      </section>
-
-      {/* ====================================================== PROCESS */}
-      <section className={styles.section} aria-labelledby="process">
-        <div className={styles.head}>
-          <p className={`${styles.kick} ${styles.rise}`}>Process</p>
-          <h2 id="process" className={`${styles.h2} ${styles.rise}`}>
-            From idea to interface.
-          </h2>
-        </div>
-
-        <div className={`${styles.ladder} ${styles.rise}`}>
-          {['Idea', 'User flow', 'Wireframes', 'Interface'].map((n, i, a) => (
-            <span key={n} className={styles.ladderNode} data-strong={i === a.length - 1 || undefined}>
-              <span>{String(i + 1).padStart(2, '0')}</span>
-              {n}
-              {i < a.length - 1 && (
-                <span className={styles.ladderArrow} aria-hidden>
-                  →
-                </span>
-              )}
-            </span>
-          ))}
-        </div>
-
-        <p className={`${styles.lede} ${styles.rise}`}>
-          As a group project, the early artefacts stayed rough and shared. Feed2Fly is the
-          thread we carried all the way to a working prototype — every screen in this study
-          is from that build.
-        </p>
       </section>
 
       {/* ================================================== CONTRIBUTION */}
@@ -562,7 +491,7 @@ export function Nextrail() {
 
         <p className={`${styles.lede} ${styles.rise}`}>
           I worked in a seven-person team on the product thinking, user experience and
-          interface direction for Nextrail — with Feed2Fly as the piece I stayed closest to.
+          interface direction for Nextrail, with Feed2Fly as the piece I stayed closest to.
         </p>
 
         <div className={styles.contribs}>
@@ -585,14 +514,14 @@ export function Nextrail() {
           What I learned.
         </h2>
 
-        <div className={styles.lessons}>
+        <dl className={`${styles.carry} ${styles.rise}`}>
           {LESSONS.map((l) => (
-            <div key={l.h} className={`${styles.lesson} ${styles.rise}`}>
-              <h3>{l.h}</h3>
-              <p>{l.p}</p>
+            <div key={l.h}>
+              <dt>{l.h}</dt>
+              <dd>{l.p}</dd>
             </div>
           ))}
-        </div>
+        </dl>
 
         <Link href="/work" className={`${styles.back} ${styles.rise}`} data-cursor="link">
           <span aria-hidden>←</span> Back to selected work

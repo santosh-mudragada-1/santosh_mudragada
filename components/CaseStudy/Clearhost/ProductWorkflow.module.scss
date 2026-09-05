@@ -1,0 +1,943 @@
+@use 'mixins' as *;
+
+/* ===========================================================================
+   "How I design products" — the pinned horizontal artifact track, plus the
+   twelve printed-artifact card styles (shared by WorkflowCards.tsx).
+   =========================================================================== */
+
+.section {
+  position: relative;
+  padding-block: var(--sect);
+}
+
+.workflowSection {
+  padding-bottom: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: var(--edge);
+}
+
+.intro {
+  max-width: 46rem;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+
+.h2 {
+  margin-top: 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2rem, 1rem + 5vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.sub {
+  margin-top: 1.25rem;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+/* ---- pinned viewport / track ------------------------------------------- */
+.viewport {
+  position: relative;
+  margin-top: 1rem;
+  display: flex;
+  height: 100svh;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-top: 7.5rem;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include mq('xl') {
+    align-items: center;
+    padding-top: 0;
+  }
+}
+
+.persistLabel {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--header-h) + 3rem);
+  z-index: 30;
+  display: none;
+
+  @include mq('xl') {
+    display: block;
+  }
+}
+
+.track {
+  position: relative;
+  display: flex;
+  width: max-content;
+  flex-direction: row;
+  align-items: flex-start;
+  height: 62svh;
+  gap: 6rem;
+  padding-left: 7vw;
+  padding-right: 24vw;
+  --zig: 0.6;
+
+  @include mq('xl') {
+    height: 545px;
+    gap: 5rem;
+    padding-left: 9vw;
+    padding-right: 16vw;
+    --zig: 1;
+  }
+}
+
+.connSvg {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+}
+
+.conn {
+  opacity: 0;
+  transition: stroke 0.3s ease, stroke-width 0.3s ease;
+}
+
+.connLit {
+  stroke: var(--accent);
+}
+
+.connDim {
+  stroke: color-mix(in oklab, var(--fg) 30%, transparent);
+}
+
+.connPulse {
+  stroke: var(--accent);
+  opacity: 0;
+}
+
+.connLabels {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+}
+
+.connLabel {
+  position: absolute;
+  display: block;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 0.25rem 0.5rem;
+  text-align: center;
+  font-family: var(--cs-mono);
+  font-size: 10px;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  opacity: 0;
+  box-shadow: var(--cs-shadow-2xs);
+}
+
+.slot {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: calc(var(--top) * var(--zig));
+  width: min(76vw, 290px);
+
+  @include mq('xl') {
+    width: var(--cw);
+  }
+}
+
+.card {
+  position: relative;
+  cursor: default;
+  border-radius: 0.75rem;
+  rotate: var(--rot);
+  transition: translate 0.3s ease-out, rotate 0.3s ease-out;
+
+  @include hover {
+    &:hover {
+      rotate: calc(var(--rot) * 0.25);
+      translate: 0 -0.375rem;
+    }
+  }
+}
+
+.cardActive {
+  z-index: 20;
+}
+
+.scan {
+  margin-bottom: 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scanNum {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--fg);
+  font-family: var(--cs-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bg);
+}
+
+.scanTitle {
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+
+.cardMedia {
+  position: relative;
+}
+
+.tapePos {
+  z-index: 10;
+  display: none;
+
+  @include mq('xl') {
+    display: block;
+  }
+}
+
+.tapeA {
+  top: -0.625rem;
+  left: -0.75rem;
+  transform: rotate(-12deg);
+}
+.tapeB {
+  top: -0.625rem;
+  right: 1.25rem;
+  transform: rotate(6deg);
+}
+.tapeC {
+  top: -0.625rem;
+  left: 1.75rem;
+  transform: rotate(-6deg);
+}
+
+.meta {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  translate: 0 0.25rem;
+  transition: translate 0.3s ease;
+
+  .card:hover & {
+    translate: 0 0;
+  }
+}
+
+.metaOn {
+  translate: 0 0;
+}
+
+.metaChip {
+  border-radius: 4px;
+  background: var(--bg-elev);
+  padding: 0.25rem 0.5rem;
+  font-family: var(--cs-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.marginNote {
+  pointer-events: none;
+  position: absolute;
+  z-index: 20;
+  display: none;
+  white-space: nowrap;
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+  opacity: 0;
+
+  @include mq('xl') {
+    display: block;
+  }
+}
+
+.marginNoteBoxed {
+  border-radius: 6px;
+  border: 1px dashed var(--line);
+  padding: 0.25rem 0.5rem;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.progress {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  height: 3px;
+  width: 140px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+
+  @include mq('xl') {
+    bottom: 3rem;
+    width: 200px;
+  }
+}
+
+.progressBar {
+  display: block;
+  height: 100%;
+  transform-origin: left;
+  transform: scaleX(0);
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* ===========================================================================
+   Printed-artifact primitives + the twelve artifacts
+   =========================================================================== */
+
+$warn: #e0a13a;
+$bad: #d64b3a;
+
+.sheet {
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1rem;
+  box-shadow: var(--cs-shadow-xs);
+  transition: box-shadow 0.3s ease;
+
+  .card:hover & {
+    box-shadow: var(--cs-shadow-lg);
+  }
+}
+
+.cap {
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.lead {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+.tag {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 6px;
+  padding: 3px 0.5rem;
+  font-family: var(--cs-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.tagMuted {
+  background: var(--bg-elev);
+}
+.tagAccent {
+  background: color-mix(in oklab, var(--accent) 15%, transparent);
+}
+.tagOk {
+  background: color-mix(in oklab, var(--cs-ok) 18%, transparent);
+}
+.tagWarn {
+  background: color-mix(in oklab, #{$warn} 45%, transparent);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+.dotOk {
+  background: var(--cs-ok);
+}
+.dotWarn {
+  background: #{$warn};
+}
+.dotBad {
+  background: #{$bad};
+}
+.dotAccent {
+  background: var(--accent);
+}
+
+.tape {
+  position: absolute;
+  height: 1.25rem;
+  width: 3.5rem;
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--cs-marker) 55%, transparent);
+  box-shadow: var(--cs-shadow-2xs);
+}
+
+.mutedIcon {
+  flex-shrink: 0;
+  color: var(--fg-muted);
+}
+.accentIcon {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mlAuto {
+  margin-left: auto;
+}
+
+/* 01 sticky */
+.aSticky {
+  position: relative;
+  background: var(--cs-marker);
+  padding: 1.25rem;
+  color: var(--cs-marker-ink);
+  box-shadow: var(--cs-shadow-xs);
+  transition: box-shadow 0.3s ease;
+
+  .card:hover & {
+    box-shadow: var(--cs-shadow-lg);
+  }
+
+  p {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+}
+
+.aStickyFold {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: color-mix(in oklab, var(--cs-marker-ink) 12%, transparent);
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+}
+
+/* 02 notion */
+.aNotionTop {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.aNotionUnit {
+  font-size: 13px;
+  color: var(--fg);
+}
+.aNotionQuote {
+  margin-top: 0.75rem;
+  border-left: 3px solid color-mix(in oklab, var(--accent) 60%, transparent);
+  padding-left: 0.75rem;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--fg);
+}
+
+/* 03 cluster */
+.aClusterGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.aClusterNote {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  border-radius: 3px;
+  background: var(--bg-elev);
+  padding: 0.5rem 0.625rem;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--fg);
+  box-shadow: var(--cs-shadow-2xs);
+}
+.tilt0 {
+  transform: rotate(-1deg);
+}
+.tilt1 {
+  transform: rotate(1deg);
+}
+.tilt2 {
+  transform: rotate(1.5deg);
+}
+.tilt3 {
+  transform: rotate(-1.5deg);
+}
+.aClusterCore {
+  margin-top: 0.75rem;
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--accent) 15%, transparent);
+  padding: 0.75rem;
+
+  p {
+    margin-top: 0.25rem;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--fg);
+  }
+}
+
+/* 04 priority */
+.aPriorityList {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+}
+.aPriorityLabel {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--fg);
+}
+.aPriorityBars {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 3px;
+}
+.barOn,
+.barOff {
+  height: 0.875rem;
+  width: 4px;
+  border-radius: 999px;
+}
+.barOn {
+  background: var(--accent);
+}
+.barOff {
+  background: var(--bg-elev);
+}
+.aPriorityEffort {
+  width: 1rem;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: var(--cs-mono);
+  font-size: 10.5px;
+  color: var(--fg-muted);
+}
+.aPriorityChip {
+  width: 52px;
+  justify-content: center;
+}
+
+/* 05 linear */
+.aLinearTop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.aLinearRef {
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--accent) 15%, transparent);
+  padding: 3px 0.5rem;
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--fg);
+}
+.aLinearSummary {
+  margin-top: 0.75rem;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--fg);
+}
+.aLinearMeta {
+  margin-top: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+.aLinearOwner {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--accent) 20%, transparent);
+  font-family: var(--cs-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.aLinearVersion {
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  color: var(--fg);
+}
+.aLinearComments {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+/* 06 flow */
+.aFlowRow {
+  margin-top: 0.625rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem 0.5rem;
+}
+.aFlowNode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.aFlowChip,
+.aFlowChipLast {
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  padding: 0.375rem 0.5rem;
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--fg);
+}
+.aFlowChip {
+  background: var(--bg);
+}
+.aFlowChipLast {
+  border-color: color-mix(in oklab, var(--accent) 60%, transparent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  font-weight: 700;
+}
+.aFlowNote {
+  margin-top: 0.75rem;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+/* 07 sprint */
+.aSprintLead {
+  margin-top: 0.625rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+
+  span {
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+}
+.aSprintBar {
+  margin-top: 0.625rem;
+  height: 0.5rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg-elev);
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+}
+.aSprintBlocked {
+  margin-top: 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 12px;
+  color: var(--fg);
+}
+
+/* 08 build */
+.aBuildBranch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--cs-mono);
+    font-size: 11px;
+    color: var(--fg);
+  }
+}
+.aBuildList {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+.aBuildBox,
+.aBuildBoxDone {
+  margin-top: 1px;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+.aBuildBoxDone {
+  border-color: var(--cs-ok);
+  background: color-mix(in oklab, var(--cs-ok) 25%, transparent);
+  color: var(--fg);
+}
+.aBuildLabel,
+.aBuildLabelDone {
+  font-size: 12.5px;
+  line-height: 1.15;
+}
+.aBuildLabel {
+  font-weight: 500;
+  color: var(--fg);
+}
+.aBuildLabelDone {
+  color: var(--fg-muted);
+  text-decoration: line-through;
+}
+
+/* 09 qa */
+.aQaLead {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+
+  span {
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+}
+.aQaList {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 12.5px;
+    color: var(--fg);
+  }
+}
+.aQaValue {
+  margin-left: auto;
+  font-family: var(--cs-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+/* 10 launch */
+.aLaunch {
+  position: relative;
+}
+.aLaunchTop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.aLaunchBadge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--cs-ok) 18%, transparent);
+  padding: 3px 0.5rem;
+  font-family: var(--cs-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.aLaunchRelease {
+  margin-top: 0.625rem;
+  font-family: var(--cs-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.aLaunchNote {
+  margin-top: 0.375rem;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--fg-muted);
+}
+.aLaunchCircle {
+  pointer-events: none;
+  position: absolute;
+  right: -0.25rem;
+  top: 0.5rem;
+  height: 2.25rem;
+  width: 86px;
+  color: color-mix(in oklab, var(--accent) 70%, transparent);
+}
+
+/* 11 learn */
+.aLearnBars {
+  margin-top: 0.75rem;
+  display: flex;
+  height: 3rem;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+.aLearnBar,
+.aLearnBarLast {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+}
+.aLearnBar {
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
+}
+.aLearnBarLast {
+  background: var(--accent);
+}
+.aLearnStats {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+}
+.aLearnStatValue {
+  font-family: var(--cs-mono);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+/* 12 iterate */
+.aIterate {
+  background: var(--bg);
+}
+.aIterateList {
+  margin-top: 0.5rem;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    border-bottom: 1px dashed var(--line);
+    padding-block: 0.5rem;
+    font-size: 12.5px;
+    line-height: 1.35;
+    color: var(--fg);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+.aIterateDot {
+  margin-top: 7px;
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--accent);
+}

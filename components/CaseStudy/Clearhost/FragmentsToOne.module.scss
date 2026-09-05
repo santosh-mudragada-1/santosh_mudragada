@@ -1,0 +1,268 @@
+@use 'mixins' as *;
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+
+.claim {
+  max-width: 46rem;
+}
+
+.title {
+  margin-top: 1rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4.6vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.marker {
+  background-image: linear-gradient(
+    transparent 58%,
+    var(--cs-marker) 58%,
+    var(--cs-marker) 92%,
+    transparent 92%
+  );
+  padding-inline: 0.1em;
+  color: var(--cs-marker-ink);
+}
+
+.sub {
+  margin-top: 1rem;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+/* ---- five problems as five equals ------------------------------------- */
+.grid {
+  margin-top: 2.5rem;
+}
+
+.problems {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: 380px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @include mq('sm') {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  @include mq('lg') {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.problemCell {
+  height: 100%;
+}
+
+.leakCell {
+  @media (min-width: 380px) {
+    grid-column: span 2;
+  }
+  @include mq('sm') {
+    grid-column: span 1;
+  }
+}
+
+.problemCard {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--cs-card);
+  padding: 1rem;
+
+  @include mq('sm') {
+    padding: 1.25rem;
+  }
+}
+
+.leakCard {
+  border-color: color-mix(in oklab, var(--accent) 40%, transparent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+}
+
+.problemN {
+  font-family: var(--cs-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: var(--accent-strong);
+}
+
+.problemTitle {
+  margin-top: 0.5rem;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.problemNote {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--fg-muted);
+}
+
+.leakValue {
+  margin-top: 0.5rem;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.leakLabel {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: color-mix(in oklab, var(--fg) 80%, transparent);
+}
+
+/* ---- converge ------------------------------------------------------------ */
+.convergeWrap {
+  margin-top: 0.5rem;
+}
+
+.converge {
+  margin-inline: auto;
+  height: 6rem;
+  width: 100%;
+  max-width: 28rem;
+  color: var(--accent);
+
+  @include mq('sm') {
+    height: 7rem;
+  }
+}
+
+.convergeDot {
+  fill: var(--accent);
+}
+
+/* ---- the solution card ------------------------------------------------- */
+.solution {
+  margin-inline: auto;
+  max-width: 40rem;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--fg);
+  background: var(--cs-card);
+  box-shadow: var(--cs-shadow-xl);
+}
+
+.solutionBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--accent);
+  padding: 1rem 1.25rem;
+  color: var(--on-accent);
+}
+
+.solutionLogo {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.6rem;
+  outline: 1px solid color-mix(in oklab, var(--on-accent) 30%, transparent);
+}
+
+.solutionWordmark {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1;
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
+}
+
+.solutionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.9rem 1.25rem;
+}
+
+.solutionLine {
+  font-family: var(--cs-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.solutionPills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+
+  li {
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: color-mix(in oklab, var(--bg-elev) 40%, transparent);
+    padding: 0.25rem 0.6rem;
+    font-family: var(--cs-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+}
+
+.solutionMedia {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  background: color-mix(in oklab, var(--bg-elev) 30%, transparent);
+}
+
+.solutionMediaInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.5rem;
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+.solutionMediaTitle {
+  font-family: var(--cs-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.solutionMediaNote {
+  max-width: 28ch;
+  font-size: 0.75rem;
+}
+
+.solutionMediaTag {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  font-family: var(--cs-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}

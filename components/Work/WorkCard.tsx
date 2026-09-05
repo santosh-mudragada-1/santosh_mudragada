@@ -6,8 +6,9 @@ import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { useIsTouch } from '@/lib/hooks/useIsTouch';
 import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
-import { WorkCardGL } from './WorkCardGL';
+import { WorkCardGL, type WorkCardGLHandle } from './WorkCardGL';
 import { addCardSkew } from './cardSkew';
+import type { SceneConfig, WorkGraphic } from './graphics';
 import styles from './WorkCard.module.scss';
 
 type WorkCardProps = {
@@ -20,6 +21,12 @@ type WorkCardProps = {
   href: string;
   /** Parallax depth, small. */
   depth?: number;
+  /** Bespoke per-project card art — the DOM/SVG fallback used wherever GL
+   *  can't run (touch, reduced motion, WebGL failure). */
+  graphic?: WorkGraphic;
+  /** The same art as a canvas-2D scene, baked onto the WebGL plane so the
+   *  scroll bow still applies; hover redraws it in place of animating DOM. */
+  scene?: SceneConfig;
 };
 
 /**
@@ -45,9 +52,13 @@ export function WorkCard({
   ratio,
   href,
   depth = 0.5,
+  graphic: Graphic,
+  scene: Scene,
 }: WorkCardProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
   const outerRef = useRef<HTMLDivElement>(null);
+  const glHandleRef = useRef<WorkCardGLHandle>(null);
+  const hoverTweenRef = useRef<gsap.core.Tween | null>(null);
   const isTouch = useIsTouch();
   const isWebKit = useIsWebKit();
   const reduced = usePrefersReducedMotion();
@@ -57,10 +68,36 @@ export function WorkCard({
   useEffect(() => setMounted(true), []);
   const onGlFail = useCallback(() => setGlFailed(true), []);
 
-  // WebGL bow: desktop only (never on touch — too heavy for 3 live contexts)
-  const useGL = mounted && !isTouch && !reduced && !glFailed;
+  // WebGL bow: desktop only (never on touch — too heavy for 3 live contexts).
+  // A bespoke graphic without a matching GL scene disables it (no photo to
+  // bake); one with a scene keeps the bow, baking that instead of a photo.
+  const useGL = mounted && !isTouch && !reduced && !glFailed && (!Graphic || !!Scene);
   // scroll-velocity skew: the touch animation, and the desktop WebKit fallback
   const useSkew = mounted && !reduced && !useGL && (isTouch || isWebKit);
+
+  // hover -> GL scene progress: a plain 0..1 driver, eased inside the scene's
+  // own draw function (position-parameter style), not here.
+  useGSAP(
+    () => {
+      if (!Scene || !useGL) return;
+      const proxy = { p: 0 };
+      const tween = gsap.to(proxy, {
+        p: 1,
+        duration: 1.1,
+        ease: 'none',
+        paused: true,
+        onUpdate: () => glHandleRef.current?.setProgress(proxy.p),
+      });
+      hoverTweenRef.current = tween;
+      return () => {
+        tween.kill();
+        hoverTweenRef.current = null;
+      };
+    },
+    { dependencies: [Scene, useGL] },
+  );
+  const onHoverStart = () => hoverTweenRef.current?.play();
+  const onHoverEnd = () => hoverTweenRef.current?.reverse();
 
   useGSAP(
     () => {
@@ -122,23 +159,32 @@ export function WorkCard({
       className={styles.card}
       data-cursor="view"
       aria-label={`${title} — ${discipline}, ${year}`}
+      onMouseEnter={onHoverStart}
+      onMouseLeave={onHoverEnd}
     >
       <div ref={parallaxRef} className={styles.parallax}>
         <div ref={outerRef} className={styles.outer} style={{ aspectRatio: ratio }}>
           <div className={styles.inner}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt={`${title} — project visual (placeholder)`}
-              className={styles.img}
-              // same CORS mode as WorkCardGL's loader so the two requests share
-              // one cache entry — otherwise the GL canvas gets tainted in prod
-              // (works on localhost with "disable cache" on) and falls back flat
-              crossOrigin="anonymous"
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-            />
+            {Graphic ? (
+              // The GL scene (below) already bakes + bows this art — mounting
+              // the DOM version too would just run its hover timeline, unseen,
+              // behind the opaque canvas.
+              !(Scene && useGL) && <Graphic />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={src}
+                alt={`${title} — project visual (placeholder)`}
+                className={styles.img}
+                // same CORS mode as WorkCardGL's loader so the two requests share
+                // one cache entry — otherwise the GL canvas gets tainted in prod
+                // (works on localhost with "disable cache" on) and falls back flat
+                crossOrigin="anonymous"
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+              />
+            )}
             <div className={styles.scrim} aria-hidden />
             <div className={styles.overlay}>
               <span className={styles.index}>{index}</span>
@@ -153,11 +199,13 @@ export function WorkCard({
 
           {useGL && (
             <WorkCardGL
+              ref={glHandleRef}
               index={index}
               title={title}
               discipline={discipline}
               year={year}
-              src={src}
+              src={Scene ? undefined : src}
+              scene={Scene}
               onFail={onGlFail}
               webkit={isWebKit}
             />

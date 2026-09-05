@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import type { Mesh as OglMesh, Renderer as OglRenderer, Texture as OglTexture } from 'ogl';
 import { gsap } from '@/lib/gsap/gsap';
 import { getLenisInstance } from '@/lib/smooth-scroll';
+import type { SceneAssets, SceneConfig } from './graphics/canvasScene';
 import styles from './WorkCard.module.scss';
 
 type Props = {
@@ -10,16 +12,27 @@ type Props = {
   title: string;
   discipline: string;
   year: string;
-  src: string;
+  /** A photo to bake + bow (the default). Ignored when `scene` is set. */
+  src?: string;
+  /** A bespoke canvas-2D "scene" to bake + bow instead of a photo — its
+   *  hover state is driven by `setProgress` on the imperative handle. */
+  scene?: SceneConfig;
   /** called if WebGL can't run — parent renders the DOM fallback instead */
   onFail: () => void;
   /** WebKit runs 3 of these at once — render a touch lighter there */
   webkit?: boolean;
 };
 
+export type WorkCardGLHandle = {
+  /** 0 = rest state, 1 = fully "hovered" — repaints and re-uploads the bake
+   *  immediately. No-op before boot finishes or outside scene mode. */
+  setProgress: (p: number) => void;
+};
+
 /**
- * A single work card rendered on a WebGL plane so the whole card — picture,
- * scrim, index / title / meta (all baked into the texture) — can deform.
+ * A single work card rendered on a WebGL plane so the whole card — picture
+ * (or bespoke scene art), scrim, index / title / meta (all baked into the
+ * texture) — can deform.
  *
  * The plane is exactly the card box, sitting inside a taller (OVERSCAN) canvas
  * that its parent (.outer) does not clip. Vertex displacement STRETCHES it
@@ -68,19 +81,53 @@ function fontStack(varName: string): string {
   return v || 'sans-serif';
 }
 
-export function WorkCardGL({
-  index,
-  title,
-  discipline,
-  year,
-  src,
-  onFail,
-  webkit = false,
-}: Props) {
+function loadImage(src: string): Promise<HTMLImageElement> {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.decoding = 'async';
+  img.src = src;
+  return img
+    .decode()
+    .then(() => img)
+    .catch(
+      () =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`failed to load ${src}`));
+        }),
+    );
+}
+
+export const WorkCardGL = forwardRef<WorkCardGLHandle, Props>(function WorkCardGL(
+  { index, title, discipline, year, src, scene, onFail, webkit = false },
+  handleRef,
+) {
   const dprCap = webkit ? WEBKIT_DPR_CAP : DPR_CAP;
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
+
+  const progressRef = useRef(0);
+  const paintRef = useRef<((w: number, h: number) => void) | null>(null);
+  const lastSizeRef = useRef({ w: 0, h: 0 });
+  const glRef = useRef<{ texture: OglTexture; renderer: OglRenderer; mesh: OglMesh } | null>(null);
+
+  useImperativeHandle(
+    handleRef,
+    () => ({
+      setProgress(p: number) {
+        progressRef.current = p;
+        const st = glRef.current;
+        const paint = paintRef.current;
+        const { w, h } = lastSizeRef.current;
+        if (!st || !paint || !w || !h) return;
+        paint(w, h);
+        st.texture.needsUpdate = true;
+        st.renderer.render({ scene: st.mesh });
+      },
+    }),
+    [],
+  );
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -113,37 +160,51 @@ export function WorkCardGL({
 
       const { Renderer, Program, Mesh, Plane, Texture } = ogl;
 
-      // --- load image + fonts, then bake the card to an offscreen canvas ---
-      const image = new Image();
-      image.crossOrigin = 'anonymous';
-      image.decoding = 'async';
-      image.src = src;
-      try {
-        await image.decode();
-      } catch {
-        await new Promise<void>((res) => {
-          image.onload = () => res();
-          image.onerror = () => res();
-        });
+      // --- load either a photo to bake, or a scene's assets ---
+      let image: HTMLImageElement | null = null;
+      let sceneAssets: SceneAssets = {};
+
+      if (scene) {
+        try {
+          const names = Object.keys(scene.assets ?? {});
+          const loaded = await Promise.all(names.map((name) => loadImage(scene.assets![name])));
+          sceneAssets = Object.fromEntries(names.map((name, i) => [name, loaded[i]]));
+        } catch {
+          onFail();
+          return;
+        }
+      } else {
+        if (!src) {
+          onFail();
+          return;
+        }
+        try {
+          image = await loadImage(src);
+        } catch {
+          onFail();
+          return;
+        }
+        if (disposed) return;
+        if (!image.naturalWidth) {
+          onFail();
+          return;
+        }
+        // a cross-origin image that didn't grant CORS would taint the bake canvas
+        // and make texImage2D throw — detect it now and use the DOM fallback.
+        try {
+          const probe = document.createElement('canvas');
+          probe.width = 1;
+          probe.height = 1;
+          const pctx = probe.getContext('2d')!;
+          pctx.drawImage(image, 0, 0, 1, 1);
+          pctx.getImageData(0, 0, 1, 1);
+        } catch {
+          onFail();
+          return;
+        }
       }
       if (disposed) return;
-      if (!image.naturalWidth) {
-        onFail();
-        return;
-      }
-      // a cross-origin image that didn't grant CORS would taint the bake canvas
-      // and make texImage2D throw — detect it now and use the DOM fallback.
-      try {
-        const probe = document.createElement('canvas');
-        probe.width = 1;
-        probe.height = 1;
-        const pctx = probe.getContext('2d')!;
-        pctx.drawImage(image, 0, 0, 1, 1);
-        pctx.getImageData(0, 0, 1, 1);
-      } catch {
-        onFail();
-        return;
-      }
+
       try {
         await document.fonts.ready;
       } catch {
@@ -153,6 +214,7 @@ export function WorkCardGL({
 
       const headingFont = fontStack('--font-heading');
       const uiFont = fontStack('--font-sans');
+      const accentFont = fontStack('--font-accent');
 
       const bake = document.createElement('canvas');
       const bctx = bake.getContext('2d');
@@ -168,19 +230,23 @@ export function WorkCardGL({
         bake.height = H;
         bctx.clearRect(0, 0, W, H);
 
-        // cover-fit image
-        const ir = image.naturalWidth / image.naturalHeight;
-        const cr = W / H;
-        let dw: number;
-        let dh: number;
-        if (cr > ir) {
-          dw = W;
-          dh = W / ir;
-        } else {
-          dh = H;
-          dw = H * ir;
+        if (scene) {
+          scene.draw(bctx, W, H, progressRef.current, { headingFont, uiFont, accentFont, assets: sceneAssets });
+        } else if (image) {
+          // cover-fit image
+          const ir = image.naturalWidth / image.naturalHeight;
+          const cr = W / H;
+          let dw: number;
+          let dh: number;
+          if (cr > ir) {
+            dw = W;
+            dh = W / ir;
+          } else {
+            dh = H;
+            dw = H * ir;
+          }
+          bctx.drawImage(image, (W - dw) / 2, (H - dh) / 2, dw, dh);
         }
-        bctx.drawImage(image, (W - dw) / 2, (H - dh) / 2, dw, dh);
 
         // bottom scrim
         const g = bctx.createLinearGradient(0, H, 0, H * 0.45);
@@ -210,6 +276,7 @@ export function WorkCardGL({
         bctx.font = `400 ${Math.round(H * 0.028)}px ${uiFont}`;
         bctx.fillText(`${discipline} · ${year}`, pad, H - pad);
       };
+      paintRef.current = paint;
 
       // --- renderer / mesh ---
       const renderer = new Renderer({
@@ -244,13 +311,17 @@ export function WorkCardGL({
         uniforms: { uTexture: { value: texture }, uAmp: { value: 0 } },
       });
       const mesh = new Mesh(gl, { geometry, program });
+      glRef.current = { texture, renderer, mesh };
 
       const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
       const resize = () => {
         const rect = wrap.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
         renderer.setSize(rect.width, rect.height * OVERSCAN); // canvas taller
-        paint(Math.round(rect.width * dpr), Math.round(rect.height * dpr)); // box
+        const W = Math.round(rect.width * dpr);
+        const H = Math.round(rect.height * dpr);
+        lastSizeRef.current = { w: W, h: H };
+        paint(W, H); // box
         texture.image = bake;
         texture.needsUpdate = true;
         renderer.render({ scene: mesh });
@@ -317,6 +388,8 @@ export function WorkCardGL({
         io.disconnect();
         ro.disconnect();
         loseCtx();
+        glRef.current = null;
+        paintRef.current = null;
       };
     };
 
@@ -325,7 +398,7 @@ export function WorkCardGL({
       disposed = true;
       cleanup();
     };
-  }, [src, index, title, discipline, year, onFail, webkit, dprCap]);
+  }, [src, scene, index, title, discipline, year, onFail, webkit, dprCap]);
 
   return (
     <div ref={wrapRef} className={styles.glWrap} aria-hidden>
@@ -336,4 +409,4 @@ export function WorkCardGL({
       />
     </div>
   );
-}
+});

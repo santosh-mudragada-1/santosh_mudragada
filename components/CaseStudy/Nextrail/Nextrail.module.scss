@@ -27,6 +27,15 @@
   scroll-margin-top: calc(var(--header-h) + 2rem);
 }
 
+// "How it works" gets its own full-bleed panel — a shade deeper than the
+// page so the section reads as its own beat, same trick as .reveal below.
+.howSection {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding-inline: var(--edge);
+  background: #fee2d7;
+}
+
 // one-shot scroll-reveal hook. GSAP owns the animation; no resting styles here
 // so content stays visible before JS runs, under reduced motion, and with JS off.
 .rise {
@@ -56,17 +65,13 @@
     background: currentColor;
     opacity: 0.65;
   }
-
-  &[data-violet] {
-    color: var(--nx-violet);
-  }
 }
 
 .h2 {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(2.2rem, 1rem + 5vw, 5rem);
-  line-height: 0.98;
+  font-size: clamp(2.4rem, 1rem + 6vw, 6rem);
+  line-height: 0.96;
   letter-spacing: -0.035em;
   max-width: 18ch;
 
@@ -82,19 +87,6 @@
   line-height: 1.5;
   color: var(--fg);
   text-wrap: pretty;
-}
-
-.micro {
-  margin-top: clamp(2rem, 4vw, 3.5rem);
-  max-width: 46ch;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: var(--fg-muted);
-
-  em {
-    font-style: normal;
-    color: var(--fg);
-  }
 }
 
 // ---------------------------------------------------------------- HERO
@@ -156,8 +148,8 @@
   margin: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(1.1rem, 2.5vw, 1.6rem);
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: clamp(3rem, 2rem + 6vw, 6rem);
-  line-height: 0.92;
+  font-size: clamp(2.75rem, 1rem + 9vw, 9rem);
+  line-height: 0.88;
   letter-spacing: -0.045em;
 }
 
@@ -175,7 +167,7 @@
 .heroSay {
   max-width: 42ch;
   font-style: italic;
-  font-size: clamp(1rem, 0.92rem + 0.55vw, 1.3rem);
+  font-size: clamp(1rem, 0.9rem + 0.8vw, 1.4rem);
   line-height: 1.55;
   letter-spacing: -0.01em;
   color: var(--fg-muted);
@@ -200,36 +192,54 @@
 }
 
 // ------------------------------------------------------ PROBLEM: triad
-// Horizontal row on desktop and tablet — Discover → Save → Forget reads as
-// one line/one flow. Mobile alone reverts to the original vertical stack
-// with the ↓ connector (see the mq-max('sm') override below).
+// Discover → Save → Forget as pills, same shape as the Chess.com "current
+// loop" row: a hairline capsule per step, numeral + label, with the arrow
+// sitting in the gap between pills rather than inline in the text.
+// "Forget" cools once the row has held in view (see the cold/lost handling
+// in Nextrail.tsx) — same idea as Chess.com's [data-dead] pill, just reached
+// by scroll dwell instead of being dead on arrival.
+$triad-gap: clamp(1.25rem, 1rem + 1.6vw, 2.2rem);
+
 .triad {
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: clamp(0.5rem, 1.8vw, 1rem);
+  gap: 0.7rem $triad-gap;
   margin-top: clamp(2.5rem, 6vw, 4.5rem);
 
   li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.85em 1.35em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
     font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: clamp(1.4rem, 0.9rem + 2.8vw, 3.2rem);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    text-transform: uppercase;
+    font-weight: 600;
+    font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.2rem);
+    letter-spacing: -0.01em;
     transition:
       color 0.5s var(--ease-quart-in-out),
       opacity 0.5s var(--ease-quart-in-out);
 
-    &:not(:last-child)::after {
-      content: '→';
-      display: inline-block;
-      margin: 0 0.18em;
-      font-size: 0.4em;
-      font-weight: 400;
+    span {
+      font-size: 0.7em;
+      font-weight: 700;
       color: var(--fg-muted);
-      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &:not(:last-child)::after {
+      content: '\2192' / '';
+      position: absolute;
+      right: calc(#{$triad-gap} / -2);
+      top: 50%;
+      transform: translate(50%, -50%);
+      font-family: var(--font-ui);
+      font-size: 0.95em;
+      font-weight: 500;
+      color: var(--fg-muted);
+      pointer-events: none;
     }
   }
 }
@@ -237,22 +247,7 @@
 .triad[data-cold] li[data-lost] {
   color: var(--fg-muted);
   opacity: 0.42;
-}
-
-.turn {
-  margin-top: clamp(3.5rem, 9vw, 7rem);
-  max-width: 22ch;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: clamp(2rem, 1rem + 5.5vw, 5.5rem);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-
-  em {
-    font-style: normal;
-    color: var(--accent);
-  }
+  border-style: dashed;
 }
 
 // ------------------------------------------------- RESEARCH: insights
@@ -472,19 +467,16 @@
   gap: 1rem;
 }
 
-.personaMono {
+.personaPhoto {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
+  width: 3.75rem;
+  height: 3.75rem;
   border-radius: 50%;
-  border: 1.5px solid color-mix(in oklab, var(--nx-violet) 55%, var(--line));
-  color: var(--nx-violet);
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
+  object-fit: cover;
+  object-position: center 20%;
+  background: var(--bg-elev);
+  border: 2px solid color-mix(in oklab, var(--nx-violet) 55%, var(--line));
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--nx-violet) 10%, transparent);
 }
 
 .personaName {
@@ -559,11 +551,63 @@
   }
 }
 
+// ---- interview insights: its own block after the personas, a scattered
+// two-up quote wall — same light-violet-tint + violet-border treatment as
+// the "Feed2Fly" contribution card below.
+.quoteWall {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  border: 1px solid color-mix(in oklab, var(--nx-violet) 45%, transparent);
+  border-radius: var(--radius-lg);
+  padding: clamp(2.25rem, 5vw, 3.75rem);
+  background: color-mix(in oklab, var(--nx-violet) 7%, transparent);
+  overflow: clip;
+}
+
+.quoteGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2rem, 4vw, 3rem) clamp(2rem, 5vw, 4rem);
+}
+
+// second column drops for the same editorial stagger the persona cards use
+.quoteCard {
+  &:nth-child(even) {
+    margin-top: clamp(2rem, 7vw, 5rem);
+  }
+
+  p {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(1.05rem, 0.85rem + 0.9vw, 1.4rem);
+    line-height: 1.32;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+    text-wrap: pretty;
+  }
+}
+
+.quoteMark {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.75rem, 2.2rem + 2vw, 4rem);
+  line-height: 1;
+  color: color-mix(in oklab, var(--nx-violet) 45%, transparent);
+  margin-bottom: -0.1em;
+}
+
 @include mq-max('md') {
   .personas {
     grid-template-columns: minmax(0, 1fr);
   }
   .persona:nth-child(2) {
+    margin-top: 0;
+  }
+  .quoteGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .quoteCard:nth-child(even) {
     margin-top: 0;
   }
 }
@@ -697,111 +741,6 @@
   }
 }
 
-// -------------------------------------------- FEED2FLY EXPERIENCE: moments
-.moments {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(3.5rem, 9vw, 7rem);
-}
-
-.moment {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
-  gap: clamp(2rem, 6vw, 5rem);
-  align-items: center;
-
-  &:nth-child(even) .momentMedia {
-    order: -1;
-  }
-}
-
-.momentLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--nx-violet);
-  margin-bottom: 0.9em;
-
-  &::before {
-    content: '';
-    width: 1.6em;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.55;
-  }
-}
-
-.momentTitle {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: clamp(1.5rem, 1rem + 2.2vw, 2.8rem);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  max-width: 18ch;
-}
-
-.momentCopy {
-  margin-top: 0.9em;
-  max-width: 40ch;
-  color: var(--fg-muted);
-  line-height: 1.55;
-}
-
-.momentMedia {
-  display: flex;
-  gap: clamp(0.75rem, 2vw, 1.75rem);
-  justify-content: center;
-  align-items: flex-end;
-
-  img {
-    width: clamp(9rem, 21vw, 12rem);
-    height: auto;
-    filter: drop-shadow(0 22px 42px rgba(20, 17, 13, 0.18));
-  }
-
-  img:nth-child(2) {
-    margin-bottom: clamp(1rem, 4vw, 2.5rem);
-  }
-}
-
-// ------------------------------------------------------- PROCESS ladder
-.ladder {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: clamp(0.55rem, 2vw, 1.2rem);
-  margin: clamp(2.5rem, 6vw, 4rem) 0 clamp(1.75rem, 4vw, 2.5rem);
-}
-
-.ladderNode {
-  display: flex;
-  align-items: baseline;
-  gap: 0.55em;
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.3rem);
-  letter-spacing: -0.01em;
-
-  span {
-    font-size: 0.68em;
-    color: var(--fg-muted);
-    font-variant-numeric: tabular-nums;
-  }
-
-  &[data-strong] {
-    color: var(--nx-violet);
-  }
-}
-
-.ladderArrow {
-  color: var(--fg-muted);
-  font-size: 0.9em;
-}
-
 // --------------------------------------------------- MY CONTRIBUTION
 .contribs {
   display: grid;
@@ -845,29 +784,22 @@
   padding-bottom: clamp(4rem, 9vh, 8rem);
 }
 
-.lessons {
+.carry {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(2rem, 6vw, 4rem);
+  gap: clamp(1.5rem, 4vw, 3rem);
   margin-top: clamp(2.5rem, 5vw, 4rem);
-}
 
-.lesson {
-  h3 {
+  dt {
     font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: clamp(1.4rem, 1rem + 1.8vw, 2.4rem);
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    max-width: 16ch;
-    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
   }
-
-  p {
-    margin-top: 1em;
+  dd {
+    margin-top: 0.45em;
+    font-size: 0.9375rem;
     color: var(--fg-muted);
-    max-width: 42ch;
-    line-height: 1.6;
   }
 }
 
@@ -923,11 +855,18 @@
 
 @include mq-max('lg') {
   .heroInner {
-    max-width: 40rem; // marquee narrows to two columns
+    max-width: 40rem; // marquee scales down to three smaller columns
   }
   .reveal {
     grid-template-columns: minmax(0, 1fr);
     gap: clamp(2rem, 8vw, 3.5rem);
+  }
+  .revealInner {
+    text-align: center;
+  }
+  .revealSay,
+  .revealBody {
+    margin-inline: auto;
   }
   .revealDevice {
     order: -1;
@@ -957,23 +896,11 @@
   .heroInner {
     max-width: none;
   }
-  .moment,
   .contribs {
     grid-template-columns: minmax(0, 1fr);
   }
-  .moment {
-    gap: clamp(1.5rem, 5vw, 2.5rem);
-
-    &:nth-child(even) .momentMedia {
-      order: 0;
-    }
-  }
-  .momentMedia {
-    justify-content: flex-start;
-  }
-  .lessons {
+  .carry {
     grid-template-columns: minmax(0, 1fr);
-    gap: clamp(2rem, 8vw, 3rem);
   }
 }
 
@@ -991,26 +918,25 @@
   .insightAnim {
     height: 11rem;
   }
-  .momentMedia img {
-    width: clamp(7rem, 34vw, 9rem);
-  }
 
-  // triad — back to the original vertical stack with the ↓ connector once
-  // there isn't room for Discover → Save → Forget on one line.
+  // triad pills stack, with the arrow pointing down between them —
+  // same pattern as the Chess.com loop at this breakpoint.
   .triad {
     flex-direction: column;
-    align-items: flex-start;
-    gap: clamp(0.6rem, 2vw, 1.4rem);
+    align-items: stretch;
+    gap: $triad-gap;
+  }
+  .triad li {
+    justify-content: center;
+    padding: 0.7em 1.05em;
 
-    li {
-      font-size: clamp(2rem, 1rem + 5vw, 4.5rem);
-
-      &:not(:last-child)::after {
-        content: '↓';
-        display: block;
-        margin: 0.2em 0 0;
-        font-size: 0.32em;
-      }
+    &:not(:last-child)::after {
+      content: '\2193' / '';
+      right: auto;
+      left: 50%;
+      top: auto;
+      bottom: calc(#{$triad-gap} / -2);
+      transform: translate(-50%, 50%);
     }
   }
 }

@@ -7,6 +7,7 @@ import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { revealUp } from '@/lib/motion/reveal';
 import { WORK } from '@/lib/content/work';
 import { WorkCard } from './WorkCard';
+import { WORK_GRAPHICS, WORK_SCENES } from './graphics';
 import styles from './SelectedWork.module.scss';
 
 const DEPTH: Record<'a' | 'b' | 'c', number> = { a: 0.45, b: 0.55, c: 0.5 };
@@ -104,6 +105,8 @@ export function SelectedWork() {
               src={project.src}
               href={project.href}
               depth={DEPTH[project.slot]}
+              graphic={WORK_GRAPHICS[project.slug]}
+              scene={WORK_SCENES[project.slug]}
             />
           </div>
         ))}

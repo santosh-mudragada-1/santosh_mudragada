@@ -1,0 +1,681 @@
+@use 'mixins' as *;
+
+/* ===========================================================================
+   The discovery notebook — the persona as the research artefact it came from.
+   The notebook is a photograph cut into three strips; the dot grid is re-tiled
+   over the stretchable middle. Everything on it is a supplied PNG placed at
+   measured percentages of its own artwork. The notebook keeps its own cream /
+   ink palette in every theme — it is a photographed object.
+   =========================================================================== */
+
+.wrap {
+  --nb-purple: #7c5fd3;
+  --nb-yellow: #f7e28c;
+  --nb-ink: #2b2723;
+  --nb-muted: #6b6259;
+}
+
+/* ---- type + colour primitives (source `T` / INK / MUTED / PURPLE) ------- */
+.hand {
+  font-family: var(--cs-hand);
+  font-weight: 700;
+}
+.mono {
+  font-family: var(--cs-mono);
+}
+.monoBold {
+  font-family: var(--cs-mono);
+  font-weight: 700;
+}
+
+.ink {
+  color: var(--nb-ink);
+}
+.muted {
+  color: var(--nb-muted);
+}
+.purple {
+  color: var(--nb-purple);
+}
+
+.tHand {
+  font-size: clamp(1rem, 1.8cqw, 1.45rem);
+  line-height: 1.3;
+}
+.tHandSm {
+  font-size: clamp(0.78rem, 1.1cqw, 0.94rem);
+  line-height: 1.3;
+}
+.tBody {
+  font-size: clamp(0.72rem, 0.98cqw, 0.84rem);
+  line-height: 1.45;
+}
+.tSmall {
+  font-size: clamp(0.66rem, 0.86cqw, 0.76rem);
+  line-height: 1.4;
+}
+.tLabel {
+  font-size: clamp(0.55rem, 0.7cqw, 0.66rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.tNote {
+  font-size: clamp(0.56rem, 0.72cqw, 0.68rem);
+  line-height: 1.6;
+}
+
+.italic {
+  font-style: italic;
+}
+
+/* ---- Surface (the photographed book) ------------------------------------ */
+.surface {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  container-type: inline-size;
+}
+
+.surfaceImg {
+  pointer-events: none;
+  display: block;
+  height: auto;
+  width: 100%;
+  user-select: none;
+}
+
+.surfaceMid {
+  position: relative;
+  margin-top: -1px;
+  width: 100%;
+  flex: 1;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.surfaceBot {
+  margin-top: -1px;
+}
+
+.pageGrid {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-image: radial-gradient(circle, rgb(104 92 78 / 0.19) 1px, transparent 1px);
+}
+
+/* ---- Rule (hand-drawn purple underline) ------------------------------- */
+.rule {
+  margin-top: 0.125rem;
+  display: block;
+  height: auto;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ---- highlighter mark (source `nb-mark` @utility + `nb-sheen`) --------- */
+.mark {
+  background-image:
+    linear-gradient(100deg, transparent 22%, rgb(255 255 255 / 0.72) 50%, transparent 78%),
+    linear-gradient(var(--nb-yellow), var(--nb-yellow));
+  background-repeat: no-repeat;
+  background-position: -150% 0, 0 0;
+  background-size: 55% 100%, 100% 100%;
+  padding-inline: 0.1em;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.sheen {
+  animation: nb-sheen 0.85s ease-out 1;
+}
+
+@keyframes nb-sheen {
+  from {
+    background-position: -150% 0, 0 0;
+  }
+  to {
+    background-position: 250% 0, 0 0;
+  }
+}
+
+/* ---- Doodle (wiped on as though drawn) -------------------------------- */
+.doodle {
+  pointer-events: none;
+  position: absolute;
+  display: block;
+}
+
+.doodleImg {
+  display: block;
+  width: 100%;
+  user-select: none;
+}
+
+/* ---- Card (a loose research sheet) ----------------------------------- */
+.card {
+  position: relative;
+  border-radius: 3px;
+  background: #fffdf8;
+  padding: 5% 6%;
+  box-shadow:
+    0 1px 0 rgb(70 58 44 / 0.16),
+    0 2px 3px rgb(70 58 44 / 0.14),
+    0 10px 16px -6px rgb(70 58 44 / 0.22),
+    0 26px 44px -22px rgb(70 58 44 / 0.42);
+  outline: 1px solid rgb(43 39 35 / 0.06);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @include hover {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 1px 0 rgb(70 58 44 / 0.16),
+        0 4px 6px rgb(70 58 44 / 0.16),
+        0 18px 28px -8px rgb(70 58 44 / 0.26),
+        0 40px 60px -26px rgb(70 58 44 / 0.48);
+    }
+  }
+}
+
+.cardTitle {
+  /* mono bold label + ink */
+}
+
+/* ---- ProfileWho ------------------------------------------------------- */
+.who {
+}
+
+.whoHeader {
+  position: relative;
+}
+
+.photoWrap {
+  margin-top: 5%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5%;
+
+  @container (min-width: 900px) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 6%;
+  }
+}
+
+.polaroid {
+  position: relative;
+  width: 64%;
+  flex: none;
+
+  @container (min-width: 900px) {
+    width: 47%;
+  }
+}
+
+.polaroidInner {
+  position: relative;
+  transition: transform 0.5s ease-out;
+
+  @include hover {
+    &:hover {
+      transform: rotate(1deg);
+    }
+  }
+}
+
+.polaroidImg {
+  display: block;
+  height: auto;
+  width: 100%;
+  user-select: none;
+  filter: drop-shadow(0 10px 18px rgb(70 58 44 / 0.18));
+}
+
+.polaroidPhoto {
+  position: absolute;
+  overflow: hidden;
+  background: #efeaf9;
+  left: 6%;
+  top: 5%;
+  width: 87%;
+  height: 74%;
+
+  img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    user-select: none;
+  }
+}
+
+.polaroidName {
+  position: absolute;
+  inset-inline: 0;
+  top: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.clip {
+  position: absolute;
+  display: block;
+  top: -9%;
+  left: 8%;
+  width: 11%;
+
+  img {
+    display: block;
+    width: 100%;
+    transform-origin: top;
+    transform: rotate(-9deg);
+    user-select: none;
+    transition: transform 0.5s ease-out;
+  }
+  @include hover {
+    &:hover img {
+      transform: rotate(-15deg);
+    }
+  }
+}
+
+.tapeK {
+  position: absolute;
+  display: block;
+  top: -5%;
+  right: -10%;
+  width: 44%;
+
+  img {
+    display: block;
+    width: 100%;
+    transform-origin: center;
+    transform: rotate(6deg);
+    user-select: none;
+    transition: transform 0.5s ease-out;
+  }
+  @include hover {
+    &:hover img {
+      transform: rotate(3deg);
+    }
+  }
+}
+
+.profileCol {
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+}
+
+.profileList {
+  margin-top: 6%;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5%;
+}
+
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: 5%;
+  border-bottom: 1px dotted rgb(43 39 35 / 0.15);
+  padding-bottom: 2.5%;
+
+  img {
+    width: 10%;
+    max-width: 26px;
+    flex: none;
+    user-select: none;
+  }
+  dt {
+    width: 38%;
+    flex: none;
+
+    @container (min-width: 900px) {
+      width: 34%;
+    }
+  }
+  dd {
+    min-width: 0;
+    white-space: nowrap;
+  }
+}
+
+/* ---- ToolsGrid ----------------------------------------------------------- */
+.toolsList {
+  margin-top: 3%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 3%;
+
+  @container (min-width: 900px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.tool {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 7%;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.9);
+  padding: 6% 7%;
+  outline: 1px solid rgb(43 39 35 / 0.1);
+  box-shadow: 0 1px 2px rgb(70 58 44 / 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  @include hover {
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  img {
+    height: 1.7em;
+    width: auto;
+    flex: none;
+    user-select: none;
+    object-fit: contain;
+  }
+  span {
+    min-width: 0;
+    line-height: 1.15;
+  }
+}
+
+/* ---- QuoteCard --------------------------------------------------------- */
+.quote {
+  position: relative;
+}
+
+.quoteInner {
+  position: relative;
+  transform: rotate(-1deg);
+  border-radius: 2px;
+  background: #ece4f9;
+  padding: 7% 6% 6%;
+  box-shadow:
+    0 1px 0 rgb(70 58 44 / 0.16),
+    0 3px 5px rgb(70 58 44 / 0.16),
+    0 14px 22px -8px rgb(70 58 44 / 0.24),
+    0 32px 50px -24px rgb(70 58 44 / 0.44);
+  transition: transform 0.5s ease-out;
+
+  @include hover {
+    &:hover {
+      transform: rotate(-0.4deg) translateY(-2px);
+    }
+  }
+}
+
+.quoteTape {
+  position: absolute;
+  display: block;
+  top: -7%;
+  left: 6%;
+  width: 20%;
+
+  img {
+    display: block;
+    width: 100%;
+    transform: rotate(-8deg);
+    user-select: none;
+    transition: transform 0.5s ease-out;
+  }
+  @include hover {
+    &:hover img {
+      transform: rotate(-4deg);
+    }
+  }
+}
+
+/* ---- Footnote --------------------------------------------------------- */
+.footnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 2%;
+  font-family: var(--cs-mono);
+
+  img {
+    margin-top: 0.35em;
+    width: 0.55em;
+    flex: none;
+  }
+}
+
+/* ---- list rows (goals / frustrations / triggers / success) ------------ */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3%;
+}
+
+.rowsWide {
+  gap: 3.5%;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 3%;
+
+  img {
+    margin-top: 0.1em;
+    flex: none;
+    user-select: none;
+  }
+}
+
+.rowDot {
+  gap: 3.5%;
+
+  img {
+    margin-top: 0.4em;
+    width: 0.55em;
+  }
+}
+
+.icoCheck img {
+  width: 1.05em;
+}
+.icoCross img {
+  width: 0.95em;
+}
+.icoQuote img {
+  margin-top: 0.25em;
+  width: 1em;
+}
+
+/* ---- Jtbd ------------------------------------------------------------- */
+.jtbd {
+  margin-top: 4%;
+}
+
+.jtbdGrid {
+  margin-top: 2%;
+  display: grid;
+  gap: 0.75rem;
+
+  @container (min-width: 700px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3%;
+  }
+}
+
+.jtbdCard {
+  border-radius: 4px;
+  padding: 6% 7%;
+  box-shadow:
+    0 1px 0 rgb(70 58 44 / 0.14),
+    0 2px 3px rgb(70 58 44 / 0.14),
+    0 10px 16px -6px rgb(70 58 44 / 0.2),
+    0 24px 40px -20px rgb(70 58 44 / 0.4);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @include hover {
+    &:hover {
+      transform: translateY(-4px);
+    }
+  }
+}
+
+.jtbdHead {
+  display: flex;
+  align-items: center;
+  gap: 6%;
+}
+
+.jtbdChip {
+  display: grid;
+  width: 2em;
+  height: 2em;
+  flex: none;
+  place-items: center;
+  border-radius: 8px;
+
+  img {
+    width: 1.25em;
+    user-select: none;
+  }
+}
+
+.jtbdRule {
+  margin-top: 4%;
+  height: auto;
+  width: 46%;
+}
+
+/* ---- notebook tabs (desktop) ---------------------------------------------- */
+.tabRow {
+  margin-bottom: -1px;
+  display: flex;
+  gap: 0.25rem;
+  padding-left: 7%;
+}
+
+.tab {
+  position: relative;
+  flex: none;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  padding: 0.5rem 1rem;
+  font-family: var(--cs-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: #e7e2d8;
+  color: #6b6259;
+  transition: color 0.3s, transform 0.3s;
+
+  @include hover {
+    &:hover {
+      transform: translateY(-2px);
+      color: #2b2723;
+    }
+  }
+}
+
+.tabOn {
+  z-index: 10;
+  border-color: rgb(43 39 35 / 0.12);
+  background: #fbf9f3;
+  color: #2b2723;
+}
+
+.tabNudge {
+  animation: nb-nudge 2.4s ease-in-out infinite;
+
+  @include reduced-motion {
+    animation: none;
+  }
+}
+
+.tabDot {
+  position: absolute;
+  right: -0.25rem;
+  top: -0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--nb-purple);
+}
+
+@keyframes nb-nudge {
+  0%,
+  62%,
+  100% {
+    transform: translateY(0);
+  }
+  72% {
+    transform: translateY(-5px);
+  }
+  84% {
+    transform: translateY(-2px);
+  }
+}
+
+/* ---- desktop spread scaffold ------------------------------------------- */
+.spreadWrap {
+  display: none;
+  margin-inline: auto;
+  max-width: 1360px;
+
+  @media (min-width: 1140px) {
+    display: block;
+  }
+}
+
+.spreadFit {
+  overflow: visible;
+}
+
+.spreadBook {
+  transform-origin: top center;
+}
+
+.spreadGrid {
+  display: grid;
+  padding-block: 1.6% 3.2%;
+  padding-inline: 6.87% 7.18%;
+  grid-template-columns: 37.39fr 7.26fr 41.3fr;
+}
+
+.spreadCol {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- mobile stack --------------------------------------------------------- */
+.stack {
+  @media (min-width: 1140px) {
+    display: none;
+  }
+}
+
+.stackInner {
+  display: flex;
+  flex-direction: column;
+  gap: 9%;
+  padding: 7% 9%;
+}
+
+.stackGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6%;
+}
+
+.stackHead {
+  margin-bottom: 4%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}

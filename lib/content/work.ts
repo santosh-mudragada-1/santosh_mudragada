@@ -21,16 +21,19 @@ const U = (id: string, w: number, h: number) =>
 
 export const WORK: WorkProject[] = [
   {
-    slug: 'northwind',
+    slug: 'clearhost',
     slot: 'a',
     index: '01',
-    title: 'Northwind',
-    discipline: 'Product design',
-    year: '2025',
+    title: 'ClearHost',
+    discipline: 'Product design · 0→1',
+    year: '2026',
     ratio: '5 / 3',
-    src: U('1517180102446-f3ece451e9d8', 1500, 900),
-    owned: 'End-to-end product design, from strategy to shipped v1.',
-    href: '/work',
+    // Real project imagery — served same-origin from /public so the WorkCardGL
+    // bake stays untainted and the bow runs.
+    src: '/clearhost/dashboard-desktop.png',
+    owned:
+      "The operating system for India's independent hotels — field research to Channex certification.",
+    href: '/work/clearhost',
   },
   {
     slug: 'nextrail',

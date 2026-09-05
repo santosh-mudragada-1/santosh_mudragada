@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import styles from './Feed2FlyScroll.module.scss';
 
@@ -24,13 +23,13 @@ const STEPS: Step[] = [
   {
     n: '01',
     lines: ['See something', 'worth going to'],
-    copy: 'You find a place, a stay, a viewpoint or a hidden spot while scrolling — a reel, a short, a clip from someone whose taste you trust.',
+    copy: 'You find a place, a stay, a viewpoint or a hidden spot while scrolling: a reel, a short, a clip from someone whose taste you trust.',
     media: { kind: 'video', src: `${V}/feed-home.mp4`, poster: `${V}/feed-home-poster.png` },
   },
   {
     n: '02',
     lines: ['Share what', 'inspires you'],
-    copy: 'Instead of saving it somewhere you’ll forget, send it straight to Nextrail — from the same share sheet you already use.',
+    copy: 'Instead of saving it somewhere you’ll forget, send it straight to Nextrail, from the same share sheet you already use.',
     media: { kind: 'video', src: `${V}/share-reel.mp4`, poster: `${V}/share-reel-poster.png` },
   },
   {
@@ -42,7 +41,7 @@ const STEPS: Step[] = [
   {
     n: '04',
     lines: ['Turn it into', 'a trip'],
-    copy: 'From there it’s a guided path — who’s going, when, and your budget — and the content you saved becomes a day-by-day plan.',
+    copy: 'From there it’s a guided path (who’s going, when, and your budget) and the content you saved becomes a day-by-day plan.',
     media: { kind: 'video', src: `${V}/share-onboard.mp4`, poster: `${V}/share-onboard-poster.png` },
   },
 ];
@@ -104,41 +103,64 @@ function StepCopy({ step }: { step: Step }) {
 /**
  * "How Feed2Fly works" — four beats, one path.
  *
- * Desktop (≥lg): a sticky stage sits centred in the viewport with the step
- * copy above the phone and progress dots below. Invisible scroll-beats behind
- * it set the active step as their centre passes the viewport middle; the copy
- * and the phone clip cross-fade to match. Native scroll — nothing is pinned.
+ * The copy is real, visible, normally-flowing content — one beat per step.
+ * Only the phone is sticky, cross-fading as you scroll past each beat.
+ * Native scroll — nothing is pinned or faded on the text side.
  *
- * Below lg: no sticky. Each beat stacks with its own copy and clip inline.
+ * Desktop (≥lg): the phone sticks in its own column beside the beats, and
+ * whichever beat's centre is nearest the viewport centre wins — text and
+ * phone sit side by side, so the viewport centre is always readable.
+ *
+ * Below lg: the same sticky/cross-fade phone sticks above the stack instead,
+ * pinned near the top while the beats scroll past underneath it — so a
+ * beat's own centre is usually hidden behind the pinned phone by the time
+ * it gets there. Instead, whichever beat's heading has most recently
+ * scrolled up into the open gap below the pinned phone wins, so the phone
+ * switches right as each beat becomes readable, not once it's (invisibly)
+ * centred behind it.
  */
 export function Feed2FlyScroll() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
-  const wide = useMediaQuery('(min-width: 1024px)');
   const [active, setActive] = useState(0);
 
-  // whichever beat's centre is nearest the viewport centre wins — one
-  // deterministic winner, no observer double-fires or skipped beats.
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const beats = Array.from(root.querySelectorAll<HTMLElement>('[data-step]'));
     if (!beats.length) return;
 
+    const wideQuery = window.matchMedia('(min-width: 1024px)');
+
     let raf = 0;
     const update = () => {
       raf = 0;
-      const mid = window.innerHeight / 2;
       let best = 0;
-      let bestDist = Infinity;
-      beats.forEach((el) => {
-        const r = el.getBoundingClientRect();
-        const dist = Math.abs(r.top + r.height / 2 - mid);
-        if (dist < bestDist) {
-          bestDist = dist;
-          best = Number(el.dataset.step) || 0;
-        }
-      });
+
+      if (wideQuery.matches) {
+        const mid = window.innerHeight / 2;
+        let bestDist = Infinity;
+        beats.forEach((el) => {
+          const r = el.getBoundingClientRect();
+          const dist = Math.abs(r.top + r.height / 2 - mid);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = Number(el.dataset.step) || 0;
+          }
+        });
+      } else {
+        // the line below the pinned phone where text actually becomes
+        // readable — not the viewport edge, which a beat can cross while
+        // still entirely hidden behind the (opaque) stage above it.
+        const line = stageRef.current?.getBoundingClientRect().bottom ?? window.innerHeight / 2;
+        beats.forEach((el) => {
+          if (el.getBoundingClientRect().top <= line) {
+            best = Number(el.dataset.step) || 0;
+          }
+        });
+      }
+
       setActive((prev) => (prev === best ? prev : best));
     };
     const onScroll = () => {
@@ -152,31 +174,21 @@ export function Feed2FlyScroll() {
       window.removeEventListener('resize', onScroll);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [wide]);
+  }, []);
 
   return (
     <div ref={rootRef} className={styles.root}>
-      {wide ? (
-        <div className={styles.grid}>
-          <div className={styles.track} aria-hidden>
-            {STEPS.map((s, i) => (
-              <div key={s.n} className={styles.beat} data-step={i} />
-            ))}
-          </div>
-
-          <div className={styles.stage}>
-            <div className={styles.copy}>
-              {STEPS.map((s, i) => (
-                <div
-                  key={s.n}
-                  className={styles.copyItem}
-                  data-active={active === i || undefined}
-                >
-                  <StepCopy step={s} />
-                </div>
-              ))}
+      <div className={styles.grid}>
+        <div className={styles.track}>
+          {STEPS.map((s, i) => (
+            <div key={s.n} className={styles.beat} data-step={i}>
+              <StepCopy step={s} />
             </div>
+          ))}
+        </div>
 
+        <div ref={stageRef} className={styles.stage}>
+          <div className={styles.phoneFrame}>
             <div className={styles.phone}>
               <div className={styles.stack}>
                 {STEPS.map((s, i) => (
@@ -190,28 +202,15 @@ export function Feed2FlyScroll() {
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className={styles.dots} aria-hidden>
-              {STEPS.map((s, i) => (
-                <span key={s.n} data-active={active === i || undefined} />
-              ))}
-            </div>
+          <div className={styles.dots} aria-hidden>
+            {STEPS.map((s, i) => (
+              <span key={s.n} data-active={active === i || undefined} />
+            ))}
           </div>
         </div>
-      ) : (
-        <div className={styles.list}>
-          {STEPS.map((s, i) => (
-            <div key={s.n} className={styles.item} data-step={i}>
-              <div className={styles.copyItem} data-active>
-                <StepCopy step={s} />
-              </div>
-              <div className={styles.inlineMedia}>
-                <Frame media={s.media} active={!reduced && active === i} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
