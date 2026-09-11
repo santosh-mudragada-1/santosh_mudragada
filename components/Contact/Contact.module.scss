@@ -69,16 +69,6 @@
   color: var(--fg-muted);
 }
 
-// the signal graphic — full-bleed to the viewport's right edge, over the
-// headline's tail. Absolute on desktop (partially outside the text column);
-// an in-flow band on mobile (see below) rather than the same thing scaled down.
-.heroPhotoWrap {
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: min(46vw, 640px);
-  z-index: 0;
-}
-
 .scrollCue {
   position: absolute;
   left: var(--gutter);
@@ -116,18 +106,6 @@
   .headline {
     font-size: clamp(2.6rem, 1.6rem + 9vw, 4.5rem);
     max-width: 100%;
-  }
-
-  // in-flow full-bleed band under the headline — its own mobile composition,
-  // not the desktop bleed scaled down
-  .heroPhotoWrap {
-    position: relative;
-    inset: auto;
-    width: 100vw;
-    margin-left: calc(-1 * var(--gutter));
-    margin-top: var(--space-lg);
-    height: 46vh;
-    max-height: 340px;
   }
 }
 

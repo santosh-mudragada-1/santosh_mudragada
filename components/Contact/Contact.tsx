@@ -6,7 +6,6 @@ import { useNavContrast } from '@/lib/hooks/useNavContrast';
 import { Magnetic } from '@/components/Magnetic';
 import { SITE, SOCIALS } from '@/lib/constants/site';
 import { src as photoSrc } from '@/components/AboutStory/story';
-import { ContactSignal } from './ContactSignal';
 import styles from './Contact.module.scss';
 
 // Reuses a frame from the /about manifest (public/about/*.webp) — real
@@ -69,10 +68,6 @@ export function Contact() {
         <span className={styles.scrollCue} aria-hidden>
           Scroll
         </span>
-
-        <div className={styles.heroPhotoWrap}>
-          <ContactSignal />
-        </div>
       </section>
 
       {/* --------------------------------------------------------- direct line */}

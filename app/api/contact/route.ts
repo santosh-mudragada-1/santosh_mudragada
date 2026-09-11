@@ -5,8 +5,9 @@ import nodemailer from 'nodemailer';
 // that, so this route must run on Node.
 export const runtime = 'nodejs';
 
-const DESTINATION = 'santoshmudragada.uiux@gmail.com';
-const FROM = '"Design with Santosh" <hello@designwithsantosh.in>';
+// same Gmail account both sends and receives — no separate service, no
+// domain/DKIM alignment to worry about
+const GMAIL_ADDRESS = 'santoshmudragada.uiux@gmail.com';
 
 type Payload = {
   name?: string;
@@ -46,10 +47,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const login = process.env.BREVO_SMTP_LOGIN;
-  const key = process.env.BREVO_SMTP_KEY;
-  if (!login || !key) {
-    console.error('Missing BREVO_SMTP_LOGIN / BREVO_SMTP_KEY env vars');
+  const appPassword = process.env.GMAIL_APP_PASSWORD;
+  if (!appPassword) {
+    console.error('Missing GMAIL_APP_PASSWORD env var');
     return NextResponse.json(
       { ok: false, error: 'Email sending is not configured.' },
       { status: 500 },
@@ -72,16 +72,16 @@ export async function POST(req: Request) {
   ].filter((l): l is string => l !== null);
 
   const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false, // STARTTLS on 587, not implicit TLS
-    auth: { user: login, pass: key },
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // implicit TLS on 465
+    auth: { user: GMAIL_ADDRESS, pass: appPassword },
   });
 
   try {
     await transporter.sendMail({
-      from: FROM,
-      to: DESTINATION,
+      from: `"Design with Santosh" <${GMAIL_ADDRESS}>`,
+      to: GMAIL_ADDRESS,
       replyTo: email,
       subject: `Let's build something — ${name}`,
       text: lines.join('\n'),
