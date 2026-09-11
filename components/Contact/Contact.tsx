@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { gsap, useGSAP } from '@/lib/gsap/gsap';
-import { useIsTouch } from '@/lib/hooks/useIsTouch';
-import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useNavContrast } from '@/lib/hooks/useNavContrast';
 import { Magnetic } from '@/components/Magnetic';
 import { SITE, SOCIALS } from '@/lib/constants/site';
@@ -32,87 +29,13 @@ const ZWSP = '\u200B';
 const EMAIL_DISPLAY = SITE.email.replace('.', `.${ZWSP}`).replace('@', `@${ZWSP}`);
 
 export function Contact() {
-  const reduced = usePrefersReducedMotion();
-  const isTouch = useIsTouch();
   const [copied, setCopied] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
-  const signalRef = useRef<HTMLDivElement>(null);
 
   // the hero + elsewhere sections are full-bleed dark — flip the fixed nav
   // to light while either sits under the header band
   useNavContrast(rootRef);
-
-  // --- entrance: headline lines + sub-copy + photo wipe -------------------
-  useGSAP(
-    () => {
-      const root = rootRef.current;
-      if (!root) return;
-      const q = gsap.utils.selector(root);
-      const lines = q<HTMLElement>(`.${styles.line} > span`);
-      const sub = q<HTMLElement>(`.${styles.heroSub}`);
-      const wrap = q<HTMLElement>(`.${styles.heroPhotoWrap}`);
-      const cue = q<HTMLElement>(`.${styles.scrollCue}`);
-
-      if (reduced) {
-        gsap.set([...lines, ...sub, ...cue], { clearProps: 'all' });
-        gsap.set(wrap, { clipPath: 'inset(0 0 0 0)' });
-        return;
-      }
-
-      gsap.set(lines, { yPercent: 115 });
-      gsap.set(sub, { autoAlpha: 0, y: 18 });
-      gsap.set(cue, { autoAlpha: 0 });
-
-      const tl = gsap.timeline({ delay: 0.1 });
-      tl.to(lines, { yPercent: 0, duration: 1.05, ease: 'expo.out', stagger: 0.09 })
-        .to(
-          wrap,
-          { clipPath: 'inset(0% 0 0 0)', duration: 1.1, ease: 'expo.out' },
-          0.1,
-        )
-        .to(sub, { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power2.out' }, 0.45)
-        .to(cue, { autoAlpha: 1, duration: 0.6 }, 0.9);
-
-      return () => {
-        tl.progress(1).kill();
-      };
-    },
-    { scope: rootRef, dependencies: [reduced] },
-  );
-
-  // --- signal graphic drifts a few px against the cursor ------------------
-  useEffect(() => {
-    if (isTouch || reduced) return;
-    const hero = heroRef.current;
-    const signal = signalRef.current;
-    if (!hero || !signal) return;
-
-    const MAX = 16;
-    const xTo = gsap.quickTo(signal, 'x', { duration: 0.8, ease: 'power3' });
-    const yTo = gsap.quickTo(signal, 'y', { duration: 0.8, ease: 'power3' });
-
-    const onMove = (e: PointerEvent) => {
-      const r = hero.getBoundingClientRect();
-      const nx = (e.clientX - r.left) / r.width - 0.5;
-      const ny = (e.clientY - r.top) / r.height - 0.5;
-      xTo(nx * MAX * -1);
-      yTo(ny * MAX * -1);
-    };
-    const onLeave = () => {
-      xTo(0);
-      yTo(0);
-    };
-
-    hero.addEventListener('pointermove', onMove, { passive: true });
-    hero.addEventListener('pointerleave', onLeave);
-    return () => {
-      hero.removeEventListener('pointermove', onMove);
-      hero.removeEventListener('pointerleave', onLeave);
-      gsap.killTweensOf(signal);
-    };
-  }, [isTouch, reduced]);
 
   const copyEmail = async () => {
     try {
@@ -127,7 +50,7 @@ export function Contact() {
   return (
     <div ref={rootRef} className={styles.root}>
       {/* ------------------------------------------------------------- hero */}
-      <section ref={heroRef} className={`${styles.hero} theme-dark`} data-theme="dark">
+      <section className={`${styles.hero} theme-dark`} data-theme="dark">
         <p className={styles.eyebrow}>— Contact</p>
         <h1 className={styles.headline}>
           <span className={styles.line}>
@@ -148,9 +71,7 @@ export function Contact() {
         </span>
 
         <div className={styles.heroPhotoWrap}>
-          <div ref={signalRef} className={styles.heroSignal}>
-            <ContactSignal />
-          </div>
+          <ContactSignal />
         </div>
       </section>
 

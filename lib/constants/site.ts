@@ -2,7 +2,7 @@ export const SITE = {
   name: 'Design with Santosh',
   fullName: 'Santosh Mudragada',
   role: 'Product Designer & Builder',
-  email: 'hello@designwithsantosh.in',
+  email: 'santoshmudragada.uiux@gmail.com',
   url: 'https://www.designwithsantosh.in',
   description:
     'Portfolio of Santosh Mudragada — product designer and builder. Design, motion, interaction and shipping real products.',
