@@ -14,12 +14,11 @@ import { useSmoothScroll } from '@/lib/smooth-scroll';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useIsomorphicLayoutEffect } from '@/lib/hooks/useIsomorphicLayoutEffect';
 import { Magnetic } from '@/components/Magnetic';
-import { SITE } from '@/lib/constants/site';
 import { EASE, DUR } from '@/lib/motion/config';
 import { ROLE_OPTIONS, PROJECT_OPTIONS } from './data';
 import styles from './ContactModal.module.scss';
 
-type Status = 'idle' | 'sending' | 'sent';
+type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 const EMPTY = {
   name: '',
@@ -30,25 +29,6 @@ const EMPTY = {
   company: '',
   message: '',
 };
-
-function buildMailto(f: typeof EMPTY) {
-  const subject = `Let's build something — ${f.name.trim() || 'a new project'}`;
-  // `null` (not falsy-but-empty) marks a line to drop, so the intentional
-  // blank spacer ('') below survives `.filter` alongside the optional fields.
-  const lines = [
-    f.message.trim() || `Hi Santosh, I'd love to chat about ${f.project.toLowerCase()}.`,
-    '',
-    '—',
-    `Name: ${f.name.trim()}`,
-    `Email: ${f.email.trim()}`,
-    f.phone.trim() ? `Phone: ${f.phone.trim()}` : null,
-    `Role: ${f.role}`,
-    `Project: ${f.project}`,
-    f.company.trim() ? `Company: ${f.company.trim()}` : null,
-  ].filter((l): l is string => l !== null);
-  const body = lines.join('\n');
-  return `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
 
 export function ContactModal() {
   const { isOpen, close } = useContactModal();
@@ -62,6 +42,7 @@ export function ContactModal() {
 
   const [form, setForm] = useState(EMPTY);
   const [status, setStatus] = useState<Status>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
   const timersRef = useRef<number[]>([]);
 
   const clearPendingTimers = () => {
@@ -81,6 +62,7 @@ export function ContactModal() {
       clearPendingTimers();
       setForm(EMPTY);
       setStatus('idle');
+      setErrorMsg('');
     }
   }, [isOpen]);
 
@@ -174,34 +156,43 @@ export function ContactModal() {
     };
   }, [isOpen, reduced]);
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    if (status !== 'idle') return;
-    setStatus('sending');
-
-    if (labelTextRef.current) {
-      gsap.to(labelTextRef.current, {
-        autoAlpha: 0,
-        y: -6,
-        duration: 0.18,
-        ease: 'power2.in',
-        onComplete: () => {
-          gsap.fromTo(
-            labelTextRef.current,
-            { autoAlpha: 0, y: 6 },
-            { autoAlpha: 1, y: 0, duration: 0.24, ease: 'power2.out' },
-          );
-        },
-      });
-    }
-
-    timersRef.current.push(
-      window.setTimeout(() => {
-        window.location.href = buildMailto(form);
-      }, 90),
-      window.setTimeout(() => setStatus('sent'), 420),
-      window.setTimeout(() => close(), 1500),
+  // crossfade the button label on every status change (idle -> sending ->
+  // sent/error) — a distinct target from the reveal timeline above, so this
+  // can react independently to the async submit below.
+  useEffect(() => {
+    if (!labelTextRef.current) return;
+    gsap.fromTo(
+      labelTextRef.current,
+      { autoAlpha: 0, y: 6 },
+      { autoAlpha: 1, y: 0, duration: 0.24, ease: 'power2.out' },
     );
+  }, [status]);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (status === 'sending') return;
+    setStatus('sending');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { ok: boolean; error?: string }
+        | null;
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || 'Could not send — please try again.');
+      }
+      setStatus('sent');
+      timersRef.current.push(window.setTimeout(() => close(), 1500));
+    } catch (err) {
+      setStatus('error');
+      setErrorMsg(err instanceof Error ? err.message : 'Could not send — please try again.');
+      timersRef.current.push(window.setTimeout(() => setStatus('idle'), 3200));
+    }
   };
 
   return (
@@ -256,8 +247,8 @@ export function ContactModal() {
                 </h2>
                 <p className={`${styles.sub} ${styles.reveal}`}>
                   A new product, a redesign, or a hard interaction problem
-                  worth talking through. Fill this in and it opens a
-                  ready-to-send email — I read everything myself.
+                  worth talking through. Fill this in and it comes straight
+                  to my inbox — I read everything myself.
                 </p>
               </div>
 
@@ -351,19 +342,20 @@ export function ContactModal() {
                       type="submit"
                       className={styles.submit}
                       data-status={status}
-                      disabled={status !== 'idle'}
+                      disabled={status === 'sending' || status === 'sent'}
                       data-cursor="hi"
                       data-cursor-sticky
                     >
                       <span ref={labelTextRef} className={styles.submitLabel}>
                         {status === 'idle' && 'Send message'}
-                        {status === 'sending' && 'Opening your email…'}
+                        {status === 'sending' && 'Sending…'}
                         {status === 'sent' && 'Sent ✓'}
+                        {status === 'error' && 'Try again'}
                       </span>
                     </button>
                   </Magnetic>
-                  <span className={styles.reply}>
-                    Replies within two working days
+                  <span className={styles.reply} data-error={status === 'error' || undefined}>
+                    {status === 'error' ? errorMsg : 'Replies within two working days'}
                   </span>
                 </div>
               </form>
