@@ -6,6 +6,12 @@
   height: 100svh;
   overflow: hidden;
   background: var(--bg);
+
+  // scratch-card interaction needs a mouse/precise pointer + room to drag —
+  // desktop only, hidden on mobile and tablet
+  @include mq-max('lg') {
+    display: none;
+  }
 }
 
 .stage {

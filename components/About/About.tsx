@@ -71,6 +71,9 @@ export function About() {
 
   useIsomorphicLayoutEffect(() => {
     if (reduced) return;
+    // hidden below 'lg' (see .section in About.module.scss) — skip the whole
+    // setup so mobile/tablet never fetches the sticker art or runs the canvas
+    if (!window.matchMedia('(min-width: 1024px)').matches) return;
     const top = topRef.current;
     const back = backRef.current;
     const stage = stageRef.current;
