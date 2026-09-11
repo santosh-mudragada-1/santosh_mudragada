@@ -11,6 +11,20 @@ import { HashScroll } from '@/components/HashScroll';
 export default function HomePage() {
   return (
     <>
+      {/* HeroReveal only renders the with-background photo (its heaviest
+          asset) once `mounted` flips true post-hydration — the SVG <image>/
+          <img> tag isn't in the server-rendered HTML for the browser's
+          preload scanner to find. Hint it explicitly so the fetch starts
+          alongside the JS bundle instead of after hydration completes.
+          Skipped under ~640px: phones never render this layer at all
+          (see HeroReveal's `mobile` gate) — no point fetching it there. */}
+      <link
+        rel="preload"
+        as="image"
+        href="/images/hero-bg.webp"
+        fetchPriority="high"
+        media="(min-width: 640px)"
+      />
       <HashScroll />
       <main>
         <Hero />
