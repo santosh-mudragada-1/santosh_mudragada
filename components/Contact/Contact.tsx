@@ -8,14 +8,13 @@ import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useNavContrast } from '@/lib/hooks/useNavContrast';
 import { Magnetic } from '@/components/Magnetic';
 import { SITE, SOCIALS } from '@/lib/constants/site';
-import { ALT, src as photoSrc } from '@/components/AboutStory/story';
+import { src as photoSrc } from '@/components/AboutStory/story';
+import { ContactSignal } from './ContactSignal';
 import styles from './Contact.module.scss';
 
-// Reuses two frames from the /about manifest (public/about/*.webp) — real
-// photographs, not stock. Side-on and looking out for the hero (the "what's
-// next" beat); the two social rows that get a swatch get something that
-// actually reads as "the work" / "the rest of it".
-const HERO_PHOTO = 'open-clouds';
+// Reuses a frame from the /about manifest (public/about/*.webp) — real
+// photographs, not stock — for the two social rows that get a swatch, so
+// they read as "the work" / "the rest of it".
 const SWATCH: Partial<Record<string, string>> = {
   LinkedIn: 'eng-team',
   Instagram: 'trv-halong',
@@ -39,7 +38,7 @@ export function Contact() {
 
   const rootRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
-  const photoRef = useRef<HTMLImageElement>(null);
+  const signalRef = useRef<HTMLDivElement>(null);
 
   // the hero + elsewhere sections are full-bleed dark — flip the fixed nav
   // to light while either sits under the header band
@@ -83,16 +82,16 @@ export function Contact() {
     { scope: rootRef, dependencies: [reduced] },
   );
 
-  // --- hero photo drifts a few px against the cursor ----------------------
+  // --- signal graphic drifts a few px against the cursor ------------------
   useEffect(() => {
     if (isTouch || reduced) return;
     const hero = heroRef.current;
-    const photo = photoRef.current;
-    if (!hero || !photo) return;
+    const signal = signalRef.current;
+    if (!hero || !signal) return;
 
     const MAX = 16;
-    const xTo = gsap.quickTo(photo, 'x', { duration: 0.8, ease: 'power3' });
-    const yTo = gsap.quickTo(photo, 'y', { duration: 0.8, ease: 'power3' });
+    const xTo = gsap.quickTo(signal, 'x', { duration: 0.8, ease: 'power3' });
+    const yTo = gsap.quickTo(signal, 'y', { duration: 0.8, ease: 'power3' });
 
     const onMove = (e: PointerEvent) => {
       const r = hero.getBoundingClientRect();
@@ -111,7 +110,7 @@ export function Contact() {
     return () => {
       hero.removeEventListener('pointermove', onMove);
       hero.removeEventListener('pointerleave', onLeave);
-      gsap.killTweensOf(photo);
+      gsap.killTweensOf(signal);
     };
   }, [isTouch, reduced]);
 
@@ -149,18 +148,9 @@ export function Contact() {
         </span>
 
         <div className={styles.heroPhotoWrap}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            ref={photoRef}
-            className={styles.heroPhoto}
-            src={photoSrc(HERO_PHOTO)}
-            alt={ALT[HERO_PHOTO] ?? ''}
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            draggable={false}
-            data-cursor="view"
-          />
+          <div ref={signalRef} className={styles.heroSignal}>
+            <ContactSignal />
+          </div>
         </div>
       </section>
 
