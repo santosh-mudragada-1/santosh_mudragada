@@ -68,12 +68,14 @@
 
   // --- z-index scale ------------------------------------------------
   // progress < menu < header (burger stays clickable over the panel)
-  //          < cursor (rides over the menu) < transition < preloader
+  //          < contact modal < cursor (rides over everything) < transition
+  //          < preloader
   --z-raised: 10;
   --z-sticky: 20;
   --z-progress: 60;
   --z-menu: 80;
   --z-header: 90;
+  --z-contact-modal: 92;
   --z-cursor: 95;
   --z-transition: 100;
   --z-preloader: 9999;

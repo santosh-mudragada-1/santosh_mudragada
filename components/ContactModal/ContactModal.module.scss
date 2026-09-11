@@ -1,0 +1,272 @@
+@use 'mixins' as *;
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-contact-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+
+  @include mq-max('sm') {
+    padding: 0;
+    align-items: flex-end;
+  }
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 5, 4, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  width: min(980px, 100%);
+  max-height: min(88vh, 900px);
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  background: var(--carbon);
+  color: var(--paper);
+  will-change: transform;
+
+  // subtle paint grain — same technique as the About panels, much fainter
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @include mq-max('sm') {
+    width: 100%;
+    max-height: 92svh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+.close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(244, 240, 233, 0.08);
+  transition: background-color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    background: var(--accent);
+  }
+
+  span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 15px;
+    height: 1.5px;
+    background: var(--paper);
+    transform-origin: center;
+
+    &:first-child {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    &:last-child {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: var(--space-lg);
+  padding: clamp(2.5rem, 2rem + 2vw, 3.5rem) clamp(1.5rem, 1rem + 2vw, 3rem);
+
+  @include mq-max('md') {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    padding: clamp(2.75rem, 2.2rem + 3vw, 3.5rem) var(--gutter) var(--space-lg);
+  }
+}
+
+// --- intro column --------------------------------------------------------
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--smoke-300);
+}
+
+.heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2rem, 1.5rem + 2.2vw, 3.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.square {
+  display: inline-block;
+  width: 0.16em;
+  height: 0.16em;
+  margin-left: 0.1em;
+  background: var(--accent);
+  vertical-align: baseline;
+}
+
+.sub {
+  max-width: 34ch;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--smoke-300);
+}
+
+// --- form ------------------------------------------------------------------
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+
+  @include mq-max('xs') {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.55em 0.1em;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(244, 240, 233, 0.22);
+    color: var(--paper);
+    font-family: var(--font-ui);
+    font-size: 0.98rem;
+    transition: border-color 0.3s var(--ease-quart-in-out);
+    resize: none;
+
+    &::placeholder {
+      color: var(--smoke-500);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+    }
+  }
+}
+
+.label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.selectField {
+  position: relative;
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 1.4em;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23b7afa1' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.15em center;
+
+    // newer Chromium's "customizable select" default markers — suppressed
+    // so a stray checkmark/arrow glyph can't render outside the custom one
+    &::picker-icon,
+    &::checkmark {
+      display: none;
+    }
+
+    option {
+      color: var(--ink);
+      background: var(--paper);
+    }
+  }
+}
+
+.submitRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-2xs);
+  flex-wrap: wrap;
+}
+
+.submit {
+  position: relative;
+  min-width: 190px;
+  padding: 0.85em 1.6em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  transition:
+    background-color 0.3s var(--ease-quart-in-out),
+    opacity 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:not(:disabled) {
+      background: var(--orange-400);
+    }
+  }
+
+  &[data-status='sent'] {
+    background: var(--orange-600);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.submitLabel {
+  display: inline-block;
+}
+
+.reply {
+  font-size: 0.78rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--smoke-500);
+}

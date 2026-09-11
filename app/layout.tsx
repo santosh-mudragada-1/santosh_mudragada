@@ -17,6 +17,7 @@ import { Preloader } from '@/components/Preloader';
 import { ScrollProgress } from '@/components/ScrollProgress';
 import { Navigation } from '@/components/Navigation';
 import { Menu } from '@/components/Menu';
+import { ContactModal } from '@/components/ContactModal';
 import { Cursor } from '@/components/Cursor';
 import { PageTransition } from '@/components/PageTransition';
 import { SITE } from '@/lib/constants/site';
@@ -170,6 +171,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ScrollProgress />
           <Navigation />
           <Menu />
+          <ContactModal />
           <Cursor />
           <PageTransition>{children}</PageTransition>
         </Providers>

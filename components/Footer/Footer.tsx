@@ -7,8 +7,9 @@ import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
 import { useWorkNav } from '@/lib/hooks/useWorkNav';
+import { useContactModal } from '@/lib/contact-modal';
 import { Magnetic } from '@/components/Magnetic';
-import { MAILTO_HREF, NAV_LINKS, SITE, SOCIALS } from '@/lib/constants/site';
+import { NAV_LINKS, SITE, SOCIALS } from '@/lib/constants/site';
 import styles from './Footer.module.scss';
 
 const CW = 1000;
@@ -30,6 +31,7 @@ const MARQUEE = 'Start a project';
 export function Footer() {
   const { scrollTo } = useSmoothScroll();
   const onWorkNav = useWorkNav();
+  const { open: openContact } = useContactModal();
   const reduced = usePrefersReducedMotion();
   const isWebKit = useIsWebKit();
   const rootRef = useRef<HTMLElement>(null);
@@ -176,8 +178,9 @@ export function Footer() {
           ))}
         </h2>
 
-        <a
-          href={MAILTO_HREF}
+        <button
+          type="button"
+          onClick={openContact}
           className={styles.band}
           data-cursor="hi"
           data-cursor-sticky
@@ -199,19 +202,20 @@ export function Footer() {
           <span className={styles.bandMeta} data-pos="br">
             {SITE.email}
           </span>
-        </a>
+        </button>
 
         <div className={styles.direct}>
           <span className={styles.label}>Direct</span>
           <Magnetic strength={0.15}>
-            <a
-              href={MAILTO_HREF}
+            <button
+              type="button"
+              onClick={openContact}
               className={styles.email}
               data-cursor-reveal
               data-cursor-sticky
             >
               {SITE.email}
-            </a>
+            </button>
           </Magnetic>
           <Magnetic strength={0.15}>
             <button

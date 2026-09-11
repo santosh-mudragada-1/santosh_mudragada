@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from 'react';
 import { MotionConfig } from 'framer-motion';
 import { SmoothScrollProvider } from '@/lib/smooth-scroll';
 import { MenuProvider } from '@/lib/menu/MenuProvider';
+import { ContactModalProvider } from '@/lib/contact-modal';
 import { detectWebKit } from '@/lib/hooks/useIsWebKit';
 import { EASE, DUR } from '@/lib/motion/config';
 
@@ -31,7 +32,9 @@ export function Providers({ children }: { children: ReactNode }) {
       transition={{ duration: DUR.base, ease: EASE.quartInOut }}
     >
       <SmoothScrollProvider>
-        <MenuProvider>{children}</MenuProvider>
+        <MenuProvider>
+          <ContactModalProvider>{children}</ContactModalProvider>
+        </MenuProvider>
       </SmoothScrollProvider>
     </MotionConfig>
   );
