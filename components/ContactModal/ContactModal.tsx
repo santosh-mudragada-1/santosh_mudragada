@@ -39,6 +39,7 @@ export function ContactModal() {
   const contentRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const labelTextRef = useRef<HTMLSpanElement>(null);
+  const successRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState(EMPTY);
   const [status, setStatus] = useState<Status>('idle');
@@ -168,6 +169,63 @@ export function ContactModal() {
     );
   }, [status]);
 
+  // success state: icon pop -> ring + check stroke-draw (measured via
+  // getTotalLength, not guessed) -> a soft radiating pulse -> copy reveal.
+  // Layout effect — same FOUC concern as the reveal timeline above: this runs
+  // before paint so the success copy never flashes visible pre-animation.
+  useIsomorphicLayoutEffect(() => {
+    if (status !== 'sent') return;
+    const root = successRef.current;
+    if (!root) return;
+    const icon = root.querySelector<SVGSVGElement>(`.${styles.successIcon}`);
+    const ring = root.querySelector<SVGCircleElement>(`.${styles.successRing}`);
+    const pulse = root.querySelector<SVGCircleElement>(`.${styles.successPulse}`);
+    const check = root.querySelector<SVGPolylineElement>(`.${styles.successCheck}`);
+    const pieces = root.querySelectorAll(`.${styles.successReveal}`);
+
+    if (reduced) {
+      gsap.set([icon, ring, check, pulse].filter(Boolean), { clearProps: 'all' });
+      gsap.set(pieces, { opacity: 1, y: 0 });
+      return;
+    }
+
+    const ringLen = ring?.getTotalLength() ?? 0;
+    const checkLen = check?.getTotalLength() ?? 0;
+    if (ring) gsap.set(ring, { strokeDasharray: ringLen, strokeDashoffset: ringLen });
+    if (check) gsap.set(check, { strokeDasharray: checkLen, strokeDashoffset: checkLen });
+    if (icon) gsap.set(icon, { scale: 0.6, autoAlpha: 0, transformOrigin: '50% 50%' });
+    if (pulse) gsap.set(pulse, { autoAlpha: 0, scale: 1, transformOrigin: '50% 50%' });
+    gsap.set(pieces, { opacity: 0, y: 14 });
+
+    const tl = gsap.timeline();
+    if (icon) {
+      tl.to(icon, { scale: 1, autoAlpha: 1, duration: 0.5, ease: 'back.out(1.8)' });
+    }
+    if (ring) {
+      tl.to(ring, { strokeDashoffset: 0, duration: 0.55, ease: 'power2.out' }, 0.15);
+    }
+    if (check) {
+      tl.to(check, { strokeDashoffset: 0, duration: 0.4, ease: 'power2.out' }, 0.5);
+    }
+    if (pulse) {
+      tl.fromTo(
+        pulse,
+        { autoAlpha: 0.55, scale: 1 },
+        { autoAlpha: 0, scale: 1.8, duration: 0.75, ease: 'power2.out' },
+        0.55,
+      );
+    }
+    tl.to(
+      pieces,
+      { opacity: 1, y: 0, duration: 0.55, ease: 'expo.out', stagger: 0.08 },
+      0.7,
+    );
+
+    return () => {
+      tl.kill();
+    };
+  }, [status, reduced]);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (status === 'sending') return;
@@ -187,7 +245,7 @@ export function ContactModal() {
         throw new Error(data?.error || 'Could not send — please try again.');
       }
       setStatus('sent');
-      timersRef.current.push(window.setTimeout(() => close(), 1500));
+      timersRef.current.push(window.setTimeout(() => close(), 2600));
     } catch (err) {
       setStatus('error');
       setErrorMsg(err instanceof Error ? err.message : 'Could not send — please try again.');
@@ -216,6 +274,7 @@ export function ContactModal() {
 
           <motion.div
             ref={panelRef}
+            layout
             className={styles.panel}
             initial={{ opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -252,6 +311,30 @@ export function ContactModal() {
                 </p>
               </div>
 
+              {status === 'sent' ? (
+                <div ref={successRef} className={styles.success}>
+                  <svg
+                    className={styles.successIcon}
+                    viewBox="0 0 120 120"
+                    width="88"
+                    height="88"
+                    aria-hidden
+                  >
+                    <circle className={styles.successPulse} cx="60" cy="60" r="50" />
+                    <circle className={styles.successRing} cx="60" cy="60" r="50" />
+                    <polyline
+                      className={styles.successCheck}
+                      points="40,61 53,75 82,45"
+                    />
+                  </svg>
+                  <h3 className={`${styles.successTitle} ${styles.successReveal}`}>
+                    Message sent.
+                  </h3>
+                  <p className={`${styles.successSub} ${styles.successReveal}`}>
+                    I&rsquo;ll get back to you within two working days.
+                  </p>
+                </div>
+              ) : (
               <form className={styles.form} onSubmit={submit}>
                 <div className={styles.row}>
                   <label className={`${styles.field} ${styles.reveal}`}>
@@ -342,14 +425,13 @@ export function ContactModal() {
                       type="submit"
                       className={styles.submit}
                       data-status={status}
-                      disabled={status === 'sending' || status === 'sent'}
+                      disabled={status === 'sending'}
                       data-cursor="hi"
                       data-cursor-sticky
                     >
                       <span ref={labelTextRef} className={styles.submitLabel}>
                         {status === 'idle' && 'Send message'}
                         {status === 'sending' && 'Sending…'}
-                        {status === 'sent' && 'Sent ✓'}
                         {status === 'error' && 'Try again'}
                       </span>
                     </button>
@@ -359,6 +441,7 @@ export function ContactModal() {
                   </span>
                 </div>
               </form>
+              )}
             </div>
           </motion.div>
         </motion.div>

@@ -140,6 +140,59 @@
   color: var(--smoke-300);
 }
 
+// --- success state -----------------------------------------------------
+// replaces .form entirely once the send succeeds — a distinct target from
+// the reveal-timeline pieces, so it gets its own draw-in choreography.
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-xs);
+  min-height: 340px;
+  padding-block: var(--space-md);
+}
+
+.successIcon {
+  overflow: visible;
+  margin-bottom: var(--space-2xs);
+}
+
+.successRing {
+  fill: rgba(255, 77, 26, 0.1);
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+.successPulse {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.successCheck {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.successTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 1.4rem + 1.2vw, 2.3rem);
+  letter-spacing: -0.02em;
+}
+
+.successSub {
+  max-width: 30ch;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--smoke-300);
+}
+
 // --- form ------------------------------------------------------------------
 .form {
   display: flex;
