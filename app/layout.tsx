@@ -130,8 +130,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: '/og.png',
-        width: 1728,
-        height: 1040,
+        width: 1200,
+        height: 722,
         alt: SITE.name,
       },
     ],
