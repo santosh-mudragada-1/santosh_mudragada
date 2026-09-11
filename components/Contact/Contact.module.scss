@@ -1,0 +1,343 @@
+@use 'mixins' as *;
+
+// /contact — a standalone, art-directed page. Three beats, no footer:
+// hero (dark) -> direct line (paper) -> elsewhere (dark). Same paper / ink /
+// orange system as the rest of the site, own composition.
+
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+// ===========================================================================
+// 1 — hero
+// ===========================================================================
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-2xl) var(--gutter) var(--space-xl);
+  overflow: hidden; // the photo's clip-path reveal never leaks past the section
+  // `theme-dark` only redefines the tokens — it doesn't paint anything itself
+  // (`color` would otherwise just inherit the light body's already-resolved
+  // ink, not re-read the var here). Paint explicitly, same as <Footer>.
+  background: var(--carbon);
+  color: var(--paper);
+}
+
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: var(--space-md);
+}
+
+.headline {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(3.2rem, 1.6rem + 8vw, 9.5rem);
+  line-height: 0.98;
+  letter-spacing: var(--tracking-tight);
+  max-width: 20ch;
+}
+
+.line {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.05em;
+
+  > span {
+    display: block;
+    will-change: transform;
+  }
+}
+
+.dot {
+  color: var(--accent);
+}
+
+.heroSub {
+  position: relative;
+  z-index: 1;
+  max-width: 34ch;
+  margin-top: var(--space-md);
+  font-size: var(--fs-1);
+  color: var(--fg-muted);
+}
+
+// the photo — full-bleed to the viewport's right edge, over the headline's
+// tail. Absolute on desktop (partially outside the text column); an in-flow
+// band on mobile (see below) rather than the same thing scaled down.
+.heroPhotoWrap {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(46vw, 640px);
+  z-index: 0;
+  clip-path: inset(100% 0 0 0); // wiped up on entrance
+}
+
+.heroPhoto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 35%;
+  will-change: transform;
+
+  // a soft scrim so the headline tail (which overlaps the photo's left edge)
+  // stays legible against whatever's in frame
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 22%
+  );
+  mask-image: linear-gradient(to right, transparent 0%, #000 22%);
+}
+
+.scrollCue {
+  position: absolute;
+  left: var(--gutter);
+  bottom: var(--space-lg);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+
+  &::before {
+    content: '';
+    width: 1px;
+    height: 22px;
+    background: var(--line-strong);
+  }
+
+  @include mq-max('md') {
+    display: none;
+  }
+}
+
+@include mq-max('lg') {
+  .hero {
+    min-height: auto;
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-lg);
+    gap: var(--space-lg);
+  }
+
+  .headline {
+    font-size: clamp(2.6rem, 1.6rem + 9vw, 4.5rem);
+    max-width: 100%;
+  }
+
+  // in-flow full-bleed band under the headline — its own mobile composition,
+  // not the desktop bleed scaled down
+  .heroPhotoWrap {
+    position: relative;
+    inset: auto;
+    width: 100vw;
+    margin-left: calc(-1 * var(--gutter));
+    margin-top: var(--space-lg);
+    height: 46vh;
+    max-height: 340px;
+  }
+
+  .heroPhoto {
+    object-position: 50% 38%;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+// ===========================================================================
+// 2 — direct line (paper)
+// ===========================================================================
+.cta {
+  padding: var(--space-2xl) var(--gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.ctaHeadline {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 1.4rem + 5vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  margin-bottom: var(--space-lg);
+}
+
+.email {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.32em;
+  // flex items default to `min-width: auto` — a floor at their content's
+  // min-content size that ignores wrap opportunities and blows out narrow
+  // viewports. Both this (a flex item of the <Magnetic> wrapper) and its
+  // text span (a flex item of this) need it zeroed.
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--fg);
+  font-size: clamp(1.7rem, 0.9rem + 5.4vw, 4.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  // `anywhere` (not `break-word`) so the min-content size itself shrinks —
+  // `break-word` only affects line-breaking, not the flex/intrinsic size
+  // floor, and the domain alone still doesn't fit some phone widths even
+  // after the <wbr/> at "@". Browsers still prefer the <wbr/> break point.
+  overflow-wrap: anywhere;
+  transition: color var(--dur-fast) var(--ease-quart-in-out);
+
+  @include hover {
+    color: var(--accent);
+
+    .arrow {
+      transform: translate(0.18em, -0.08em) rotate(0deg);
+    }
+  }
+}
+
+.emailText {
+  min-width: 0;
+}
+
+.arrow {
+  display: inline-block;
+  font-size: 0.5em;
+  transform: rotate(-45deg);
+  transition: transform var(--dur-fast) var(--ease-quart-in-out);
+}
+
+.ctaSub {
+  margin-top: var(--space-md);
+  font-size: var(--fs-0);
+  color: var(--fg-muted);
+  transition: color var(--dur-fast) ease;
+
+  &[data-copied] {
+    color: var(--accent);
+    font-weight: 500;
+  }
+}
+
+// ===========================================================================
+// 3 — elsewhere (dark) — the page's deliberate close, no footer after this
+// ===========================================================================
+.socials {
+  padding: var(--space-2xl) var(--gutter) var(--space-xl);
+  background: var(--carbon);
+  color: var(--paper);
+}
+
+.rows {
+  border-top: 1px solid var(--line);
+  margin-top: var(--space-lg);
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding-block: var(--space-md);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden; // clips the swatch reveal
+  text-decoration: none;
+  color: inherit;
+
+  @include hover {
+    .label {
+      color: var(--accent);
+    }
+    .rowArrow {
+      transform: translateX(0.2em);
+    }
+    .swatch {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+}
+
+.index {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-0);
+  color: var(--fg-muted);
+  width: 2.4ch;
+  flex: none;
+}
+
+.label {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.8rem, 1.2rem + 3.6vw, 3.75rem);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+  transition: color var(--dur-fast) var(--ease-quart-in-out);
+}
+
+.rowArrow {
+  margin-left: auto;
+  flex: none;
+  font-size: clamp(1.2rem, 1rem + 1vw, 1.8rem);
+  transition: transform var(--dur-fast) var(--ease-quart-in-out);
+}
+
+// small image swatch, clipped shut until the row is hovered
+.swatch {
+  position: absolute;
+  right: clamp(3.5rem, 3rem + 4vw, 7rem);
+  top: 50%;
+  translate: 0 -50%;
+  width: clamp(80px, 6vw + 40px, 140px);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--dur-base) var(--ease-quart-in-out);
+  pointer-events: none;
+
+  @include touch {
+    display: none;
+  }
+}
+
+.closing {
+  margin-top: var(--space-lg);
+  font-size: var(--fs-1);
+  color: var(--fg-muted);
+}
+
+@include mq-max('md') {
+  .row {
+    gap: var(--space-sm);
+  }
+  .rowArrow {
+    font-size: 1.2rem;
+  }
+}
+
+@include reduced-motion {
+  .line > span,
+  .heroPhoto {
+    will-change: auto;
+  }
+}

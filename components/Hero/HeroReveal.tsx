@@ -71,6 +71,17 @@ const SCATTER = {
 // don't let the reveal circle ride up under the fixed header
 const HEADER_ZONE = 96;
 
+// DIAGNOSTIC (2026-09-11): the hero glitches intermittently. Prime suspect is
+// this "negative" copy — a second full text stack (marquee + scattered copy)
+// masked through the gooey blob, which on Chromium recomputes a
+// feGaussianBlur + SVG <mask> every frame while the marquee scroll keeps its
+// content moving too. Toggling this off removes that layer (both the
+// Chromium <g> and the WebKit cream div) while leaving the blob reveal on the
+// background photo itself untouched. If the glitch stops with this off, the
+// masked text was the cause — leave it off. If it still happens, flip this
+// back to true and look elsewhere.
+const SHOW_NEGATIVE_TEXT = false;
+
 export function HeroReveal({ play }: Props) {
   const isTouch = useIsTouch();
   const isWebKit = useIsWebKit();
@@ -441,18 +452,20 @@ export function HeroReveal({ play }: Props) {
     if (!useWkReveal) return;
     const host = hostRef.current;
     const bg = wkBgRef.current;
+    // negative-text layer is optional — see SHOW_NEGATIVE_TEXT above
     const neg = wkNegRef.current;
-    if (!host || !bg || !neg) return;
+    if (!host || !bg) return;
 
     const st = { x: 0, y: 0, r: 0, o: 0 };
     const maxR = () => Math.max(180, Math.min(window.innerWidth * 0.2, 300));
+    const layers = [bg, neg].filter(Boolean) as HTMLElement[];
 
     const paint = () => {
       const r = st.r < 1 ? 1 : st.r;
       const m = `radial-gradient(circle ${r}px at ${st.x}px ${st.y}px, #000 ${
         r * 0.52
       }px, rgba(0,0,0,0) ${r}px)`;
-      for (const el of [bg, neg] as HTMLElement[]) {
+      for (const el of layers) {
         el.style.webkitMaskImage = m;
         el.style.maskImage = m;
         el.style.opacity = `${st.o}`;
@@ -593,7 +606,7 @@ export function HeroReveal({ play }: Props) {
         </svg>
 
         {/* layer 2b — same copy, cream, shown only inside the reveal circle */}
-        {useWkReveal && (
+        {useWkReveal && SHOW_NEGATIVE_TEXT && (
           <div ref={wkNegRef} className={styles.wkReveal} aria-hidden>
             <svg
               className={styles.wkText}
@@ -781,7 +794,7 @@ export function HeroReveal({ play }: Props) {
         </g>
 
         {/* layer 2b — same text, light, shown ONLY through the blob (negative) */}
-        {useReveal && (
+        {useReveal && SHOW_NEGATIVE_TEXT && (
           <g
             className={styles.textLight}
             mask="url(#heroBlob)"

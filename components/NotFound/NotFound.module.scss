@@ -1,0 +1,145 @@
+@use 'mixins' as *;
+
+// /404 — its own standalone dark page, no footer after it. The digits are the
+// whole point: enormous, cursor-reactive, orange on approach.
+
+.root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-2xl) var(--gutter);
+  // `theme-dark` only redefines the tokens — paint explicitly, same as
+  // <Footer>, or `color` just inherits the light body's resolved ink.
+  background: var(--carbon);
+  color: var(--paper);
+}
+
+.eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.digits {
+  display: flex;
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+}
+
+.digit {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(5.5rem, 1.5rem + 22vw, 20rem);
+  color: var(--fg);
+  will-change: transform;
+}
+
+.heading {
+  position: relative;
+  z-index: 1;
+  margin-top: var(--space-md);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2rem, 1.3rem + 3.2vw, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-tight);
+  max-width: 16ch;
+}
+
+.copy {
+  position: relative;
+  z-index: 1;
+  margin-top: var(--space-sm);
+  max-width: 38ch;
+  font-size: var(--fs-1);
+  color: var(--fg-muted);
+}
+
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  margin-top: var(--space-2xl);
+}
+
+.action {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.15rem, 1rem + 0.8vw, 1.6rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--fg);
+
+  span[aria-hidden] {
+    color: var(--accent);
+    transition: transform var(--dur-fast) var(--ease-quart-in-out);
+  }
+
+  @include hover {
+    color: var(--accent);
+
+    &[data-dir='back'] span[aria-hidden] {
+      transform: translateX(-0.25em);
+    }
+    &[data-dir='forward'] span[aria-hidden] {
+      transform: translateX(0.25em);
+    }
+  }
+}
+
+// the "wrong turn" photograph — a small tilted print, half behind the digits
+.lost {
+  position: absolute;
+  right: clamp(1rem, 4vw, 6rem);
+  top: clamp(14%, 18svh, 22%);
+  z-index: 0;
+  width: clamp(120px, 16vw, 220px);
+  padding: 10px 10px 34px;
+  background: var(--paper);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  rotate: 7deg;
+  will-change: transform;
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  figcaption {
+    margin-top: 8px;
+    font-size: 0.7rem;
+    color: var(--carbon);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  @include mq-max('md') {
+    display: none; // mobile: the digits + copy carry the page on their own
+  }
+}
+
+@include mq-max('sm') {
+  .actions {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+}
+
+@include reduced-motion {
+  .digit,
+  .lost {
+    will-change: auto;
+  }
+}
