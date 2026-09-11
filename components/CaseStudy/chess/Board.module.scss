@@ -1,0 +1,180 @@
+// Chess.com board — product palette, kept out of the portfolio's page theme.
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 20px 50px -24px rgba(0, 0, 0, 0.5);
+  user-select: none;
+}
+
+.sq {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: #eeeed2; // board-light
+
+  &[data-dark] {
+    background: #769656; // board-dark
+  }
+
+  .board[data-interactive] & {
+    cursor: pointer;
+  }
+}
+
+.hl {
+  position: absolute;
+  inset: 0;
+  background: rgba(246, 246, 105, 0.55); // board-highlight
+}
+
+.hint {
+  position: absolute;
+  inset: 9%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(38, 194, 163, 0.85); // brand teal ring
+}
+
+.dot {
+  width: 26%;
+  height: 26%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+}
+
+// legal target that holds an enemy piece — ring the square instead of a dot
+.dotCapture {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+}
+
+// a move that was played in the game and shouldn't have been
+.wrong {
+  position: absolute;
+  inset: 0;
+  background: rgba(225, 83, 83, 0.32);
+  box-shadow: inset 0 0 0 2px rgba(225, 83, 83, 0.55);
+}
+
+.danger {
+  position: absolute;
+  inset: 0;
+  background: #e15353;
+
+  &[data-pulse] {
+    animation: lossPulse 1.15s ease-in-out infinite;
+  }
+}
+
+@keyframes lossPulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.piece {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5%;
+  }
+
+  // gently advertises a clickable piece before the first solve
+  &[data-invite] img {
+    animation: invitePulse 1.9s ease-in-out infinite;
+  }
+
+  // the mated king takes the blow once, then settles (from tailwind.config.ts)
+  &[data-toppled] img {
+    transform-origin: 50% 88%;
+    animation: kingTopple 0.75s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.44s 1 both;
+  }
+}
+
+@keyframes invitePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes kingTopple {
+  0% {
+    transform: rotate(0deg);
+  }
+  22% {
+    transform: rotate(-9deg);
+  }
+  44% {
+    transform: rotate(6deg);
+  }
+  66% {
+    transform: rotate(-3.5deg);
+  }
+  84% {
+    transform: rotate(1.5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece[data-invite] img,
+  .piece[data-toppled] img {
+    animation: none;
+  }
+}
+
+.coord {
+  position: absolute;
+  z-index: 2;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.8;
+  pointer-events: none;
+
+  &[data-pos='file'] {
+    right: 3px;
+    bottom: 2px;
+  }
+  &[data-pos='rank'] {
+    left: 3px;
+    top: 2px;
+  }
+  &[data-on='light'] {
+    color: #769656;
+  }
+  &[data-on='dark'] {
+    color: #eeeed2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .danger[data-pulse] {
+    animation: none;
+  }
+}

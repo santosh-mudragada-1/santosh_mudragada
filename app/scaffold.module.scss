@@ -1,0 +1,49 @@
+@use 'mixins' as *;
+
+// Shared styling for the Stage 1 route scaffold pages (/work, /about, /contact).
+// These are placeholders so Stage 2 page transitions have real routes to move
+// between — not the real sections.
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--gutter);
+  max-width: 60rem;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.heading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--fs-6);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+.copy {
+  max-width: 44ch;
+  color: var(--fg-muted);
+  font-size: var(--fs-1);
+}
+
+.back {
+  margin-top: var(--space-sm);
+  font-weight: 500;
+  width: max-content;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+}

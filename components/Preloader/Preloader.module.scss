@@ -1,0 +1,62 @@
+@use 'mixins' as *;
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-preloader);
+  display: grid;
+  place-items: center;
+  background: var(--carbon);
+  // The document is scroll-locked via html.is-loading while this is up; keeping
+  // it non-interactive means a skip-click still reaches window listeners.
+  pointer-events: none;
+  will-change: transform;
+}
+
+.rootReduced {
+  background: var(--carbon);
+  color: var(--paper);
+}
+
+// the dark shape whose bottom edge (bulged down 300px) flattens on exit
+.curve {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 300px);
+
+  path {
+    fill: var(--carbon);
+  }
+}
+
+.word {
+  --size-scale: 1;
+
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.38em;
+
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: calc(clamp(2.6rem, 1.6rem + 4.6vw, 5.25rem) * var(--size-scale));
+  line-height: 1;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  color: var(--paper);
+  will-change: opacity;
+}
+
+.dot {
+  align-self: center;
+  width: 0.26em;
+  height: 0.26em;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+  transform: translateY(-0.06em);
+}

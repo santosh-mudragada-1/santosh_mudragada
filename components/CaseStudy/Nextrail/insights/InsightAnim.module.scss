@@ -1,0 +1,323 @@
+// Shared visual language for the three "what we found" animations —
+// InsightFlow (FLOW), InsightAccumulate (ACCUMULATION), InsightConnect (RESET).
+//
+// Bold-but-minimal editorial diagram: heavier strokes than a UI decoration,
+// orange reserved for the moment of intent, no fills beyond the paper
+// background, no shadows, no gradients on the shapes themselves. Each
+// animation owns its own motion; this file owns only how things look and the
+// invisible viewport they travel through.
+
+// ---------------------------------------------------------------- viewport
+// The animation lives inside an invisible horizontal frame. Cards enter from
+// beyond one edge and leave past the other; the top and bottom gradient bands
+// blend that motion back into the page so it reads as a window onto a larger
+// continuous system. No border — the fades alone imply the frame.
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+// Cream fading to nothing. A multi-stop ease-in-out curve (a "scrim") rather
+// than a 2–3 stop linear ramp, so the blend has no visible start or end line —
+// it just melts into the page. Strength is tuned per variant purely by how far
+// the band reaches, not by changing the curve.
+@mixin scrim($dir) {
+  background: linear-gradient(
+    #{$dir},
+    var(--bg) 0%,
+    color-mix(in oklab, var(--bg) 98.7%, transparent) 8.1%,
+    color-mix(in oklab, var(--bg) 95.1%, transparent) 15.5%,
+    color-mix(in oklab, var(--bg) 89.6%, transparent) 22.5%,
+    color-mix(in oklab, var(--bg) 82.5%, transparent) 29%,
+    color-mix(in oklab, var(--bg) 74.1%, transparent) 35.3%,
+    color-mix(in oklab, var(--bg) 64.8%, transparent) 41.2%,
+    color-mix(in oklab, var(--bg) 55%, transparent) 47.1%,
+    color-mix(in oklab, var(--bg) 45%, transparent) 52.9%,
+    color-mix(in oklab, var(--bg) 35.2%, transparent) 58.8%,
+    color-mix(in oklab, var(--bg) 25.9%, transparent) 64.7%,
+    color-mix(in oklab, var(--bg) 17.5%, transparent) 71%,
+    color-mix(in oklab, var(--bg) 10.4%, transparent) 77.5%,
+    color-mix(in oklab, var(--bg) 4.9%, transparent) 84.5%,
+    color-mix(in oklab, var(--bg) 1.6%, transparent) 92%,
+    transparent 100%
+  );
+}
+
+.edgeFade {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.edgeFade[data-edge='top'],
+.edgeFade[data-edge='bottom'] {
+  left: 0;
+  right: 0;
+  height: 30%;
+}
+.edgeFade[data-edge='left'],
+.edgeFade[data-edge='right'] {
+  top: 0;
+  bottom: 0;
+  width: 15%;
+}
+
+.edgeFade[data-edge='top'] {
+  top: 0;
+  @include scrim(to bottom);
+}
+.edgeFade[data-edge='bottom'] {
+  bottom: 0;
+  @include scrim(to top);
+}
+.edgeFade[data-edge='left'] {
+  left: 0;
+  @include scrim(to right);
+}
+.edgeFade[data-edge='right'] {
+  right: 0;
+  @include scrim(to left);
+}
+
+// Over real footage the band reaches a little further so a solid rectangle of
+// video dissolves fully; the curve is unchanged.
+.viewport[data-variant='media'] .edgeFade[data-edge='top'],
+.viewport[data-variant='media'] .edgeFade[data-edge='bottom'] {
+  height: 34%;
+}
+.viewport[data-variant='media'] .edgeFade[data-edge='left'],
+.viewport[data-variant='media'] .edgeFade[data-edge='right'] {
+  width: 18%;
+}
+
+// The photo collage has its own gaps, so the band stays short — just enough
+// that no photo ends on a hard rectangle.
+.viewport[data-variant='collage'] .edgeFade[data-edge='top'],
+.viewport[data-variant='collage'] .edgeFade[data-edge='bottom'] {
+  height: 22%;
+}
+.viewport[data-variant='collage'] .edgeFade[data-edge='left'],
+.viewport[data-variant='collage'] .edgeFade[data-edge='right'] {
+  width: 10%;
+}
+
+// ------------------------------------------------------------- media + route
+// Animation 01 — a small grid of looping travel clips with a hand-drawn route
+// threading through them; the inspiration you already scroll past.
+.mediaGrid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  background: var(--bg);
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-elev);
+}
+
+.panel video,
+.panel img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  // a touch of warmth + slight mute so the footage sits under the page palette
+  filter: saturate(0.92) contrast(1.02);
+}
+
+// A faint white path connecting the markers — the line itself, with no
+// bright trail drawn over it.
+.routeOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.routeBase {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.42);
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+}
+
+// A marker on each clip, sitting on the path.
+.node {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 5px rgba(255, 255, 255, 0.18);
+  z-index: 1;
+}
+
+.node[data-dest] {
+  background: var(--accent);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 5px color-mix(in oklab, var(--accent) 28%, transparent);
+}
+
+.nodePulse {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  z-index: 1;
+}
+
+.nodePulse[data-dest] {
+  border-color: var(--accent);
+}
+
+// ----------------------------------------------------------- photo collage
+// Animation 02 — travel photos saved at every size, scattered and drifting,
+// with the headline knocked through them. `isolation` keeps the luminosity
+// blend contained to the collage (not the page behind it).
+.collage {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+}
+
+.collageShot {
+  position: absolute;
+  width: auto;
+  max-width: none;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 44px rgba(20, 17, 13, 0.24),
+    0 5px 14px rgba(20, 17, 13, 0.16);
+  will-change: transform;
+  filter: saturate(1.03) contrast(1.03);
+}
+
+.collageText {
+  position: absolute;
+  inset: 0;
+  z-index: 9; // above every photo, below the edge fades (z-index 2 on .viewport)
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 6%;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 0.9rem + 3.4vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: #fff;
+  mix-blend-mode: luminosity;
+  pointer-events: none;
+  text-wrap: balance;
+}
+
+// ---------------------------------------------------------- empty map (03)
+// A full-bleed map sits behind everything — the planning surface you start
+// from, with nothing plotted on it. Saved travel photos scatter across it on
+// every side. Hover tilts the photos and zooms the map a little. No markers.
+.mapScene {
+  position: absolute;
+  inset: 0;
+}
+
+.mapStage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #93a3a8; // roughly the map's ocean tone, in case it loads slow
+  will-change: transform;
+  z-index: 0;
+}
+
+.mapImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// a whisper of the page palette so it doesn't feel bolted on
+.mapStage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--bg) 7%, transparent);
+  pointer-events: none;
+}
+
+// ---------------------------------------------------------------- card unit
+// `fill-box` keeps percentage transform-origins locked to each element's own
+// geometry (not the whole SVG), so scale / rotate stay jitter-free in Safari.
+.card {
+  will-change: transform;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cardRect {
+  fill: var(--bg);
+  stroke: color-mix(in oklab, var(--fg) 34%, transparent);
+  stroke-width: 1.75;
+}
+
+.cardLine {
+  stroke: color-mix(in oklab, var(--fg) 26%, transparent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.cardBlock {
+  fill: color-mix(in oklab, var(--fg) 8%, transparent);
+  stroke: color-mix(in oklab, var(--fg) 20%, transparent);
+  stroke-width: 1.25;
+}
+
+.cardStroke {
+  fill: none;
+  stroke: color-mix(in oklab, var(--fg) 30%, transparent);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+// ------------------------------------------------------------ orange accent
+.dot {
+  fill: var(--accent);
+}
+
+.dotHalo {
+  fill: color-mix(in oklab, var(--accent) 15%, transparent);
+}
+
+// The JS holds each animation on a composed static frame under reduced motion;
+// nothing is moving, so drop the compositing hints too.
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    will-change: auto;
+  }
+}

@@ -1,0 +1,83 @@
+@use 'mixins' as *;
+
+// Nextrail card art. Fills WorkCard's clipped `.inner`, raised above the card
+// scrim (`z-index: 2`) so the bright gradient isn't dimmed; its own `::after`
+// gives the title the contrast the scrim would have. Sizes are container units
+// so the phone scales with the card.
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  container-type: size;
+  background:
+    radial-gradient(
+      130% 95% at 84% 6%,
+      rgba(150, 122, 255, 0.5) 0%,
+      rgba(150, 122, 255, 0) 58%
+    ),
+    linear-gradient(158deg, #5b47c7 0%, #4a38ab 52%, #3a2c8e 100%);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 46%;
+    background: linear-gradient(to top, rgba(18, 10, 40, 0.62), transparent);
+    pointer-events: none;
+    z-index: 2;
+  }
+}
+
+.map {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: min(1400px, 170%);
+  height: auto;
+  opacity: 0.12;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+// full-card flex box that GSAP slides on Y — no CSS transform of its own
+.riser {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+// `feed-home.webm` is itself the phone mockup (528×1080, device chrome baked
+// in, edge to edge), so this is just a sized, native-ratio window onto it —
+// no <DeviceMockup>. The corner radius clips the small square wedges the
+// render leaves outside the phone's rounded corners; the drop shadow then
+// hugs that rounded silhouette.
+.device {
+  --w: min(46cqh, 62cqw);
+
+  width: var(--w);
+  aspect-ratio: 528 / 1080;
+  border-radius: calc(var(--w) * 0.115);
+  overflow: hidden;
+  filter: drop-shadow(0 4cqh 7cqh rgba(20, 10, 45, 0.55));
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@include reduced-motion {
+  // sit still, centred, just poking up from the lower half
+  .riser {
+    transform: translateY(14%);
+  }
+}

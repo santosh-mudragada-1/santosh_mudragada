@@ -1,0 +1,116 @@
+// Playing chess board as a large, faint backdrop CENTERED behind the hero
+// content. It rides up under the header and feathers away on every side —
+// most strongly at the bottom, so it's gone before the rule. Two-layer
+// gradient mask (soft all-round vignette ∩ bottom fade); gradients only, no
+// SVG filter, nothing re-rasterises on scroll (Safari-safe).
+
+.wrap {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(94vw, 1200px);
+  pointer-events: none;
+}
+
+.blob {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-top: clamp(-160px, -10vh, -56px);
+  opacity: 0.7;
+
+  --mask:
+    radial-gradient(
+      60% 54% at 50% 37%,
+      #000 0%,
+      #000 22%,
+      rgba(0, 0, 0, 0.34) 46%,
+      rgba(0, 0, 0, 0.1) 64%,
+      rgba(0, 0, 0, 0) 82%
+    ),
+    linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 30%,
+      rgba(0, 0, 0, 0.22) 52%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  -webkit-mask-image: var(--mask);
+  mask-image: var(--mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+
+  animation: blobBreathe 20s ease-in-out infinite;
+}
+
+.inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+// the board fills the box; the mask does all the shaping, so no border-radius
+// / shadow of its own
+.inner > div {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@keyframes blobBreathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none;
+  }
+}
+
+// large desktop: a little wider, sitting further back
+@media (min-width: 1600px) {
+  .wrap {
+    width: min(88vw, 1460px);
+  }
+
+  .blob {
+    opacity: 0.55;
+  }
+}
+
+// tablet: narrower, fainter still
+@media (max-width: 1023.98px) {
+  .wrap {
+    width: min(104vw, 900px);
+  }
+
+  .blob {
+    margin-top: clamp(-96px, -6vh, -36px);
+    opacity: 0.5;
+  }
+}
+
+// mobile: the board rides high behind the hero text, small and faint
+@media (max-width: 767.98px) {
+  .wrap {
+    width: 116vw;
+  }
+
+  .blob {
+    margin-top: clamp(-32px, -3vh, -8px);
+    opacity: 0.38;
+  }
+}

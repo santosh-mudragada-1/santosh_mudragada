@@ -1,0 +1,205 @@
+@use 'mixins' as *;
+
+// ClearHost card art — the case study's Product Tour, ported to a self-contained
+// looping card. Fills WorkCard's clipped `.inner`, raised above the card scrim.
+// Sizes are container units so it scales with the card at any ratio.
+.root {
+  --type: clamp(2rem, 15cqh, 8rem);
+
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0b0b0c;
+
+  // gives the WorkCard title its contrast back (we sit above the card scrim)
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    pointer-events: none;
+    z-index: 3;
+  }
+}
+
+// ---- background heading: vertical ticker + horizontal drift ------------
+// The clip window is one line tall, so only the active heading shows.
+.marqueeViewport {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--type);
+  transform: translateY(-50%);
+  overflow: hidden;
+  z-index: 0;
+}
+
+.marqueeStack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  will-change: transform;
+}
+
+.marqueeRow {
+  height: var(--type);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.marqueeTrack {
+  display: flex;
+  flex: none;
+  width: max-content;
+
+  @include motion-ok {
+    animation: ch-tour-marquee 38s linear infinite;
+  }
+}
+
+.marqueeGroup {
+  display: flex;
+  flex: none;
+}
+
+.marqueeUnit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28em;
+  padding-right: 0.28em;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--type);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: color-mix(in oklab, #f4f0e9 15%, transparent);
+}
+
+.marqueeSep {
+  font-style: normal;
+  font-size: 0.42em;
+  color: var(--accent);
+  transform: translateY(-0.15em);
+}
+
+@keyframes ch-tour-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+// ---- the flipping card ------------------------------------------------
+.perspective {
+  position: relative;
+  z-index: 1;
+  width: min(84cqw, 132cqh);
+  aspect-ratio: 16 / 10;
+  perspective: 1600px;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.faceBack {
+  transform: rotateX(180deg);
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: clamp(8px, 1.6cqw, 18px);
+  overflow: hidden;
+  background: #0b0b0c;
+  box-shadow: 0 4cqh 10cqh -3cqh rgba(0, 0, 0, 0.7);
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.faceScrim {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.42), transparent);
+  pointer-events: none;
+}
+
+.pills {
+  position: absolute;
+  right: 3cqw;
+  bottom: 3cqh;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  z-index: 2;
+}
+
+.pill {
+  border-radius: 8px;
+  background: #fff;
+  color: #14110d;
+  font-size: max(0.58rem, 1.9cqh);
+  font-weight: 600;
+  padding: 0.3rem 0.55rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  white-space: nowrap;
+}
+
+// ---- progress dots --------------------------------------------------
+.dots {
+  position: absolute;
+  left: 50%;
+  bottom: 7cqh;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 4;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in oklab, #f4f0e9 28%, transparent);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.dotOn {
+  background: var(--accent);
+  transform: scale(1.35);
+}
+
+@include reduced-motion {
+  .marqueeTrack {
+    animation: none;
+  }
+}

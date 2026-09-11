@@ -1,0 +1,210 @@
+@use 'mixins' as *;
+
+/* ScrollStory — sticky "problem -> solution" scene. Renders inside `.root`
+   so `--cs-*` tokens cascade in. Cinematic frame on the paper surface: the
+   light mock/screenshot floats on a faint dot grid, dark tooltip cards carry
+   the annotations. */
+
+.spacer {
+  position: relative;
+  width: 100%;
+  height: calc(100svh + var(--scroll-length, 3000px));
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--bg);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--fg) 10%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+}
+
+.frame {
+  position: relative;
+  /* height (= width / 1.6) stays clear of the fixed header and the stage floor */
+  width: min(92vw, 124vh, 1140px);
+  aspect-ratio: 1600 / 1000;
+  overflow: visible;
+}
+
+.imageBox {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--cs-shadow-xl);
+}
+
+.zoomLayer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  will-change: transform, opacity;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  backface-visibility: hidden;
+}
+
+.overlay {
+  position: absolute;
+  display: block;
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 10px 24px hsl(40 20% 20% / 0.24));
+}
+
+.pathSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.strikeWrap {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.strikeSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* annotations */
+.annLayer {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.annOuter {
+  position: absolute;
+}
+
+.annCard {
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.8rem 0.95rem;
+  border-radius: 12px;
+  box-shadow: var(--cs-shadow-lg);
+  font-size: clamp(0.78rem, 0.72rem + 0.3vw, 0.9rem);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  will-change: transform, opacity;
+}
+
+.annTitle {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--cs-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+.annText {
+  display: block;
+}
+
+.badge {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 4;
+  font-family: var(--cs-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--fg) 62%, transparent);
+  background: color-mix(in oklab, var(--bg) 78%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.2rem 0.45rem;
+  backdrop-filter: blur(4px);
+}
+
+/* ---- reduced motion / phones: stacked before -> after -------------------- */
+.staticStack {
+  display: grid;
+  gap: 2.5rem;
+  // the wrapper in ProductDecisions is full-bleed (for the scrub stage) —
+  // put the page gutter back for this stacked fallback.
+  padding-inline: var(--edge);
+
+  @include mq('md') {
+    gap: 3rem;
+  }
+
+  @include mq('lg') {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.staticPhase {
+  margin: 0;
+}
+
+.staticShot {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--cs-shadow-md);
+  aspect-ratio: 1600 / 1000;
+}
+
+.staticNotes {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.6rem;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding-left: 0.85rem;
+    border-left: 3px solid var(--accent);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+
+  li[data-tone='solution'] {
+    border-left-color: var(--cs-ok);
+  }
+}
+
+.staticNoteTitle {
+  font-family: var(--cs-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}

@@ -1,0 +1,269 @@
+@use 'mixins' as *;
+
+/* ==========================================================================
+ *  v2 — DRIFT. Horizontal editorial gallery.
+ * ========================================================================== */
+
+.section {
+  position: relative;
+  background: #f3efe8;
+  overflow: clip;
+  padding-top: clamp(120px, 20vh, 240px);
+}
+
+.head {
+  width: 100%;
+  max-width: 1500px;
+  margin-inline: auto;
+  padding: 0 var(--gutter) clamp(2.5rem, 8vh, 6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.kicker {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--smoke-500);
+}
+
+.arrow {
+  color: var(--accent);
+}
+
+.title {
+  margin-top: clamp(0.75rem, 2vw, 1.25rem);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 1rem + 7vw, 6.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.intro {
+  margin-top: clamp(1rem, 2.5vw, 1.75rem);
+  max-width: 40ch;
+  font-size: clamp(1rem, 0.95rem + 0.45vw, 1.25rem);
+  line-height: 1.5;
+  color: var(--smoke-500);
+}
+
+/* -- the drift stage --------------------------------------------------- */
+.spacer {
+  position: relative;
+  height: calc(100svh + var(--drift, 2600px));
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #f3efe8;
+}
+
+.track {
+  position: relative;
+  z-index: 1;
+  margin-top: 7svh; // headroom for the name that sits above each panel
+  display: flex;
+  align-items: center;
+  gap: clamp(9vw, 13vw, 16vw);
+  padding-inline: clamp(12vw, 18vw, 22vw);
+  width: max-content;
+  will-change: transform;
+
+  :global(html.is-webkit) & {
+    will-change: auto;
+  }
+}
+
+.panel {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(360px, 64vw, 960px);
+  height: min(60svh, 50vw);
+}
+
+.name {
+  position: absolute;
+  left: -1vw;
+  bottom: calc(100% + 0.12em);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(2.2rem, 1.3rem + 3.8vw, 5rem);
+  line-height: 0.9;
+  letter-spacing: -0.032em;
+  white-space: nowrap;
+  color: var(--ink);
+  will-change: transform;
+
+  :global(html.is-webkit) & {
+    will-change: auto;
+  }
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  overflow: clip;
+  contain: paint;
+  background: var(--carbon);
+  box-shadow: 0 50px 110px -44px rgba(20, 17, 13, 0.42);
+}
+
+.artLink {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+
+.panelCaption {
+  position: absolute;
+  top: calc(100% + 1.1rem);
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.capIndex {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.capTitle {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.capMeta {
+  color: var(--smoke-500);
+}
+
+.capLink {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--ink);
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line-strong);
+  transition: border-color var(--dur-fast) var(--ease-quart-in-out);
+
+  @include hover {
+    border-color: var(--accent);
+  }
+}
+
+/* -- HUD ------------------------------------------------------------- */
+.hud {
+  position: absolute;
+  z-index: 3;
+  left: clamp(12vw, 18vw, 22vw);
+  right: clamp(12vw, 18vw, 22vw);
+  bottom: clamp(1.5rem, 4.5vh, 2.75rem);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.hudNow {
+  font-size: 1rem;
+}
+
+.rail {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0.22;
+  }
+}
+
+.railFill {
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.hudTotal {
+  font-size: 0.8rem;
+  color: var(--smoke-500);
+}
+
+.hint {
+  position: absolute;
+  z-index: 3;
+  right: clamp(12vw, 18vw, 22vw);
+  top: clamp(1.5rem, 5vh, 3rem);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--smoke-500);
+}
+
+@include mq-max('md') {
+  .name {
+    font-size: clamp(2rem, 1.2rem + 4vw, 3.4rem);
+  }
+  .panel {
+    width: 82vw;
+    height: min(56svh, 92vw);
+  }
+  .hint {
+    display: none;
+  }
+}
+
+@include reduced-motion {
+  // entry renders <ShowcaseFlow> under reduced motion; seatbelt only.
+  .track {
+    flex-direction: column;
+    transform: none !important;
+  }
+  .panel {
+    width: min(90vw, 640px);
+    margin-inline: auto;
+  }
+  .name {
+    position: static;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .panelCaption {
+    position: static;
+    margin-top: 4rem;
+  }
+}

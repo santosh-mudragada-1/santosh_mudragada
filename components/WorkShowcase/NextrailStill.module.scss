@@ -1,0 +1,62 @@
+@use 'mixins' as *;
+
+// Same treatment as NextrailGraphic.module.scss, phone centred and static.
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(
+      130% 95% at 84% 6%,
+      rgba(150, 122, 255, 0.5) 0%,
+      rgba(150, 122, 255, 0) 58%
+    ),
+    linear-gradient(158deg, #5b47c7 0%, #4a38ab 52%, #3a2c8e 100%);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 42%;
+    background: linear-gradient(to top, rgba(18, 10, 40, 0.55), transparent);
+    pointer-events: none;
+  }
+}
+
+.map {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: min(1400px, 170%);
+  height: auto;
+  opacity: 0.12;
+  pointer-events: none;
+  user-select: none;
+}
+
+.device {
+  --h: min(86cqh, 130cqw);
+
+  position: relative;
+  height: var(--h);
+  aspect-ratio: 528 / 1080;
+  // `feed-home.webm` is the phone mockup with solid-black square corners
+  // outside the device silhouette. The clip radius has to be rounder than the
+  // phone's own corners so `overflow: hidden` shaves those black wedges off
+  // rather than leaving them poking past the frame onto the violet.
+  border-radius: calc(var(--h) * 0.09);
+  overflow: hidden;
+  filter: drop-shadow(0 3cqh 6cqh rgba(20, 10, 45, 0.5));
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

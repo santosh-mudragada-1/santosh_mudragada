@@ -1,0 +1,61 @@
+@use 'mixins' as *;
+
+// The floating plate. No visible card chrome — just a gentle rounded clip and
+// a soft, wide shadow so the (mostly dark) artwork sits on the warm paper like
+// a print on a table. The wrapper the stage animates is OUTSIDE this file.
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+}
+
+.plate {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  // clip 3D-transformed descendants too (ClearhostGraphic's flip card would
+  // otherwise bleed its marquee past `overflow: hidden` mid-rotation)
+  contain: paint;
+  border-radius: clamp(12px, 1.4vw, 22px);
+  background: var(--carbon);
+  box-shadow:
+    0 2px 6px rgba(20, 17, 13, 0.06),
+    0 44px 90px -34px rgba(20, 17, 13, 0.34);
+
+  // hairline to lift the plate edge off the paper without a hard border
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgba(20, 17, 13, 0.08);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@include mq-max('md') {
+  .frame {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@include mq-max('sm') {
+  .frame {
+    aspect-ratio: 3 / 2.15;
+  }
+  .plate {
+    border-radius: 12px;
+    box-shadow:
+      0 2px 6px rgba(20, 17, 13, 0.06),
+      0 24px 50px -26px rgba(20, 17, 13, 0.3);
+  }
+}

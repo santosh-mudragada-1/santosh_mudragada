@@ -1,0 +1,423 @@
+@use 'mixins' as *;
+
+/* ===========================================================================
+   /resume — portfolio-native reading of Resume.pdf. Same paper / ink / orange
+   shell, type scale, spacing tokens and motion idioms as the case studies
+   (compare Clearhost.module.scss / Nextrail.module.scss).
+
+   Layout: every block is a two-column row — a large section title that sticks
+   on the left while its content scrolls past on the right. Below `md` the
+   columns stack and the title is static. No new visual system; every value
+   resolves to an existing token.
+   =========================================================================== */
+
+.root {
+  --sect: clamp(3.25rem, 2rem + 5vh, 6rem);
+  --edge: var(--gutter);
+  --shell: 70rem;
+  --rail: 20rem; // left (title) column on wide screens
+  --rail-gap: clamp(2rem, 6vw, 5rem);
+
+  background: var(--bg);
+  color: var(--fg);
+  overflow: clip;
+
+  /* room for the sticky Download button to settle above the footer */
+  padding-bottom: clamp(2.5rem, 3rem + 4vh, 6rem);
+}
+
+/* --- Download button dock -------------------------------------------------- */
+/* Sticky, so the button pins bottom-right while the résumé is on screen and
+   scrolls away with the article at its end — it never rides over the footer.
+   `overflow: clip` on `.root` clips without creating a scroll container, so it
+   doesn't trap this (same as the sticky section titles). */
+.downloadDock {
+  position: sticky;
+  bottom: max(
+    clamp(1rem, 2.4vw, 2.25rem),
+    env(safe-area-inset-bottom, 0px)
+  );
+  z-index: var(--z-sticky);
+  display: flex;
+  justify-content: flex-end;
+  margin-top: clamp(2.5rem, 7vh, 5rem);
+  padding-inline: clamp(1rem, 2.4vw, 2.25rem);
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+@include mq-max('sm') {
+  .downloadDock {
+    padding-inline: 0.9rem;
+    bottom: max(0.9rem, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--edge);
+}
+
+/* one-shot scroll-reveal hooks — GSAP owns the animation; no resting styles
+   so content is visible before JS, under reduced motion, and with JS off. */
+.rise,
+.riseGroup {
+  /* intentionally empty */
+}
+
+/* --- the shared two-column grid ----------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, var(--rail)) minmax(0, 1fr);
+  column-gap: var(--rail-gap);
+}
+
+.col1 {
+  min-width: 0;
+}
+
+.col2 {
+  min-width: 0;
+}
+
+/* --- sticky section title -------------------------------------------------- */
+.sectionTitle {
+  position: sticky;
+  top: calc(var(--header-h) + 2rem);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 1.2rem + 2.5vw, 3.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  text-wrap: balance;
+}
+
+/* ===========================================================  MASTHEAD  === */
+.masthead {
+  padding-top: clamp(6.5rem, 10vw + 3rem, 11rem);
+  padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(3rem, 1.3rem + 6.4vw, 6rem);
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+  color: var(--fg);
+}
+
+.nameLine {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.06em;
+
+  > span {
+    display: block;
+    will-change: transform;
+  }
+}
+
+.masthead .grid {
+  margin-top: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+/* label + value list (About, Skills, Tools) */
+.metaRow,
+.subRow {
+  display: grid;
+  grid-template-columns: minmax(0, 6rem) minmax(0, 1fr);
+  gap: 0.6rem 1.5rem;
+  align-items: start;
+}
+
+.metaLabel {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  padding-top: 0.15rem;
+}
+
+.metaList,
+.plainList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: clamp(1rem, 0.97rem + 0.15vw, 1.1rem);
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.profile {
+  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+  padding-top: clamp(1.75rem, 3.5vw, 2.5rem);
+  border-top: 1px solid var(--line);
+  max-width: 62ch;
+  font-style: italic;
+  font-size: clamp(1.05rem, 0.98rem + 0.4vw, 1.3rem);
+  line-height: 1.6;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+/* ===========================================================  SECTIONS  === */
+.section {
+  border-top: 1px solid var(--line);
+  padding-block: var(--sect);
+  scroll-margin-top: calc(var(--header-h) + 2rem);
+}
+
+.sectionEmphasis {
+  padding-block: calc(var(--sect) + clamp(0.75rem, 2vw, 1.75rem));
+}
+
+/* --- role / degree / certificate title ------------------------------------ */
+.blockTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.9rem);
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+/* small inline meta with dot separators (period · location · company) */
+.factLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em 0.7em;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+
+  i {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
+  }
+}
+
+.faded {
+  color: color-mix(in oklab, var(--fg-muted) 72%, transparent);
+}
+
+/* --- point list — spaced paragraphs, no bullets, no rules --------------- */
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.85rem, 2vw, 1.3rem);
+  margin-top: clamp(1.35rem, 3vw, 2rem);
+  font-size: clamp(1rem, 0.97rem + 0.15vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--fg-muted);
+
+  li {
+    max-width: 64ch;
+    text-wrap: pretty;
+  }
+}
+
+/* --- selected work ---------------------------------------------------------- */
+.projects {
+  display: flex;
+  flex-direction: column;
+}
+
+.project {
+  display: flex;
+  flex-direction: column;
+
+  & + & {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+    padding-top: clamp(2.5rem, 6vw, 4rem);
+    border-top: 1px solid var(--line);
+  }
+}
+
+.projectType {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin-bottom: 0.95em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+
+  &::before {
+    content: '';
+    width: 1.6em;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.65;
+  }
+}
+
+.projectName {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.85rem, 1.35rem + 2.2vw, 2.9rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+}
+
+.projectDescriptor {
+  margin-top: 0.5em;
+  max-width: 42ch;
+  font-size: clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem);
+  line-height: 1.4;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.caseLink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  margin-top: clamp(1.5rem, 3.5vw, 2.25rem);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fg);
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 3px;
+  transition:
+    color 0.25s var(--ease-quart-in-out),
+    border-color 0.25s var(--ease-quart-in-out);
+}
+
+.caseArrow {
+  transition: transform 0.25s var(--ease-quart-in-out);
+}
+
+@include hover {
+  .caseLink:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .caseLink:hover .caseArrow {
+    transform: translateX(4px);
+  }
+}
+
+/* --- education / certifications ---------------------------------------- */
+.entries {
+  display: flex;
+  flex-direction: column;
+}
+
+.entry {
+  & + & {
+    margin-top: clamp(1.5rem, 3.5vw, 2.25rem);
+    padding-top: clamp(1.5rem, 3.5vw, 2.25rem);
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* --- skills & tools -------------------------------------------------------- */
+.subRows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.75rem, 4.5vw, 3rem);
+}
+
+/* --- contact ------------------------------------------------------------- */
+.contactList {
+  display: flex;
+  flex-direction: column;
+}
+
+.contactItem {
+  padding-block: clamp(0.6rem, 1.6vw, 0.95rem);
+  border-top: 1px solid var(--line);
+
+  &:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+.contactValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.05rem, 0.98rem + 0.4vw, 1.3rem);
+  color: var(--fg-muted);
+}
+
+a.contactValue {
+  transition: color 0.25s var(--ease-quart-in-out);
+}
+
+.contactArrow {
+  font-size: 0.8em;
+  transition: transform 0.25s var(--ease-quart-in-out);
+}
+
+@include hover {
+  a.contactValue:hover {
+    color: var(--accent);
+  }
+  a.contactValue:hover .contactArrow {
+    transform: translate(3px, -3px);
+  }
+}
+
+/* ===========================================================  RESPONSIVE  === */
+
+/* below md: stack the columns, title goes static above its content */
+@include mq-max('md') {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .masthead .grid {
+    margin-top: clamp(1.75rem, 5vw, 2.75rem);
+  }
+
+  /* the empty spacer cell in the masthead grid collapses */
+  .masthead .col1 {
+    display: none;
+  }
+
+  .sectionTitle {
+    position: static;
+    top: auto;
+    font-size: clamp(1.7rem, 1.3rem + 2vw, 2.2rem);
+  }
+
+  .metaRow,
+  .subRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .metaLabel {
+    padding-top: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+}
+
+@include reduced-motion {
+  .caseLink,
+  .caseArrow,
+  a.contactValue,
+  .contactArrow {
+    transition-duration: 0.001ms;
+  }
+}

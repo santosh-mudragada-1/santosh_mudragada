@@ -1,0 +1,102 @@
+@use 'mixins' as *;
+
+/* The button visual only — the `.downloadDock` wrapper in Resume.module.scss
+   owns positioning (sticky, bottom-right, scoped to the résumé article).
+   Mirrors the nav circle button: carbon pill, accent wipe on hover, compact. */
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  background: var(--carbon);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  isolation: isolate;
+
+  box-shadow: 0 10px 30px -12px rgba(20, 17, 13, 0.4);
+
+  /* entrance */
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.5s var(--ease-quart-in-out),
+    transform 0.5s var(--ease-quart-in-out),
+    box-shadow 0.35s var(--ease-quart-in-out);
+
+  &[data-in] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* accent fill wipes up from the bottom, same idiom as .circle::before */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--accent);
+    transform: translateY(101%);
+    transition: transform 0.4s var(--ease-quart-in-out);
+  }
+
+  @include hover {
+    &:hover {
+      color: var(--on-accent);
+      box-shadow: 0 16px 38px -14px rgba(255, 77, 26, 0.5);
+
+      &::before {
+        transform: translateY(0);
+      }
+
+      .icon {
+        transform: translateY(2px);
+      }
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+.icon {
+  display: inline-flex;
+  transition: transform 0.35s var(--ease-quart-in-out);
+}
+
+.text {
+  line-height: 1;
+}
+
+@include mq-max('md') {
+  .button {
+    padding: 0.8rem 1.1rem;
+    font-size: 0.82rem;
+  }
+}
+
+@include mq-max('sm') {
+  .button {
+    gap: 0.45rem;
+    padding: 0.7rem 0.95rem;
+    font-size: 0.8rem;
+  }
+}
+
+@include reduced-motion {
+  .button,
+  .icon {
+    transition-duration: 0.001ms;
+  }
+  .button {
+    transform: none;
+  }
+}

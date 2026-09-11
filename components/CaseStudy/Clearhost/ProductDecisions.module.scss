@@ -1,0 +1,93 @@
+@use 'mixins' as *;
+
+/* §5 · Product design & decisions. Layout primitives mirror
+   Clearhost.module.scss (.section / .container / .h2 / .lede) so this section
+   sits flush with the rest of the case study. */
+
+.section {
+  position: relative;
+  padding-block: var(--sect);
+}
+
+.container {
+  width: 100%;
+  padding-inline: var(--edge);
+}
+
+.fullBleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+.h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 1rem + 6vw, 6rem);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  max-width: 20ch;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.lede {
+  margin-top: 1.25rem;
+  max-width: var(--cs-measure);
+  font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.4rem);
+  line-height: 1.55;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+/* per-decision block */
+.decision {
+  margin-top: clamp(4rem, 8vw, 7rem);
+}
+
+.decHead {
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.decTop {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+}
+
+.decN {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+.decAspect {
+  font-family: var(--font-heading);
+  font-size: clamp(1.2rem, 1rem + 1vw, 1.65rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.decCall {
+  max-width: 52ch;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.15rem);
+  line-height: 1.5;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+}
+
+.playground {
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.storyWrap {
+  margin-top: clamp(2rem, 4vw, 3rem);
+}

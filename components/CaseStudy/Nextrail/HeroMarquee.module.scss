@@ -1,0 +1,198 @@
+@use 'mixins' as *;
+
+/* ------------------------------------------------------------------ *
+ * Hero marquee — three columns of real Nextrail screens.
+ *
+ * The whole rig is ONE flat sheet, rotated ONCE. Nothing inside it
+ * carries its own transform:
+ *
+ *   .wrap    scene bounds — clip + the vertical fade mask.
+ *   .rig     the flat, unrotated layout (flex row of columns) AND the
+ *            single 3D pose (perspective + rotateX/Y/Z). A CSS
+ *            transform never affects how its own flex children are
+ *            laid out — they're measured and positioned as a normal
+ *            flat sheet first, and only the finished, already-spaced
+ *            sheet gets tilted in space for paint. That's what keeps
+ *            every card's relative spacing intact (nothing to
+ *            overlap) and every image a true rectangle (nothing to
+ *            distort) — rotating 17 separate cards individually was
+ *            the bug, not the fix.
+ *
+ *            There is deliberately NO perspective() in this transform.
+ *            perspective() makes rotateX/Y a projective transform: it
+ *            adds a near/far divide, so a card's rendered size depends
+ *            on where it sits in the (tall, scrolling) sheet — corners
+ *            further from centre balloon or shrink relative to nearer
+ *            ones, turning each card into a visible trapezoid instead
+ *            of a clean tilted rectangle. That trapezoid — cells wider
+ *            at one edge than the other — is what actually reads as
+ *            "stretched", and it doesn't go away by raising the
+ *            perspective distance, only shrinks slowly. Dropping
+ *            perspective() entirely makes this a pure affine rotation
+ *            (an orthographic projection): the sheet still tilts by
+ *            the exact angles below, but every card keeps parallel
+ *            edges and a constant size everywhere in the sheet and
+ *            through the whole scroll loop — confirmed by rendering
+ *            both side by side (a squared-grid test box) and comparing
+ *            cell shape across the box.
+ *   .col     one marquee column — plain flex column, no transform.
+ *   .track   the moving belt — translateY keyframes only (loop + dupes).
+ *   .card    frame only — border-radius. No transform, no shadow, no
+ *            forced aspect-ratio (screens aren't all the same ratio —
+ *            see HeroMarquee.tsx). Its box comes entirely from the img.
+ *   img      display only — width:100%; height:auto. Each <img> carries
+ *            its OWN real width/height attributes (set per-screen in
+ *            HeroMarquee.tsx, not one guessed-at constant), so the
+ *            browser reserves that exact box from first paint, before
+ *            the (lazy) file has loaded. Without that, a loading image
+ *            changes the track's total height mid-animation, and since
+ *            the loop keyframe is `translateY(-50%)` — relative to that
+ *            height — every late image load shifts the target and the
+ *            belt visibly jumps. Correct size up front = no jump, and
+ *            the displayed ratio is always the image's real one.
+ * ------------------------------------------------------------------ */
+
+.wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: clip; // the only clip
+  // Viewport-aligned vertical dissolve, applied on the untransformed
+  // wrapper so it fades against the screen edges, not the tilted sheet's
+  // own (now diagonal) local axis.
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 18%,
+    #000 84%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 18%,
+    #000 84%,
+    transparent 100%
+  );
+}
+
+// The rig is a plain flex sheet — columns side by side, ordinary gap.
+// Figma -> Rotate 3D: X 25 · Y 25 · Z -50, applied once, here, to the
+// whole sheet after layout. Nothing downstream repeats it.
+.rig {
+  position: absolute;
+  top: -14%;
+  left: 66%;
+  width: 46%;
+  height: 92%;
+
+  display: flex;
+  gap: clamp(0.85rem, 1.6vw, 1.5rem);
+
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+
+  transform:
+    rotateX(30deg)
+    rotateY(0deg)
+    rotateZ(-50deg);
+}
+
+.col {
+  flex: 0 0 clamp(126px, 12vw, 176px);
+  min-width: 0;
+}
+
+// The belt. Movement, looping and spacing only.
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.85rem, 1.6vw, 1.5rem);
+  will-change: transform;
+
+  &[data-dir='up'] {
+    animation: nxUp 54s linear infinite;
+  }
+  &[data-dir='down'] {
+    animation: nxDown 54s linear infinite;
+  }
+}
+
+// One screenshot's frame — no transform, no shadow.
+.card {
+  flex: none;
+  width: 100%;
+  border-radius: clamp(14px, 1.4vw, 22px);
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto; // ratio comes from each image's own width/height attrs
+    // (set per-screen in HeroMarquee.tsx) — never forced or guessed at
+    // a single fixed number, so nothing to stretch and no box to resize
+    // out from under the animation once the real file arrives.
+  }
+}
+
+@keyframes nxUp {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes nxDown {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+// tablet — same three columns as desktop, scaled down and pulled tighter
+// to the corner so the sheet stays clear of the copy column instead of
+// sprawling the full height of a taller, narrower viewport.
+@include mq-max('lg') {
+  .rig {
+    top: -20%;
+    left: 96%;
+    width: 60%;
+    height: 100%;
+    gap: clamp(1.1rem, 2.6vw, 1.8rem);
+  }
+  .col {
+    flex-basis: clamp(112px, 14.6vw, 176px);
+  }
+  .track {
+    gap: clamp(1.1rem, 2.6vw, 1.8rem);
+  }
+}
+
+// mobile — one faint column, top-right corner accent only.
+@include mq-max('md') {
+  .rig {
+    top: -6%;
+    left: 82%;
+    width: 46%;
+    height: 60%;
+    opacity: 0.2;
+  }
+  .col:nth-child(2),
+  .col:nth-child(3) {
+    display: none;
+  }
+  .col {
+    flex-basis: 34vw;
+  }
+}
+
+@include reduced-motion {
+  .track {
+    animation: none;
+  }
+}

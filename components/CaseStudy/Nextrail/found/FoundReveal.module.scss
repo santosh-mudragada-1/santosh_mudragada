@@ -1,0 +1,494 @@
+@use 'mixins' as *;
+
+// ===========================================================================
+// "What we found" — a single pinned card stage that runs through three
+// scroll-scrubbed scenes (flow / scroll-expand / fan) while three plain text
+// points scroll past normally, one per scene. At `lg` and up the stage sits
+// in its own column to the right of the text, sticky for the full height of
+// `.track`. Below `lg` there's no room for that side-by-side layout, so the
+// two stack instead — the stage is reordered (not reparented; DOM/reading
+// order keeps the text first) to sit visually first and pins at a reduced
+// height, with the point text scrolling beneath it in the same viewport.
+// ===========================================================================
+.reveal {
+  position: relative;
+  // Shared between `.stage`'s stacked-layout height and `.point`'s matching
+  // top offset below `lg`, so the two stay in sync if either is retuned.
+  --found-stage-h: clamp(16rem, 46vh, 24rem);
+  // Tablet only (see `.pointInner` and `.stage`): the caption's own reserved
+  // box height and how far its bottom sits from the true viewport bottom.
+  // Both `.pointInner`'s `top` and `.stage`'s `height` are computed from
+  // these two, so the stage always fills exactly the space left over above
+  // the caption with no gap or overlap between them.
+  // Tuned to the tallest (point 3) caption's actual rendered height at
+  // tablet widths (~14.2rem) plus a hair of slack — sized to content rather
+  // than a round number so the bottom gap comes out close to the intended
+  // 5% for that caption; shorter ones land with a little extra gap above
+  // it, which is fine since only one caption is ever on screen at a time.
+  --found-caption-h: 14.5rem;
+  --found-bottom-gap: 5svh;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+  column-gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+
+  @include mq-max('lg') {
+    display: flex;
+    flex-direction: column;
+    // Override the grid rule's `align-items: start` above — a column flex
+    // reads that as "shrink to content width" on the cross axis, which would
+    // stop `.track`/`.stage` from filling the available width.
+    align-items: stretch;
+  }
+}
+
+.track {
+  min-width: 0;
+}
+
+// CSS `sticky` can only engage once `.stage`'s own natural (static) position
+// (~the top of `.track`) has scrolled up to the `top` offset — it can never
+// stick *before* that. Point 1's trigger now starts 50vh before point 1's own
+// top (see the `-=` offset in FoundReveal.tsx), so this lead-in is exactly
+// 50vh: just enough scroll room for stickiness to engage right as that
+// trigger starts, with zero dead space between the heading above and the
+// first frame of the animation. Shrink further and the animation would start
+// playing before the stage is pinned (the panel would visibly jump into
+// place mid-motion); the two figures must stay in lockstep.
+.leadIn {
+  height: 50vh;
+
+  // Below `lg` the stage is reordered to sit visually first (see `.stage`),
+  // so it's already at the very top of the stacked column and engages
+  // sticky almost immediately — no pre-roll needed before point 1's trigger.
+  @include mq-max('lg') {
+    height: 0;
+  }
+}
+
+.point {
+  min-height: 100vh;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+
+  // Below `lg`, `.pointInner` (sticky) takes over vertical placement — plain
+  // top-alignment here keeps flexbox's own centring from fighting with
+  // sticky's static-position calculation (see `.pointInner`). Kept at a
+  // plain `100vh` (not taller) so each point hands off to the next the
+  // instant its own scene settles — padding this out just to give a sticky
+  // caption more room to hold its position reads as a dead pause where nothing
+  // moves before the next point arrives.
+  @include mq-max('lg') {
+    justify-content: flex-start;
+  }
+}
+
+// A plain wrapper on desktop (no layout effect — `.point`'s flex centres it
+// exactly as it centred these children directly before). Below `lg` it's
+// what actually holds the caption in place: a `top` offset just past the
+// stage's own bottom edge. Pushing this further down the screen (tried:
+// resting near the bottom) sounded nicer but a sticky offset can only hold
+// for as long as a ~100vh point has *room* left below it — the further
+// down the offset, the sooner that room runs out, so a bottom-hugging
+// offset detached (and started drifting back up) as early as halfway
+// through the point's own scene, well before that scene had finished
+// animating. This smaller offset is what a ~100vh point can actually hold
+// for most of a scene's dwell — it still has to detach for the last
+// stretch (there isn't enough room in a ~100vh point to hold *any* offset
+// the entire way through), which is what the fade on `.stage` (and the
+// `.headerMask` strip above it) are for: that detach-and-drift-up
+// disappears cleanly behind the pinned stage instead of visibly crossing
+// in front of the cards.
+.pointInner {
+  @include mq-max('lg') {
+    position: sticky;
+    top: calc(var(--header-h) + var(--found-stage-h) + 1rem);
+    padding-block: 1rem 0;
+  }
+
+  // Tablet only: a fixed `top` just below the stage (above) reads fine on a
+  // short phone screen — it's already close to the bottom there — but a
+  // taller tablet viewport leaves a large, empty gap below it, reading as
+  // "centred" rather than resting near the bottom as requested. (Tried
+  // stretching this box to near-full-viewport height with
+  // `justify-content: flex-end` so it bottom-aligns any caption length
+  // automatically — but a sticky element's "room to stay stuck" is
+  // `container height − top − the element's OWN height`, so a
+  // near-viewport-tall box left almost none: it released almost
+  // immediately and just scrolled off with the page, opacity already
+  // faded, never visibly holding at the bottom at all.) A plain,
+  // content-sized box moved down via `top` keeps the box small — the
+  // release math stays the same as the working phone version, just with a
+  // bigger offset — landing close to the bottom for the longest (point 3)
+  // caption; shorter ones sit a little higher above the gutter, not flush,
+  // which reads fine since they're never on screen at the same time.
+  // `--found-bottom-gap` off the true bottom instead of flush against it —
+  // `.stage` below fills exactly the room this leaves above it.
+  @include mq('md') {
+    @include mq-max('lg') {
+      top: calc(100svh - var(--found-bottom-gap) - var(--found-caption-h));
+    }
+  }
+}
+
+.pointN {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.6em;
+}
+
+.pointStatement {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1rem + 2.4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+.pointBody {
+  margin-top: 0.8em;
+  max-width: 40ch;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+// The site header (see Navigation.module.scss) is a transparent overlay —
+// no background of its own, by design, so hero content elsewhere on the
+// site can show through it. That means it does nothing to hide a caption
+// that scrolls up past `.stage`'s own top edge (`.stage` starts *below*
+// the header, at `--header-h`, not above it) — without this, an exiting
+// caption is fully visible passing behind the header's empty space, only
+// getting masked once it reaches `.stage` a bit further down. A thin,
+// permanently-stuck, opaque strip covering exactly the header's own band
+// closes that gap; it sits below the header in z-index, so the header's
+// own wordmark/menu button (z-index 90) still paint over it as normal.
+.headerMask {
+  display: none;
+
+  @include mq-max('lg') {
+    display: block;
+    // `.grid`'s flex column places items by `order`, not DOM position — left
+    // at the default `order: 0`, this sat AFTER `.track` (all three ~100vh
+    // points) in layout, so its own *static* position (what a sticky
+    // element's engagement is measured from) was near the very BOTTOM of the
+    // ~3200px grid. That gave it almost no room to actually hold at `top: 0`
+    // before running out of container and releasing — it was only ever
+    // fleetingly, unreliably present, which is what let point captions bleed
+    // through the header band for nearly this whole component's scroll
+    // range. Ordered first instead, its static position is the very top of
+    // `.grid` (scroll 0), so it engages immediately and holds for the entire
+    // section.
+    order: -2;
+    position: sticky;
+    top: 0;
+    height: var(--header-h);
+    // Ordering it first would otherwise reserve `header-h` of real space
+    // ahead of `.stage`, pushing the whole stacked layout down — this isn't
+    // content, just a masking overlay, so cancel its own footprint and let
+    // `.stage` (order -1, right after) sit flush at the top as before.
+    margin-bottom: calc(var(--header-h) * -1);
+    background: var(--bg);
+    // Flex items with equal z-index paint in order-modified (not DOM) document
+    // order, later = on top — so with `.stage` at z-index 2 and this ordered
+    // *before* it, a tied z-index would let `.stage` paint OVER this mask, the
+    // opposite of what's needed right as `.stage` releases from sticky and its
+    // cards momentarily pass through this exact band on their way off-screen.
+    // A strictly higher z-index sidesteps the order-based tie-break entirely.
+    z-index: 3;
+  }
+}
+
+// ---------------------------------------------------------------- the stage
+// Sticky, not GSAP-pinned: it holds at `top` for exactly as long as `.track`
+// has extra scroll room (its full height minus this element's own height),
+// then releases — the same mechanism Feed2FlyScroll's phone column uses.
+.stage {
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100svh - var(--header-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 1400px;
+
+  // The flow scene's cards travel flush to this box's right edge (no
+  // padding, by design) so `overflow: hidden` clips them with a hard,
+  // straight edge instead of a natural fade. This overlay blends that cut
+  // into the page background instead of masking it outright. Desktop-only —
+  // see the mobile override below, where the flow/scroll scenes no longer
+  // travel to the true edge, so there's nothing left for this to blend.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent 72%, var(--bg) 100%);
+    z-index: 1;
+  }
+
+  // Stacked below `lg` (see `.grid`): sit first, at a much shorter height —
+  // just enough for the scene to read clearly — so the point text below it
+  // is still visible in the same viewport instead of the stage claiming the
+  // whole screen the way it does side-by-side on desktop.
+  @include mq-max('lg') {
+    order: -1;
+    height: var(--found-stage-h);
+    // Flex items paint in `order` order, not positioned-vs-static order —
+    // without this, `.track`'s scrolling point text (order: 0, later) paints
+    // *over* this sticky, order: -1 stage instead of scrolling in underneath
+    // it, since they're siblings in the same flex container.
+    z-index: 2;
+    // `.pointInner` below sticks well down the screen (see `.pointInner`),
+    // which means it drifts back up underneath this pinned stage for the
+    // tail of each point's own scroll. A flat opaque fill here would hide
+    // it — but abruptly, cutting the caption off mid-line right at the
+    // stage's bottom edge instead of letting it disappear gracefully. This
+    // gradient keeps most of the stage opaque (matching the page background,
+    // so cards read normally) but fades the bottom slice to transparent, so
+    // a caption passing underneath dissolves out over that band instead of
+    // being guillotined by a hard edge.
+    background: linear-gradient(to bottom, var(--bg) 0%, var(--bg) 78%, transparent 100%);
+
+    // The stage now spans the full viewport width instead of a narrower
+    // right-hand column, and the flow/scroll scenes are re-centred for it
+    // (see FoundReveal.tsx) instead of running flush to the right edge —
+    // so there's no longer a hard cut here to blend, just a stray tint with
+    // nothing under it.
+    &::after {
+      content: none;
+    }
+
+    // Moves clipping to `.scene` instead (identical box to this element at
+    // this breakpoint — both 100%/100% — so nothing visually changes).
+    // Safari has long-standing bugs combining `position: sticky` with
+    // `overflow: hidden` *on the same element*, up to and including the
+    // sticky element failing to release and staying visually pinned long
+    // after it should have scrolled away with the rest of the page —
+    // keeping them on separate elements sidesteps it.
+    overflow: visible;
+
+    // Tablet only: the base `top: var(--header-h)` above pins the stage to a
+    // short, fixed height flush under the header — on a tall tablet
+    // viewport that leaves it stranded in a small band with a big dead gap
+    // between it and the (now bottom-anchored, see `.pointInner`) caption.
+    // Filling exactly that leftover space instead — from the header down to
+    // where the caption's own box begins — uses the room properly and reads
+    // as the animation actually happening across the remaining screen,
+    // rather than a small centred box floating in the middle of it.
+    @include mq('md') {
+      top: var(--header-h);
+      height: calc(
+        100svh - var(--header-h) - var(--found-bottom-gap) - var(--found-caption-h)
+      );
+    }
+  }
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  height: min(64vh, 38rem);
+  transform-style: preserve-3d;
+
+  // Ties the scene box exactly to the stage's own (shorter, mobile) height
+  // instead of the desktop vh-based formula, which can exceed the mobile
+  // stage and shift cards' centred resting point off from the visible,
+  // clipped area. Also takes over clipping from `.stage` at this
+  // breakpoint — see the note on `.stage`'s own `overflow: visible` override.
+  @include mq-max('lg') {
+    // Taller than the stage's own box (140%, not 100%) — a fanned card's
+    // *rotated* bounding box, plus its drop shadow, is noticeably taller
+    // than the card itself, and at 100% it was tall enough to clip flush
+    // against this box's edges: the card's corner and its shadow both got
+    // a hard, flat cut instead of rendering fully. `.scene` is centred
+    // inside `.stage` (which stays `overflow: visible` below), so the
+    // extra height just clears symmetric breathing room above and below —
+    // it doesn't move or resize anything the flow/scroll scenes' math
+    // depends on, since that's computed from `.stage`'s own rect, not
+    // `.scene`'s.
+    height: 140%;
+    overflow: hidden;
+  }
+}
+
+.card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(12.5rem, 17.5vw, 18.75rem);
+  aspect-ratio: 3 / 4;
+  margin: 0;
+  transform: translate3d(-50%, -50%, 0);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  border-radius: 1.5rem;
+  border: 1.5px solid var(--accent);
+  background: var(--accent-tint);
+  padding: 0.65rem 0.65rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 26px 54px rgba(20, 17, 13, 0.24);
+  will-change: transform;
+
+  // static resting fan — shows with no JS and under reduced motion. `left`
+  // stays a plain 50% on every card (JS positioning is transform-only, so a
+  // per-card `left` here would silently offset every scene's math on top of
+  // it); the spread lives entirely in `transform`, which GSAP fully replaces
+  // with its own inline transform the moment motion runs.
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      transform: translate3d(calc(-50% + #{($i - 4.5) * 55%}), -50%, 0) rotate(#{($i - 4.5) * 3}deg);
+    }
+  }
+
+  // Smaller floor and a steeper vw coefficient than the desktop formula
+  // above — at `lg`'s own width the desktop clamp is already close to its
+  // floor, but skip straight to `17.5vw` on a narrow phone stage and a card
+  // would be wider than the stage's own travel path, so consecutive cards'
+  // near-full-scale poses overlap ("merging") instead of clearing each
+  // other. This scales down together with the stage's reduced mobile height
+  // (see `.stage`) instead of overflowing it. `34vw` means it keeps scaling
+  // up with the viewport itself (not just the fixed rem floor/ceiling), so
+  // a larger phone gets a visibly larger card, not the same size as a small
+  // one. Radius is smaller too — the desktop radius reads as too heavy/
+  // blobby on a card this small.
+  // A fanned deck of rotated cards each casting the same desktop
+  // straight-down shadow makes their shadows converge into one harsh dark
+  // wedge near the fan's pivot instead of reading as soft depth per card —
+  // affects tablet too, not just phone, since it's about card *count and
+  // rotation* overlapping, not card size.
+  @include mq-max('lg') {
+    width: clamp(8.5rem, 38vw, 13.5rem);
+    border-radius: 0.85rem;
+    box-shadow: 0 10px 20px rgba(20, 17, 13, 0.16);
+  }
+
+  // Phone only (not tablet) — the desktop padding reads as too heavy on a
+  // card this small, eating into the already-tight photo area.
+  @include mq-max('md') {
+    padding: 0.4rem 0.4rem 0.5rem;
+  }
+}
+
+.cardPhoto {
+  flex: 1;
+  min-height: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  @include mq-max('lg') {
+    border-radius: 0.6rem;
+  }
+}
+
+.cardLabel {
+  padding: 0.7rem 0.2rem 0.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  @include mq-max('md') {
+    padding: 0.4rem 0.1rem 0;
+  }
+}
+
+.cardCity {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
+  letter-spacing: -0.01em;
+  color: #1b1712;
+
+  // Phone only — 700 at the desktop size reads as too bold/heavy once it's
+  // the only line of card copy (country's hidden below `lg`) on a card this
+  // small.
+  @include mq-max('md') {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+}
+
+.cardCountry {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(27, 23, 18, 0.6);
+
+  // A card this small only has room to read cleanly as one line — city
+  // alone carries the card; the country line is dropped rather than shrunk
+  // further into illegibility.
+  @include mq-max('lg') {
+    display: none;
+  }
+}
+
+// A plain photo used only by the scroll scene — no label/chrome, just the
+// image. `left` stays a plain 50% for the same reason as `.card` above: JS
+// positioning is transform-only. Width is a fixed base; each instance's own
+// aspect-ratio (inline style) sets its height, and GSAP's per-item `scale`
+// is what actually varies its on-screen size for the depth effect.
+.extraImg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9rem;
+  margin: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 20px 44px rgba(20, 17, 13, 0.22);
+  will-change: transform;
+  opacity: 0; // JS-driven only; stays hidden with no JS / reduced motion
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  // Same rationale as `.card`'s override above — scales with the stage and
+  // grows with the viewport, and the radius is toned down to match. Sized
+  // up from the very first mobile pass now that there are fewer of them
+  // (see `MOBILE_EXTRA_IMAGE_COUNT`) — the same total count at this size
+  // would merge into clutter, but fewer, bigger photos read clearly.
+  @include mq-max('lg') {
+    width: clamp(7rem, 30vw, 10.5rem);
+    border-radius: 0.6rem;
+  }
+}
+
+// Below `lg`, only the first `MOBILE_EXTRA_IMAGE_COUNT` of `EXTRA_IMAGES`
+// render at all — see the constant's own comment in FoundReveal.tsx. Desktop
+// keeps the full set (this class does nothing there).
+.extraImgWideOnly {
+  @include mq-max('lg') {
+    display: none;
+  }
+}
+
+@include reduced-motion {
+  .card {
+    will-change: auto;
+  }
+}

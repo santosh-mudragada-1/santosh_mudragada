@@ -1,0 +1,170 @@
+@use 'mixins' as *;
+
+.section {
+  position: relative;
+  background: var(--bg);
+}
+
+// ===========================================================================
+// DEFAULT — a framed column. This is the reduced-motion fallback at every
+// width; everyone else gets the pinned "dealing pile" from the motion @media
+// block further down.
+// ===========================================================================
+.section {
+  padding: clamp(3.5rem, 9vw, 6rem) var(--gutter);
+}
+
+.stage {
+  display: block;
+}
+
+.pile {
+  display: grid;
+  // minmax(0, …) stops a wide intrinsic image from blowing the column out
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 3.25rem);
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+
+// the phone / tablet column shows the strongest handful; the pile deals them all
+.print:nth-child(n + 8) {
+  display: none;
+}
+
+.print {
+  position: static;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--paper);
+  padding: 10px 10px 12px;
+  box-shadow:
+    0 2px 2px rgba(20, 17, 13, 0.05),
+    0 24px 48px -22px rgba(20, 17, 13, 0.32);
+}
+
+.print:nth-child(odd) {
+  rotate: -1deg;
+}
+.print:nth-child(even) {
+  rotate: 1deg;
+}
+
+.printMedia {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  // explicit height wins over the inline aspect-ratio, so every print is the
+  // same tidy landing-card size and object-fit crops the rest
+  height: min(56vh, 84vw);
+  overflow: hidden;
+  background: #ded7c9;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.printCap {
+  margin-top: 0.7rem;
+  font-family: var(--font-accent);
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.15rem);
+  line-height: 1.25;
+  color: var(--smoke-700);
+}
+
+.liveCap {
+  display: none;
+}
+
+// ===========================================================================
+// The pinned dealing pile — every viewport that allows motion. Reduced
+// motion (any width) keeps the plain column above.
+// ===========================================================================
+@media (prefers-reduced-motion: no-preference) {
+  .section {
+    padding: 0;
+  }
+
+  .stage {
+    position: relative;
+    // svh so the pinned stage is never taller than the phone actually shows
+    // (a vh stage left a black band below the pile); a fixed number, so the
+    // pin stays put as the toolbar slides
+    height: 100vh;
+    height: 100svh;
+    overflow: clip;
+    display: grid;
+    place-items: center;
+  }
+
+  .pile {
+    position: relative;
+    display: block;
+    width: min(360px, 62vw);
+    height: 1px; // just an anchor — prints are absolutely centred on it
+    max-width: none;
+  }
+
+  .print,
+  .print:nth-child(n + 8) {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    // desktop lands at 340px; phones fill more of the narrow stage
+    width: min(340px, 74vw);
+    transform: translate(-50%, -50%);
+    rotate: none;
+    justify-self: auto;
+    opacity: 0;
+    padding: clamp(10px, 2.4vw, 12px) clamp(10px, 2.4vw, 12px)
+      clamp(30px, 8vw, 46px);
+    will-change: transform, opacity;
+    transition: filter 0.4s var(--ease-quart-in-out);
+  }
+
+  .print[data-top] {
+    filter: none;
+  }
+  .print:not([data-top]) {
+    filter: brightness(0.94) saturate(0.92);
+  }
+
+  .printMedia {
+    height: auto; // let the inline aspect-ratio size the box again
+  }
+
+  .printCap {
+    display: none;
+  }
+
+  .liveCap {
+    display: block;
+    position: absolute;
+    left: 50%;
+    bottom: clamp(5vh, 8vh, 11vh);
+    transform: translateX(-50%);
+    z-index: 50;
+    max-width: min(32ch, 88vw);
+    margin: 0;
+    padding: 0.5em 1.1em;
+    text-align: center;
+    font-family: var(--font-accent);
+    font-size: clamp(1.1rem, 0.95rem + 0.7vw, 1.6rem);
+    line-height: 1.25;
+    color: var(--fg);
+    background: color-mix(in srgb, var(--paper) 82%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border-radius: 999px;
+    opacity: 0;
+  }
+}

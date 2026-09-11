@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#f4f0e9"/>
+  <rect x="11" y="21" width="664" height="280" fill="#12100c" opacity="0.85"/>
+  <circle cx="468" cy="308" r="181" fill="#ff4d1a"/>
+  <rect x="0" y="732" width="1200" height="68" fill="#8a857c" opacity="0.5"/>
+  <rect x="96" y="123" width="319" height="11" fill="#12100c" opacity="0.9"/>
+  <rect x="96" y="178" width="341" height="11" fill="#12100c" opacity="0.9"/>
+  <rect x="96" y="237" width="588" height="11" fill="#12100c" opacity="0.9"/>
+  <text x="60" y="855" font-family="Georgia, 'Times New Roman', serif" font-size="54" fill="#12100c" opacity="0.85">Northstar</text>
+  <text x="60" y="81" font-family="ui-monospace, Menlo, monospace" font-size="27" fill="#ff4d1a" letter-spacing="2">PLACEHOLDER</text>
+</svg>

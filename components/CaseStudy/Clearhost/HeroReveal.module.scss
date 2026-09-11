@@ -1,0 +1,55 @@
+@use 'mixins' as *;
+
+/* Video revealed through a blurred blob punched into a bg-colored overlay —
+   see HeroReveal.tsx for the mask technique. Sizing/position is the caller's
+   job (pass `className`); this module only owns the reveal mechanics. */
+
+.wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.maskSvg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+}
+
+// Same color as the page background — outside the blob this rect is
+// invisible (it *is* the surrounding page), which is what makes the video
+// read as bleeding straight out of the background instead of sitting in a
+// framed box.
+.overlayRect {
+  fill: var(--bg);
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: 1;
+  transition: opacity 0.5s var(--ease-quart-in-out);
+  pointer-events: none;
+}
+
+.coverHidden {
+  opacity: 0;
+}

@@ -1,0 +1,326 @@
+@use 'mixins' as *;
+
+/* Preventing invalid configurations — validation playground. State is driven
+   by data-attributes so every transition is plain CSS (and therefore already
+   damped under the global reduced-motion rule). Renders inside `.root`. The
+   accent is re-pointed to ClearHost's product purple (not the portfolio
+   orange) so the mockup reads as the real product UI; `--cs-err` / `--cs-ok`
+   stay as-is. */
+
+.root {
+  --accent: #7a5af8;
+  --accent-strong: #5b3fd6;
+  --accent-soft: #a790fb;
+  --accent-tint: #ece7fe;
+
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.card {
+  width: 100%;
+  max-width: 28rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--cs-card);
+  padding: clamp(1.1rem, 0.9rem + 1.2vw, 1.5rem);
+  box-shadow: var(--cs-shadow-lg);
+
+  @include mq-max('sm') {
+    border-radius: var(--radius-md);
+  }
+}
+
+.header {
+  margin-bottom: 1.15rem;
+}
+
+.panelTitle {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* fields */
+.field {
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--fg) 2.5%, transparent);
+  border-radius: var(--radius-md);
+  padding: 0.8rem 0.85rem;
+  margin-bottom: 0.6rem;
+  transition: border-color 0.42s var(--ease-expo-out), background-color 0.42s var(--ease-expo-out);
+
+  &[data-invalid='true'] {
+    border-color: var(--cs-err);
+    background: color-mix(in oklab, var(--cs-err) 8%, transparent);
+  }
+
+  &[data-dimmed='true'] .stepper {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.fieldTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  @include mq-max('xs') {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.7rem;
+  }
+}
+
+.fieldMeta {
+  min-width: 0;
+}
+
+.fieldTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.fieldTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.fieldSub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--fg-muted);
+}
+
+.warn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: var(--cs-err);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+  transform: scale(0.4);
+  opacity: 0;
+  transition: transform 0.42s var(--ease-back-out), opacity 0.3s ease;
+
+  .field[data-invalid='true'] & {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* stepper */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: color-mix(in oklab, var(--fg) 4%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 3px;
+  flex-shrink: 0;
+  transition: opacity 0.3s ease;
+
+  @include mq-max('xs') {
+    justify-content: space-between;
+  }
+}
+
+.stepBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  @include hover {
+    &:hover {
+      background: color-mix(in oklab, var(--fg) 7%, transparent);
+      color: var(--fg);
+    }
+  }
+}
+
+.valueBox {
+  position: relative;
+  min-width: 4.25rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @include mq-max('xs') {
+    flex: 1;
+  }
+}
+
+.num,
+.noLimitLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.num {
+  color: var(--fg);
+
+  &[data-hidden='true'] {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+}
+
+.noLimitLabel {
+  color: var(--accent);
+  font-size: 0.78rem;
+  opacity: 0;
+  transform: scale(0.88);
+
+  &[data-shown='true'] {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* inline message */
+.msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  overflow: hidden;
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--cs-err);
+  transition: max-height 0.35s var(--ease-expo-out), opacity 0.3s ease, margin-top 0.35s var(--ease-expo-out);
+
+  .field[data-invalid='true'] & {
+    max-height: 4rem;
+    margin-top: 0.55rem;
+    opacity: 1;
+  }
+}
+
+.msgDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cs-err);
+  flex-shrink: 0;
+  margin-top: 0.4rem;
+}
+
+/* no-limit row */
+.noLimitRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 0.85rem;
+  margin-top: 2px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--fg) 2.5%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.track {
+  position: relative;
+  width: 2.5rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--fg) 12%, transparent);
+  padding: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.32s var(--ease-expo-out);
+
+  .noLimitRow[data-on='true'] & {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.knob {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(20, 17, 13, 0.35);
+  transition: transform 0.32s var(--ease-back-out);
+
+  .noLimitRow[data-on='true'] & {
+    transform: translateX(1.1rem);
+  }
+}
+
+/* success */
+.ready {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
+  padding: 0 0.85rem;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--cs-ok) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--cs-ok) 34%, transparent);
+  color: var(--cs-ok);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: max-height 0.4s var(--ease-expo-out), opacity 0.35s ease, margin-top 0.4s var(--ease-expo-out),
+    padding 0.4s var(--ease-expo-out);
+
+  .card[data-ready='true'] & {
+    max-height: 4rem;
+    margin-top: 1rem;
+    padding: 0.7rem 0.85rem;
+    opacity: 1;
+  }
+}
+
+.readyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--cs-ok);
+  color: #fff;
+  flex-shrink: 0;
+}

@@ -1,0 +1,612 @@
+@use 'mixins' as *;
+
+// Ported from framercomponent.tsx (#try) + tailwind.config.ts. The stage is
+// Chess.com's dark product surface; the annotation rail is the portfolio's
+// own voice (paper / ink / accent).
+$cc-bg: #302e2b;
+$cc-surface: #262522;
+$cc-sunken: #1f1e1c;
+$cc-line: #3d3a37;
+$cc-ink: #ffffff;
+$cc-muted: #b7b4b0;
+$cc-soft: #a3a19e;
+$brand: #81b64c;
+$brand-hover: #8ec155;
+$brand-edge: #4c7a2f;
+$m-blunder: #ca3431;
+$m-missed: #e0a03c;
+$stroke: rgba(255, 255, 255, 0.16);
+$stroke-soft: rgba(255, 255, 255, 0.08);
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+.proto {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(258px, 0.7fr);
+  gap: clamp(20px, 2.6vw, 38px);
+  align-items: start;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+/* ==================================================== stage (dark card) */
+.stage {
+  position: relative;
+  border-radius: clamp(20px, 2vw, 28px);
+  border: 1px solid $stroke;
+  background: $cc-bg;
+  padding: clamp(16px, 2.2vw, 26px);
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.6);
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.badgeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
+  &[data-tone='blunder'] {
+    color: $m-blunder;
+  }
+  &[data-tone='missed'] {
+    color: $m-missed;
+  }
+}
+
+.counter {
+  justify-self: center;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: $cc-ink;
+
+  span {
+    color: $cc-soft;
+    font-weight: 500;
+  }
+}
+
+.streak {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+
+  i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    transition:
+      background 0.35s $ease,
+      transform 0.35s $ease,
+      box-shadow 0.35s ease;
+  }
+  i[data-on] {
+    background: $brand;
+    box-shadow: 0 0 12px rgba(129, 182, 76, 0.65);
+  }
+  i[data-pop] {
+    animation: dotPop 0.4s $ease;
+  }
+}
+
+@keyframes dotPop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.65);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.top {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.boardWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.evalCol {
+  display: flex;
+  width: 26px;
+  flex: none;
+}
+
+/* ---- end-of-set card, on the board ---- */
+.finish {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 4%;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.finishCard {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  padding: 18px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgb(49, 46, 43) 0%, rgba(0, 0, 0, 0.08) 100%),
+    rgb(48, 46, 43);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 18px 50px -12px rgba(0, 0, 0, 0.65);
+}
+
+.finishClose {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.finishArt {
+  position: relative;
+  width: 100%;
+  height: 104px;
+  flex: none;
+
+  > img {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 96px;
+    height: 96px;
+    transform: translateX(-50%);
+  }
+}
+
+.sparkles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  img {
+    position: absolute;
+    opacity: 0;
+    animation: sparkleDrift 3.4s ease-in-out infinite var(--d, 0s);
+  }
+}
+
+@keyframes sparkleDrift {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.35) rotate(0deg);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(-14px) scale(1) rotate(80deg);
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(-34px) scale(0.95) rotate(165deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-52px) scale(0.5) rotate(200deg);
+  }
+}
+
+.finishTag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(129, 182, 76, 0.1);
+  color: $brand;
+}
+
+.finishTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.finishStats {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+
+  div {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    border-radius: 10px;
+    background: #1c1c19;
+    padding: 9px 4px;
+  }
+  b {
+    font-size: 21px;
+    font-weight: 900;
+    line-height: 24px;
+    font-variant-numeric: tabular-nums;
+    color: #fff;
+  }
+  span {
+    font-size: 10px;
+    line-height: 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #dedede;
+  }
+}
+
+.finishLine {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: -0.32px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.finishActions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+}
+
+.finishBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 10px;
+  padding-inline: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 20px;
+  color: #fff;
+  cursor: pointer;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  transition:
+    filter 0.15s ease,
+    transform 0.1s ease;
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.finishBtnGreen {
+  background: linear-gradient(180deg, #{$brand} 0%, #5d9948 100%);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 -1px 0 0 #45753c;
+}
+
+.finishBtnGhost {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  font-weight: 700;
+  text-shadow: none;
+}
+
+/* ---- controls (the signature 3D Chess.com buttons) ---- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ccBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 50px;
+  padding-inline: 22px;
+  border: 0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.1s $ease,
+    background-color 0.1s $ease,
+    box-shadow 0.1s $ease,
+    opacity 0.1s ease;
+
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+}
+
+.ccPrimary {
+  flex: 1 1 auto;
+  min-width: 170px;
+  background: $brand;
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 3px 0 $brand-edge;
+
+  @include hover {
+    &:hover {
+      background: $brand-hover;
+    }
+  }
+  &:active {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.14),
+      0 2px 0 $brand-edge;
+  }
+}
+
+.ccSecondary {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  color: $cc-ink;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @include hover {
+    &:hover {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
+    }
+  }
+}
+
+.ccGhost {
+  background: transparent;
+  color: $cc-muted;
+  box-shadow: none;
+
+  @include hover {
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: $cc-ink;
+    }
+  }
+}
+
+/* ==================================================== side (portfolio voice) */
+.side {
+  position: sticky;
+  top: calc(var(--header-h) + 1.25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.annot {
+  border-radius: clamp(18px, 2vw, 26px);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: clamp(20px, 2.4vw, 28px);
+}
+
+.annotHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+
+  i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes livePulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+.annotState {
+  margin: 0 0 10px;
+  font-family: var(--font-heading);
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--fg);
+}
+
+.annotWhy {
+  margin: 0 0 18px;
+  min-height: 4.5em;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.annotLog {
+  margin: 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 190px;
+  overflow-y: auto;
+
+  li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 12.5px;
+    color: var(--fg-muted);
+  }
+  b {
+    flex: none;
+    min-width: 62px;
+    font-family: var(--font-heading);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  li[data-bad] b {
+    color: $m-blunder;
+  }
+}
+
+.san {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ==================================================== responsive */
+@media (min-width: 1600px) {
+  .proto {
+    grid-template-columns: minmax(0, 42rem) minmax(0, 30rem);
+    justify-content: center;
+    column-gap: clamp(2.5rem, 4vw, 4rem);
+  }
+}
+
+/* compact laptops (13"–15"): cap the board card so it doesn't dominate */
+@media (min-width: 1024px) and (max-width: 1599.98px) {
+  .proto {
+    grid-template-columns: minmax(0, 32rem) minmax(0, 1fr);
+  }
+}
+
+@include mq-max('lg') {
+  .proto {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+  .stage,
+  .side {
+    max-width: 36rem;
+    margin-inline: auto;
+    width: 100%;
+  }
+  .side {
+    position: static;
+  }
+}
+
+@include mq-max('sm') {
+  // just the theme icon in the HUD, and drop the annotation rail
+  .badgeTagName {
+    display: none;
+  }
+  .annot {
+    display: none;
+  }
+  // coach sits above the board card
+  .side {
+    order: -1;
+  }
+}
+
+@include reduced-motion {
+  .streak i,
+  .sparkles img,
+  .annotHead i {
+    animation: none;
+  }
+}

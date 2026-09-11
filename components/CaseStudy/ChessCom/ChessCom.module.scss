@@ -1,0 +1,2080 @@
+@use 'mixins' as *;
+
+// ===========================================================================
+// Chess.com case study — full-bleed, portfolio shell (paper / ink / orange).
+// The board + eval bar + coach keep their own Chess.com product palette.
+// ===========================================================================
+
+.root {
+  --sect: clamp(4.5rem, 3rem + 8vh, 9.5rem);
+  --edge: var(--gutter);
+  --cs-measure: 46ch;
+
+  background: var(--bg);
+  color: var(--fg);
+  overflow: clip;
+}
+
+.section {
+  position: relative;
+  padding: var(--sect) var(--edge);
+  scroll-margin-top: calc(var(--header-h) + 2rem);
+}
+
+// heading cluster — eyebrow + big h2, pushed toward the edge
+.head {
+  margin-bottom: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
+}
+
+.eyebrow,
+.kick {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.85em;
+
+  &::before {
+    content: '';
+    width: 1.6em;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.65;
+  }
+}
+
+.h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 1rem + 6vw, 6rem);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  max-width: 18ch;
+
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+.h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 0.9rem + 1vw, 1.6rem);
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  max-width: var(--cs-measure);
+  font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--fg);
+  text-wrap: pretty;
+}
+
+.note {
+  max-width: 40ch;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+
+  em {
+    font-style: normal;
+    color: var(--fg);
+  }
+}
+
+.micro {
+  margin-top: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
+  max-width: 44ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--fg-muted);
+
+  em {
+    font-style: normal;
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ---------------------------------------------------------------- HERO
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(7rem, 16vh, 11rem) var(--edge) clamp(3.5rem, 8vh, 6rem);
+  overflow: clip;
+  isolation: isolate;
+}
+
+.heroInner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 62rem; // centered column — board is a backdrop behind it
+  margin-inline: auto;
+
+  a {
+    pointer-events: auto;
+  }
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.5em 1em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    background: color-mix(in oklab, var(--bg) 70%, transparent);
+    backdrop-filter: blur(6px);
+  }
+}
+
+// desktop: the two <ul>s collapse so the pills flow straight into .tags
+.tagsSet {
+  display: contents;
+}
+.tagsDupe {
+  display: none;
+}
+
+@keyframes tag-marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.heroTitle {
+  margin: clamp(1.25rem, 3.5vw, 2.25rem) 0 clamp(1.25rem, 3vw, 2rem);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.75rem, 1rem + 9vw, 9rem);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  text-align: center;
+}
+
+.tl {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.04em;
+
+  > span {
+    display: inline-block;
+    will-change: transform;
+  }
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--line);
+}
+
+.heroFoot {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(1.25rem, 4vw, 3rem);
+  padding-top: clamp(1.5rem, 3.5vh, 2.5rem);
+  text-align: left;
+}
+
+.heroSay {
+  max-width: 32ch;
+  font-size: clamp(1rem, 0.9rem + 0.8vw, 1.4rem);
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+
+  b {
+    font-weight: 600;
+    color: var(--accent);
+  }
+}
+
+// right column of the foot: CTAs stacked over the scope note
+.ctaCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.85rem, 2vh, 1.15rem);
+  max-width: 40ch;
+}
+
+// primary CTA — rounded pill linking out to the live prototype, with a small
+// pulsing "live" dot
+.ctaProto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.9em 1.5em;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  transition:
+    background 0.25s var(--ease-quart-in-out),
+    border-color 0.25s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+
+      .ctaProtoGo {
+        transform: translate(2px, -2px);
+      }
+    }
+  }
+}
+
+.ctaProtoDot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #38d16a;
+  animation: protoPulse 2.4s var(--ease-quart-in-out) infinite;
+}
+
+.ctaProtoGo {
+  transition: transform 0.25s var(--ease-quart-in-out);
+}
+
+@keyframes protoPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 209, 106, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(56, 209, 106, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 209, 106, 0);
+  }
+}
+
+.protoNote {
+  max-width: 42ch;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+
+  b {
+    font-weight: 600;
+    color: var(--fg);
+  }
+}
+
+// ---------------------------------------------------- loop (nodes)
+$loop-gap: clamp(1.5rem, 1rem + 2vw, 2.6rem);
+
+.loop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem $loop-gap;
+  margin-top: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
+
+  li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.85em 1.35em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.2rem);
+    letter-spacing: -0.01em;
+
+    span {
+      font-size: 0.7em;
+      font-weight: 700;
+      color: var(--fg-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    // progress arrow, sitting in the gap to the next pill
+    &:not(:last-child)::after {
+      content: '\2192' / '';
+      position: absolute;
+      right: calc(#{$loop-gap} / -2);
+      top: 50%;
+      transform: translate(50%, -50%);
+      font-family: var(--font-ui);
+      font-size: 0.95em;
+      font-weight: 500;
+      color: var(--fg-muted);
+      pointer-events: none;
+    }
+
+    &[data-dead] {
+      color: var(--fg-muted);
+      border-style: dashed;
+    }
+    &[data-new] {
+      border-color: color-mix(in oklab, var(--accent) 55%, transparent);
+      background: color-mix(in oklab, var(--accent) 8%, transparent);
+      span {
+        color: var(--accent);
+      }
+    }
+  }
+}
+
+.shift {
+  background: color-mix(in oklab, var(--accent) 4%, var(--bg));
+}
+
+// the playable set — pulled forward with a warmer panel + accent hairlines
+.tryOut {
+  background: color-mix(in oklab, var(--accent) 9%, var(--bg));
+  border-block: 1px solid color-mix(in oklab, var(--accent) 28%, transparent);
+}
+
+// --------------------------------------------------- big pull quote
+.quoteSec {
+  padding-block: clamp(7rem, 18vh, 16rem);
+}
+
+.quote {
+  max-width: 20ch;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 1rem + 6.5vw, 7rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+
+  em {
+    font-style: normal;
+    color: var(--accent);
+  }
+}
+
+.quoteBy {
+  margin-top: clamp(1.25rem, 1rem + 1.5vw, 2.25rem);
+  font-size: 0.9375rem;
+  letter-spacing: 0.01em;
+  color: var(--fg-muted);
+
+  &::before {
+    content: '\2014\00a0';
+  }
+}
+
+// --------------------------------------------------------- fair
+.fairLede {
+  max-width: 56ch;
+  font-size: clamp(1.05rem, 0.95rem + 0.55vw, 1.35rem);
+  line-height: 1.5;
+  color: var(--fg-muted);
+  text-wrap: pretty;
+
+  b {
+    font-weight: 700;
+    color: var(--fg);
+  }
+}
+
+.fairNote {
+  max-width: 60ch;
+  margin-top: clamp(0.9rem, 0.7rem + 0.6vw, 1.25rem);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+}
+
+.netGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+}
+
+.netCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-height: 11.5rem;
+  padding: clamp(1.15rem, 0.9rem + 1vw, 1.65rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--fg) 3%, var(--bg));
+}
+
+.netCardBand {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.netCardN {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 1.6rem + 2vw, 3.1rem);
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.netCardLabel {
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+}
+
+.netBar {
+  margin-top: auto;
+  padding-top: 1.1rem;
+
+  i {
+    display: block;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--accent);
+    transform-origin: left;
+  }
+}
+
+// ------------------------------------------ built pieces (the bento)
+// Framer §9.6 — real prototype screens, framed by portfolio-theme tiles.
+// Everything (tile + inner well + sub-cards) is on paper; only the buttons,
+// board art, icons and animations stay Chess.com.
+$cc-brand: #81b64c;
+$cc-brand-hover: #8ec155;
+$cc-brand-edge: #4c7a2f;
+$cc-brand-ink: #e8f3da;
+$cc-info: #4a90d9;
+$cc-info-hover: #5b9ee2;
+$cc-info-edge: #2c6aa8;
+$cc-blunder: #ca3431;
+$ev-light: #f1f0e8;
+$ev-dark: #403d39;
+$ev-loss: #e3a0a0;
+$ev-loss-hot: #d24b4b;
+$ev-gain: #a9d183;
+$ev-gain-hot: #81b64c;
+$cc-quint: cubic-bezier(0.22, 1, 0.36, 1);
+$cc-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: minmax(210px, auto);
+  grid-template-areas:
+    'home eval  eval  badges'
+    'home coach coach badges'
+    'done done  rows  rows';
+  gap: 14px;
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+
+.tileHome {
+  grid-area: home;
+}
+.tileEval {
+  grid-area: eval;
+}
+.tileBadges {
+  grid-area: badges;
+}
+.tileCoach {
+  grid-area: coach;
+}
+.tileDone {
+  grid-area: done;
+}
+.tileRows {
+  grid-area: rows;
+}
+
+/* outer card — portfolio theme */
+.tile {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+  transition:
+    border-color 0.4s ease,
+    transform 0.45s $cc-out;
+
+  @include hover {
+    &:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-5px);
+    }
+  }
+}
+
+/* inner well — a faint paper surface, so white sub-cards still read */
+.tileFrame {
+  flex: 1;
+  background: color-mix(in oklab, var(--fg) 3%, var(--bg));
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.tileHome .tileFrame {
+  padding: 14px;
+  align-items: stretch;
+}
+.tileDone .tileFrame {
+  padding: 16px;
+}
+
+.tileCap {
+  padding: 15px 18px 17px;
+
+  h4 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+  }
+  p {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+  em {
+    font-style: normal;
+    color: var(--fg);
+  }
+}
+
+/* --- home preview card --- */
+.bPreview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: clip;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.28);
+}
+
+.bPreviewBoard {
+  width: 100%;
+  line-height: 0;
+  overflow: hidden;
+}
+
+.bPreviewBody {
+  display: flex;
+  flex-direction: column;
+  padding: 13px;
+}
+
+.bPreviewTitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin: 0 0 6px;
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.bPreviewSub {
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+  margin: 0 0 9px;
+}
+
+.bPreviewCount {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.4s ease;
+}
+.tileHome:hover .bPreviewCount {
+  color: $cc-brand;
+}
+
+.bProgress {
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--fg) 12%, transparent);
+  overflow: hidden;
+  margin-bottom: 11px;
+}
+
+.bProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: $cc-brand;
+  width: 33%;
+  transition: width 0.6s $cc-quint;
+}
+.tileHome:hover .bProgressFill {
+  width: 42%;
+}
+
+/* --- Chess.com 3D button --- */
+.bBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.1s $cc-quint,
+    background-color 0.1s $cc-quint;
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.bBtnPrimary {
+  background: $cc-brand;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 3px 0 $cc-brand-edge;
+
+  @include hover {
+    &:hover {
+      background: $cc-brand-hover;
+    }
+  }
+}
+
+.bBtnInfo {
+  background: $cc-info;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 3px 0 $cc-info-edge;
+
+  @include hover {
+    &:hover {
+      background: $cc-info-hover;
+    }
+  }
+}
+
+.bShimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: translateX(-100%);
+  animation: cc-shimmer 2.6s ease-in-out infinite;
+}
+
+@keyframes cc-shimmer {
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* --- eval bars --- */
+.bEvalRow {
+  display: flex;
+  gap: clamp(20px, 3vw, 34px);
+  height: 158px;
+  align-items: stretch;
+}
+
+.bEvalCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.bEval {
+  position: relative;
+  flex: 1;
+  width: 28px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: $ev-dark;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--fg) 18%, transparent);
+}
+
+.bEvalFill {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  background: $ev-light;
+}
+
+.bEvalMid {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.bEvalBand {
+  position: absolute;
+  inset-inline: 0;
+  overflow: hidden;
+
+  &[data-loss] {
+    background: $ev-loss;
+  }
+  &[data-gain] {
+    background: $ev-gain;
+  }
+}
+
+.bEvalHot {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 60%;
+
+  [data-loss] > & {
+    background: linear-gradient(to bottom, transparent, $ev-loss-hot, transparent);
+    animation: cc-sweep-down 1.7s ease-in-out infinite 0.2s;
+  }
+  [data-gain] > & {
+    background: linear-gradient(to bottom, transparent, $ev-gain-hot, transparent);
+    animation: cc-sweep-up 1.5s ease-in-out 1 both;
+  }
+}
+
+@keyframes cc-sweep-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(200%);
+  }
+}
+@keyframes cc-sweep-up {
+  from {
+    transform: translateY(200%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.bEvalNum {
+  position: absolute;
+  inset-inline: 0;
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #22201d;
+}
+.bEvalNumLive {
+  bottom: 3px;
+}
+.bEvalNumDrop {
+  color: #22201d;
+}
+.bEvalArrow {
+  font-size: 0.5rem;
+  margin-left: 1px;
+}
+.bEvalLbl {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* --- classification badge stack --- */
+.bStack {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.bBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.45s $cc-out;
+  transition-delay: var(--i, 0ms);
+
+  img {
+    width: 28px;
+    height: 28px;
+  }
+}
+.tileBadges:hover .bBadge {
+  transform: translateX(10px);
+}
+
+.bStackNote {
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+/* --- coach --- */
+.tileCoach .tileFrame > div {
+  width: 100%;
+  max-width: 460px;
+}
+
+/* --- completion cards --- */
+.bDoneRow {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.bComplete {
+  flex: 1;
+  min-width: 200px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid color-mix(in oklab, #{$cc-brand} 32%, var(--line));
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.28);
+  padding: 18px;
+  text-align: center;
+
+  &:first-child {
+    border-color: var(--line);
+  }
+}
+
+.bCompleteTitle {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--fg);
+}
+
+.bCompleteStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: color-mix(in oklab, var(--fg) 6%, transparent);
+    border-radius: 6px;
+    padding: 9px 4px;
+  }
+  b {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+    line-height: 1;
+  }
+  span {
+    font-size: 0.6875rem;
+    color: var(--fg-muted);
+  }
+}
+
+/* --- solver rows --- */
+.bRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.bRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+}
+
+.bRowMistake {
+  border-left: 3px solid $cc-blunder;
+}
+
+.bRowSolved {
+  background: color-mix(in oklab, #{$cc-brand} 16%, transparent);
+  color: color-mix(in oklab, #{$cc-brand} 62%, var(--fg));
+  border-left: 3px solid $cc-brand;
+}
+
+.bRowEnd {
+  margin-left: auto;
+
+  &[data-loss] {
+    color: $cc-blunder;
+    font-weight: 600;
+  }
+}
+
+.bFig {
+  font-family: 'Segoe UI Symbol', 'Apple Symbols', serif;
+  font-weight: 600;
+}
+
+.bRowPulse {
+  justify-content: center;
+  color: color-mix(in oklab, #{$cc-brand} 62%, var(--fg));
+  font-weight: 600;
+  animation: cc-row-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes cc-row-breathe {
+  0%,
+  100% {
+    background: rgba(129, 182, 76, 0.12);
+  }
+  50% {
+    background: rgba(129, 182, 76, 0.26);
+  }
+}
+
+// ----------------------------------------------------- versions
+// Framer §9.10 graphics + loop animations, in the portfolio's paper theme.
+// V1 rows scan on a loop; V2 diary days land in sequence. Rows/dates are kept
+// compact so the two cards land at roughly the same height.
+$v-green: #81b64c;
+$v-green-ink: #10240a;
+$v-red: #ca3431;
+$v-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+.versions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 2rem);
+  align-items: stretch;
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+
+.version {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg);
+  transition: border-color 0.4s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      border-color: color-mix(in oklab, $v-green 45%, transparent);
+    }
+  }
+}
+
+.versionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: clamp(1.1rem, 2.4vw, 1.5rem) clamp(1.1rem, 2.4vw, 1.5rem) 0;
+}
+
+.versionMicro {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.vTag {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 0.25em 0.6em;
+  border-radius: 5px;
+}
+
+.versionDemo {
+  margin: clamp(0.9rem, 2vw, 1.15rem) clamp(1.1rem, 2.4vw, 1.5rem) 0;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--fg) 3%, var(--bg));
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.versionBody {
+  padding: clamp(1rem, 2.2vw, 1.35rem) clamp(1.1rem, 2.4vw, 1.5rem) clamp(1.25rem, 2.6vw, 1.6rem);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 8px;
+  }
+
+  > p {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    margin: 0 0 14px;
+  }
+}
+
+.pros {
+  list-style: none;
+  margin: auto 0 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+
+  li {
+    position: relative;
+    padding-left: 1.15em;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--fg-muted);
+
+    &::before {
+      content: '+';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: $v-green;
+      font-weight: 700;
+    }
+    &[data-con]::before {
+      content: '\2212';
+      color: $v-red;
+    }
+  }
+  em {
+    font-style: normal;
+    color: var(--fg);
+  }
+}
+
+/* V1 — the rolling window. A row lights in sequence, so it reads as a sweep. */
+.window {
+  display: grid;
+  gap: 6px;
+}
+
+.windowGame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
+  font-size: 0.78rem;
+  color: var(--fg-muted);
+  overflow: hidden;
+
+  i {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    flex: none;
+    background: $v-red;
+  }
+  i[data-ok] {
+    background: $v-green;
+  }
+  span {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(129, 182, 76, 0.32), transparent);
+    transform: translateX(-100%);
+    animation: row-scan 5.4s ease-in-out infinite;
+    animation-delay: var(--i, 0s);
+  }
+}
+
+@keyframes row-scan {
+  0%,
+  62% {
+    transform: translateX(-100%);
+  }
+  76% {
+    transform: translateX(0);
+  }
+  92%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.windowMore {
+  text-align: center;
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+  color: var(--fg-muted);
+}
+
+.windowOut {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  background: color-mix(in oklab, #{$v-green} 14%, transparent);
+  border: 1px solid color-mix(in oklab, #{$v-green} 42%, transparent);
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: color-mix(in oklab, #{$v-green} 72%, var(--fg));
+  animation: out-breathe 5.4s ease-in-out infinite;
+}
+
+@keyframes out-breathe {
+  0%,
+  84%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(129, 182, 76, 0);
+  }
+  92% {
+    box-shadow: 0 0 18px 0 rgba(129, 182, 76, 0.4);
+  }
+}
+
+/* V2 — the diary: a real month grid, dates kept as short rectangles */
+.cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calDow {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  text-align: center;
+  padding-bottom: 3px;
+}
+
+.calDay {
+  position: relative;
+  height: 3rem;
+  border-radius: 5px;
+  background: color-mix(in oklab, var(--fg) 5%, transparent);
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+
+.calEmpty {
+  background: transparent;
+}
+
+.calHas {
+  background: color-mix(in oklab, var(--fg) 12%, transparent);
+  color: var(--fg);
+}
+
+.calDone {
+  background: $v-green;
+  color: #fff;
+  font-weight: 700;
+  animation: day-land 6s $v-quint infinite;
+  animation-delay: var(--i, 0s);
+
+  &::after {
+    content: '\2713';
+    position: absolute;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  span {
+    display: none;
+  }
+}
+
+@keyframes day-land {
+  0%,
+  6% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  14%,
+  88% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.calToday {
+  box-shadow: inset 0 0 0 2px $v-green;
+  color: color-mix(in oklab, #{$v-green} 65%, var(--fg));
+  font-weight: 700;
+  animation: today-ring 2.6s ease-in-out infinite;
+}
+
+@keyframes today-ring {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 2px $v-green;
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px $v-green,
+      0 0 12px 0 rgba(129, 182, 76, 0.4);
+  }
+}
+
+.calLegend {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  i {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    background: $v-green;
+  }
+  i[data-has] {
+    background: color-mix(in oklab, var(--fg) 30%, transparent);
+  }
+  i[data-today] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px $v-green;
+  }
+}
+
+/* the still-open switch note under both cards */
+.vSwitch {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding: 18px 22px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in oklab, var(--accent) 32%, transparent);
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+
+  p {
+    flex: 1;
+    min-width: 260px;
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--fg-muted);
+  }
+  b {
+    color: var(--fg);
+    font-weight: 600;
+  }
+}
+
+.vSwitchStep {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fg);
+
+  b {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.75rem;
+  }
+}
+
+// ------------------------------------------------- wall / free vs premium
+.plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 2rem);
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+
+.planCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+
+  &[data-premium] {
+    border-color: color-mix(in oklab, #81b64c 40%, transparent);
+    background: color-mix(in oklab, #81b64c 5%, transparent);
+  }
+}
+
+.planHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.planName {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.planPill {
+  flex: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: color-mix(in oklab, var(--fg) 6%, transparent);
+  border-radius: 999px;
+  padding: 0.4em 0.9em;
+
+  &[data-on] {
+    color: color-mix(in oklab, #81b64c 88%, var(--fg));
+    background: color-mix(in oklab, #81b64c 16%, transparent);
+  }
+}
+
+.planStrip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.7rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--fg) 4%, transparent);
+}
+
+.planWall {
+  flex: none;
+  align-self: stretch;
+  width: 0;
+  margin-inline: 3px;
+  border-left: 2px dashed #ca3431;
+}
+
+.planTile {
+  flex: 1 1 0;
+  min-width: 0;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+
+  svg {
+    display: block;
+  }
+
+  &[data-state='done'] {
+    background: #81b64c;
+    border-color: #81b64c;
+    color: #fff;
+  }
+  &[data-state='current'] {
+    color: var(--fg);
+    border-color: transparent;
+    box-shadow: inset 0 0 0 2px #81b64c;
+  }
+  &[data-state='locked'] {
+    opacity: 0.6;
+  }
+  &[data-state='upcoming'] {
+    opacity: 0.5;
+  }
+}
+
+.planRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-md);
+  border-left: 3px solid color-mix(in oklab, var(--accent) 55%, transparent);
+  background: color-mix(in oklab, var(--fg) 3%, transparent);
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+
+  b {
+    color: var(--fg);
+    font-weight: 700;
+  }
+
+  .planCard[data-premium] & {
+    border-left-color: color-mix(in oklab, #81b64c 70%, transparent);
+  }
+}
+
+.planRowAside {
+  flex: none;
+  font-size: 0.8rem;
+}
+
+.planHint {
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: var(--fg-muted);
+}
+
+.planNote {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--fg-muted);
+
+  b {
+    font-weight: 600;
+    color: var(--fg);
+  }
+}
+
+// ------------------------------- decisions (scroll-stepped game review)
+// The rail + panel pin while a tall track scrolls past; scroll position
+// picks the active call. Rail items also jump on click.
+.drTrack {
+  position: relative;
+  height: 460vh;
+  margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+
+.drReview {
+  position: sticky;
+  top: max(calc(var(--header-h) + 1.5rem), calc(50vh - 16rem));
+  display: grid;
+  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+  align-items: stretch;
+  max-width: 76rem;
+  min-height: clamp(25rem, 42vh, 31rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: color-mix(in oklab, var(--fg) 2%, var(--bg));
+}
+
+.drRail {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 16px;
+  border-right: 1px solid var(--line);
+}
+
+.drItem {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 15px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--fg-muted);
+  transition:
+    background 0.25s var(--ease-quart-in-out),
+    color 0.25s var(--ease-quart-in-out);
+
+  b {
+    flex: none;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.95rem;
+    color: var(--fg-muted);
+    transition: color 0.25s var(--ease-quart-in-out);
+  }
+  img {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    opacity: 0.55;
+    transition: opacity 0.25s var(--ease-quart-in-out);
+  }
+  span {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @include hover {
+    &:hover {
+      background: color-mix(in oklab, var(--fg) 5%, transparent);
+      img {
+        opacity: 0.85;
+      }
+    }
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  &[data-on] {
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    color: var(--fg);
+
+    b {
+      color: var(--accent);
+    }
+    img {
+      opacity: 1;
+    }
+  }
+}
+
+.drPanel {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: clamp(2rem, 4.5vw, 3.5rem);
+}
+
+.drPanelInner {
+  width: 100%;
+  max-width: 37rem; // ~3/4 of the panel column at full width
+  animation: dr-in 0.45s var(--ease-quart-in-out) both;
+}
+
+@keyframes dr-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.drKicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
+  i {
+    font-style: normal;
+    font-weight: 700;
+  }
+}
+
+.drClaim {
+  margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1rem + 1.9vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.drSay {
+  min-height: 10rem;
+}
+
+// ----------------------------------------------------- metrics
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.metric {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+
+  p {
+    margin-top: 0.5em;
+    font-size: 0.9375rem;
+    color: var(--fg-muted);
+  }
+
+  &[data-primary] {
+    grid-column: 1 / -1;
+    border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+
+    .metricName {
+      font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem);
+    }
+  }
+}
+
+.metricName {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+
+  i {
+    font-family: var(--font-ui);
+    font-style: normal;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 0.2em 0.5em;
+    border-radius: 4px;
+  }
+}
+
+// ------------------------------------------------------- close
+.close {
+  padding-bottom: clamp(4rem, 9vh, 8rem);
+}
+
+.carry {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+
+  dt {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+  }
+  dd {
+    margin-top: 0.45em;
+    font-size: 0.9375rem;
+    color: var(--fg-muted);
+  }
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  transition: color 0.25s var(--ease-quart-in-out);
+
+  span {
+    transition: transform 0.25s var(--ease-quart-in-out);
+  }
+
+  @include hover {
+    &:hover {
+      color: var(--accent);
+      span {
+        transform: translateX(-3px);
+      }
+    }
+  }
+}
+
+// ===========================================================================
+// Responsive
+// ===========================================================================
+
+// 16" and up — a touch more air
+@media (min-width: 1600px) {
+  .root {
+    --sect: clamp(9rem, 6rem + 10vh, 15rem);
+  }
+  .heroInner {
+    max-width: 70rem;
+  }
+}
+
+// Compact laptops (13"–15", ~1024–1599px). The type scale and the bento mosaic
+// are tuned for 16"+; rein them in so nothing runs oversized here.
+@media (min-width: 1024px) and (max-width: 1599.98px) {
+  .h2 {
+    font-size: clamp(2.2rem, 4.4vw, 3.85rem);
+  }
+  .heroTitle {
+    font-size: clamp(2.75rem, 7vw, 6rem);
+  }
+  .quote {
+    font-size: clamp(2.2rem, 5vw, 4.25rem);
+  }
+
+  // pair tiles by height and let rows fit content — no forced empty space
+  .bento {
+    grid-auto-rows: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'home  badges'
+      'eval  done'
+      'coach rows';
+  }
+}
+
+@include mq-max('lg') {
+  .versions,
+  .metrics,
+  .plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .netGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .carry {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .heroInner {
+    max-width: 52rem;
+  }
+  // hero: stack and centre — title, then tagline, then the CTA
+  .heroFoot {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: clamp(1.25rem, 3vw, 1.75rem);
+  }
+  .heroSay {
+    max-width: 34ch;
+    margin-inline: auto;
+  }
+  .ctaCol {
+    align-items: center;
+    max-width: none;
+  }
+  .protoNote {
+    display: none;
+  }
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'home badges'
+      'eval eval'
+      'coach coach'
+      'done done'
+      'rows rows';
+  }
+  // still scroll-stepped, but the rail sits on top as a horizontal strip
+  .drTrack {
+    height: 340vh;
+  }
+  .drReview {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    max-width: none;
+    min-height: min(30rem, 78vh);
+    top: calc(var(--header-h) + 0.5rem);
+  }
+  .drRail {
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  .drRail::-webkit-scrollbar {
+    display: none;
+  }
+  .drItem {
+    flex: 0 0 auto;
+    width: auto; // was 100% from the base
+
+    span {
+      display: none;
+    }
+  }
+  .drPanelInner {
+    max-width: none;
+  }
+}
+
+@include mq-max('md') {
+  .heroInner {
+    max-width: none; // board hidden below this, text can use the width
+  }
+  .carry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .metric[data-primary] {
+    grid-column: auto;
+  }
+}
+
+@include mq-max('sm') {
+  .h2 {
+    max-width: none;
+  }
+  .netGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  // hero pills: an auto-scrolling marquee, all one grey tone
+  .tags {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0; // the seam gap comes from .tagsSet padding-right, so the loop is even
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .tagsSet {
+    display: flex;
+    flex: none;
+    gap: 0.5rem;
+    padding-right: 0.5rem;
+    animation: tag-marquee 20s linear infinite;
+  }
+  .tagsDupe {
+    display: flex;
+  }
+
+  // rating-band cards hug their content instead of a fixed height
+  .netCard {
+    min-height: 0;
+  }
+
+  // diary: square dates, tighter
+  .calDay {
+    height: auto;
+    aspect-ratio: 1;
+    font-size: 0.6rem;
+  }
+  .calDone::after {
+    font-size: 0.6rem;
+  }
+
+  // V1 rolling window: show only the first four games
+  .windowGame:nth-of-type(n + 5) {
+    display: none;
+  }
+
+  // hero: no CTA / prototype note on phones
+  .ctaCol {
+    display: none;
+  }
+
+  // built pieces: a horizontal carousel, every tile the same (shorter) height
+  .bento {
+    display: flex;
+    align-items: stretch;
+    grid-template-areas: none;
+    grid-auto-rows: auto;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 6px;
+  }
+  .bento::-webkit-scrollbar {
+    display: none;
+  }
+  .tileHome,
+  .tileEval,
+  .tileBadges,
+  .tileCoach,
+  .tileDone,
+  .tileRows {
+    grid-area: auto;
+    flex: 0 0 88%;
+    height: 24rem;
+    scroll-snap-align: center;
+  }
+  .tileFrame {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .bPreviewBoard {
+    max-height: 11rem;
+  }
+  .bStack {
+    gap: 9px;
+  }
+  .bBadge {
+    font-size: 0.82rem;
+
+    img {
+      width: 22px;
+      height: 22px;
+    }
+  }
+  .bDoneRow {
+    flex-direction: row;
+  }
+  .planTile {
+    font-size: 0.7rem;
+  }
+
+  // process pills stack, with the arrow pointing down between them
+  .loop {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $loop-gap;
+  }
+  .loop li {
+    justify-content: center;
+    padding: 0.7em 1.05em;
+
+    &:not(:last-child)::after {
+      content: '\2193' / '';
+      right: auto;
+      left: 50%;
+      top: auto;
+      bottom: calc(#{$loop-gap} / -2);
+      transform: translate(-50%, 50%);
+    }
+  }
+}
+
+@include reduced-motion {
+  .floater {
+    animation: none;
+    opacity: 0.9;
+  }
+  .tl > span {
+    will-change: auto;
+  }
+  .ctaProtoDot,
+  .windowGame::after,
+  .windowOut,
+  .calDone,
+  .calToday,
+  .bShimmer::after,
+  .bEvalHot,
+  .bRowPulse,
+  .drPanelInner,
+  .tagsSet {
+    animation: none;
+  }
+  .calDone {
+    opacity: 1;
+    transform: none;
+  }
+  .tile:hover {
+    transform: none;
+  }
+}

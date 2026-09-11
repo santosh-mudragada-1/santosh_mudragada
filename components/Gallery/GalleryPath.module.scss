@@ -1,0 +1,25 @@
+.svg {
+  position: absolute;
+  // start point (≈4% / 6% of the viewBox) lands ~14vw in and just above the
+  // section top, so the line drops in from the top; end point (≈96% / 75%)
+  // lands past the right edge, well clear of the bottom.
+  left: 14vw;
+  top: -13vh;
+  // Explicit height (not `auto`) — Safari doesn't derive an intrinsic ratio
+  // from viewBox alone on an absolutely positioned <svg>, so `height: auto`
+  // there collapses to 150px.
+  width: 98vw;
+  height: calc(98vw * 1408 / 2176);
+  aspect-ratio: 2176 / 1408;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+// the big sweeping line only reads on the wide desktop layout; on the
+// narrow stacked layout it just clutters the background
+@media (max-width: 1023.98px) {
+  .svg {
+    display: none;
+  }
+}

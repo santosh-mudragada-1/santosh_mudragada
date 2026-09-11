@@ -1,0 +1,137 @@
+// A device mockup ported from devices.css's "iPhone 14 Pro" skin
+// (https://github.com/picturepan2/devices.css) — a proven, widely-used
+// pure-CSS device frame with a real Dynamic Island — reproduced here as
+// scoped classes rather than pulled in via the npm package, so it doesn't
+// need a global stylesheet import, and scaled responsively with a container
+// query instead of the library's own fixed-px sizing.
+//
+// Design space is the frame's natural size: 428×868 (the iPhone 14 Pro
+// screen, 390×830, plus its 19px bezel on every edge — also, conveniently,
+// almost exactly the intro video's own native capture resolution, 786×1704
+// @2x). .frame establishes that as a container and .body is scaled
+// uniformly to fit whatever width it's given.
+//
+// The scale must divide two like-typed lengths (100cqw / 428px), not a
+// length by a bare number (100cqw / 428) — the latter type-checks as a
+// <length>, which `scale()` rejects (it needs a unitless <number>), so the
+// whole transform gets silently dropped and the frame renders at its full
+// unscaled 428px design width instead of the intended responsive size.
+
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 428 / 868;
+  container-type: inline-size;
+  // .body keeps its full 868px layout height even once scaled down (a
+  // transform repaints, it doesn't reflow), so without this .frame would
+  // stretch to fit that untransformed height instead of the aspect-ratio.
+  overflow: hidden;
+  // the drop shadow lives here (a filter, not a box-shadow) because
+  // anything drawn by .body itself gets clipped by this overflow:hidden —
+  // filter renders around the whole clipped result instead, so it isn't.
+  filter: drop-shadow(0 40px 70px rgba(0, 0, 0, 0.5));
+}
+
+.body {
+  position: relative;
+  width: 428px;
+  height: 868px;
+  box-sizing: border-box;
+  padding: 19px;
+  background: #010101;
+  border: 1px solid #1b1721;
+  border-radius: 68px;
+  box-shadow:
+    inset 0 0 4px 2px #c0b7cd,
+    inset 0 0 0 6px #342c3f;
+  transform: scale(calc(100cqw / 428px));
+  transform-origin: top left;
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  width: 390px;
+  height: 830px;
+  overflow: hidden;
+  background: #000;
+  border-radius: 49px;
+}
+
+// Dynamic Island — the pill itself, a slightly smaller inset "camera
+// housing" layer, and the lens graphic, stacked to read as one component.
+.island {
+  position: absolute;
+  z-index: 2;
+  top: 29px;
+  left: 50%;
+  margin-left: -60px;
+  width: 120px;
+  height: 35px;
+  background: #010101;
+  border-radius: 20px;
+}
+
+.islandHousing {
+  position: absolute;
+  z-index: 2;
+  top: 30px;
+  left: 50%;
+  margin-left: -60px;
+  width: 74px;
+  height: 33px;
+  background: #010101;
+  border-radius: 17px;
+}
+
+.islandCamera {
+  position: absolute;
+  z-index: 2;
+  top: 42px;
+  left: 50%;
+  margin-left: 36px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background:
+    radial-gradient(farthest-corner at 20% 20%, #6074bf 0, transparent 40%),
+    radial-gradient(farthest-corner at 80% 80%, #513785 0, #24555e 20%, transparent 50%);
+  box-shadow: 0 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.btns {
+  position: absolute;
+  left: -2px;
+  top: 115px;
+  width: 3px;
+  height: 32px;
+  background: #1b1721;
+  border-radius: 2px;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 3px;
+    height: 62px;
+    background: #1b1721;
+    border-radius: 2px;
+  }
+  &::before {
+    top: 60px;
+  }
+  &::after {
+    top: 140px;
+  }
+}
+
+.power {
+  position: absolute;
+  right: -2px;
+  top: 200px;
+  width: 3px;
+  height: 100px;
+  background: #1b1721;
+  border-radius: 2px;
+}

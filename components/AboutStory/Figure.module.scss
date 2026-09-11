@@ -1,0 +1,162 @@
+@use 'mixins' as *;
+
+.figure {
+  position: relative;
+  margin: 0;
+  width: 100%;
+}
+
+.crop {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background: var(--bg-elev);
+  // reveal rig target — parent GSAP animates clip-path + the child <img>.
+  // default state is fully open so no-JS / reduced-motion shows everything.
+  clip-path: inset(0% 0% 0% 0%);
+  will-change: clip-path;
+
+  :global(html.is-webkit) & {
+    will-change: auto;
+  }
+
+  // phones: never let a tall portrait run past most of the viewport — it makes
+  // the essay scroll forever. Crop from the centre instead.
+  @include mq-max('md') {
+    max-height: 66vh;
+  }
+}
+
+// full-cover figures (opening / ending / bleed) fill an absolutely-positioned
+// parent — the phone crop cap would leave a dead band under them.
+.cover .crop {
+  max-height: none;
+
+  @include mq-max('md') {
+    max-height: none;
+  }
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  scale: 1;
+}
+
+// parallax headroom: the image is taller than its crop and centred, so the
+// GSAP yPercent drift never exposes an edge. Overridden (larger) for full-bleed.
+.parallaxImg {
+  position: absolute;
+  top: -12%;
+  left: 0;
+  width: 100%;
+  height: 124%;
+}
+
+.crop[data-reveal] .img {
+  // slightly overscaled at rest; the reveal settles it to 1
+  scale: 1.06;
+}
+
+.framed {
+  background: var(--paper);
+  padding: clamp(10px, 1.1vw, 20px);
+  padding-bottom: clamp(34px, 3.4vw, 58px);
+  box-shadow:
+    0 1px 1px rgba(20, 17, 13, 0.05),
+    0 18px 40px -18px rgba(20, 17, 13, 0.28);
+
+  .crop {
+    background: #ded7c9;
+  }
+
+  [data-theme='dark'] & {
+    background: #16140f;
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.3),
+      0 24px 60px -20px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.caption {
+  margin-top: clamp(10px, 1vw, 16px);
+  font-size: 0.78rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  max-width: 46ch;
+
+  .framed & {
+    position: absolute;
+    left: clamp(10px, 1.1vw, 20px);
+    right: clamp(10px, 1.1vw, 20px);
+    bottom: clamp(11px, 1.2vw, 20px);
+    margin-top: 0;
+    font-family: var(--font-accent);
+    font-size: clamp(0.95rem, 0.85rem + 0.4vw, 1.15rem);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--smoke-700);
+    line-height: 1.2;
+  }
+}
+
+// --- hover easter egg: a scribbled note that only shows if you go looking ---
+.secret {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .secret {
+    display: block;
+    position: absolute;
+    left: clamp(-8px, -0.6vw, -2px);
+    top: clamp(-13px, -1.2vw, -8px);
+    z-index: 3;
+    max-width: min(26ch, 74%);
+    padding: 0.34em 0.9em 0.42em;
+    font-family: var(--font-accent);
+    font-size: clamp(0.9rem, 0.8rem + 0.4vw, 1.15rem);
+    line-height: 1.15;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow: 0 12px 26px -12px rgba(20, 17, 13, 0.55);
+    rotate: -2.2deg;
+    transform-origin: left top;
+    opacity: 0;
+    translate: 0 -8px;
+    scale: 0.96;
+    pointer-events: none;
+    transition:
+      opacity 0.34s var(--ease-quart-in-out),
+      translate 0.34s var(--ease-quart-in-out),
+      scale 0.34s var(--ease-quart-in-out);
+
+    &::before {
+      content: '✶ ';
+      color: var(--accent);
+    }
+  }
+
+  .figure:hover .secret {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@include reduced-motion {
+  .crop {
+    clip-path: none !important;
+  }
+  .crop[data-reveal] .img {
+    scale: 1;
+  }
+  .secret {
+    transition: opacity 0.01ms !important;
+    translate: none !important;
+    scale: none !important;
+  }
+}

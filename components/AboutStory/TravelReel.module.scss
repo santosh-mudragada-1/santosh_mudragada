@@ -1,0 +1,176 @@
+@use 'mixins' as *;
+
+.section {
+  position: relative;
+  background: var(--carbon);
+  color: var(--paper);
+  overflow: clip;
+}
+
+// ===========================================================================
+// DEFAULT — a horizontal swipe strip. Phones, tablets, reduced motion.
+// Top padding clears the fixed header so the first frame never sits behind
+// the wordmark; a soft scrim keeps the white wordmark legible for the moment
+// a frame does pass under it further into the strip.
+// ===========================================================================
+.section {
+  padding: calc(var(--header-h, 84px) + clamp(1.25rem, 5vw, 2.5rem)) 0
+    clamp(2.5rem, 8vw, 4rem);
+}
+
+.section::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  display: block;
+  height: calc(var(--header-h, 84px) + 1.5rem);
+  margin-bottom: calc(-1 * (var(--header-h, 84px) + 1.5rem));
+  background: linear-gradient(
+    to bottom,
+    rgba(12, 11, 10, 0.92) 0%,
+    rgba(12, 11, 10, 0.6) 55%,
+    rgba(12, 11, 10, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.track {
+  display: flex;
+  gap: clamp(0.9rem, 3vw, 1.6rem);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-inline: var(--gutter);
+  overscroll-behavior-x: contain;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.frame {
+  flex: 0 0 min(78%, 360px);
+  margin: 0;
+  scroll-snap-align: center;
+}
+
+.frameMedia {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  // fixed box (beats the inline aspect-ratio) so the strip stays one calm
+  // height whatever the frame's proportions
+  height: clamp(300px, 46vh, 460px);
+  overflow: hidden;
+  background: #1b1a17;
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.8);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.note {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  margin-top: clamp(0.7rem, 0.5rem + 0.6vw, 1.1rem);
+  font-size: clamp(0.85rem, 0.8rem + 0.3vw, 1.05rem);
+  letter-spacing: 0.01em;
+  color: var(--smoke-300);
+}
+
+.noteIndex {
+  font-family: var(--font-heading);
+  font-size: 0.72em;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent);
+}
+
+@include reduced-motion {
+  .track {
+    scroll-snap-type: none;
+  }
+}
+
+// ===========================================================================
+// The pinned, scrubbed reel — every viewport that allows motion. Reduced
+// motion (any width) keeps the swipe strip above.
+// ===========================================================================
+@media (prefers-reduced-motion: no-preference) {
+  .section {
+    padding: 0;
+  }
+
+  // the strip's header scrim is only for the swipe layout; here the pin plus
+  // the nav-contrast flip already keep the wordmark legible
+  .section::before {
+    display: none;
+  }
+
+  .track {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.5rem, 1rem + 3vw, 4.5rem);
+    // svh, not vh: the small-viewport height is a fixed number, so the pinned
+    // track is never taller than what the phone actually shows (vh includes the
+    // retracted-toolbar area, which left a black band under the reel). It does
+    // not resize as the toolbar slides, so the pin stays stable.
+    height: 100vh;
+    height: 100svh;
+    width: max-content;
+    padding-inline: max(var(--gutter), 8vw);
+    overflow: visible;
+    scroll-snap-type: none;
+    will-change: transform;
+  }
+
+  .frame {
+    flex: 0 0 auto;
+    // height-first: every frame fills most of the pinned stage, width follows
+    // the ratio. Panoramas run wider than the screen and you scrub across them
+    // — that is the point of a reel. (The old `min(…, 88vw)` cap never bit on
+    // desktop but squashed every landscape frame to a stamp on phones, leaving
+    // big black voids in the pinned stage.)
+    width: calc(62svh * var(--ar));
+    min-width: 220px;
+    scroll-snap-align: none;
+    will-change: transform, filter;
+
+    @include mq('lg') {
+      width: clamp(240px, calc(62svh * var(--ar)), 84vw);
+    }
+  }
+
+  // stagger the vertical rest position for a hand-laid feel
+  .frame:nth-child(3n) {
+    align-self: flex-start;
+    margin-top: 10svh;
+  }
+  .frame:nth-child(4n) {
+    align-self: flex-end;
+    margin-bottom: 8svh;
+  }
+  .frame:nth-child(5n) {
+    margin-top: 4svh;
+  }
+
+  .frameMedia {
+    height: auto; // inline aspect-ratio drives the box again
+  }
+}
+
+// reduced motion never builds the pin rig; this just clears any inline
+// filter/transform a stale tween left behind if the preference flips mid-scroll
+@include reduced-motion {
+  .frame {
+    filter: none !important;
+    transform: none !important;
+  }
+}

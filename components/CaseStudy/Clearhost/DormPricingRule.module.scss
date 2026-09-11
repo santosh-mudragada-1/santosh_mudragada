@@ -1,0 +1,440 @@
+@use 'mixins' as *;
+
+/* Dormitory-specific pricing — interactive card. Renders inside `.root`
+   (Clearhost.module.scss) so the `--cs-*` tokens cascade in. The accent is
+   re-pointed to ClearHost's product purple here (not the portfolio orange) so
+   the mockup reads as the real product UI; every `var(--accent)` below inherits
+   it. `--cs-err` / `--cs-ok` stay as-is. */
+
+.root {
+  --accent: #7a5af8;
+  --accent-strong: #5b3fd6;
+  --accent-soft: #a790fb;
+  --accent-tint: #ece7fe;
+
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.card {
+  width: 100%;
+  max-width: 32rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--cs-card);
+  padding: clamp(1.25rem, 1rem + 1.5vw, 1.75rem);
+  box-shadow: var(--cs-shadow-lg);
+
+  @include mq-max('sm') {
+    border-radius: var(--radius-md);
+  }
+}
+
+/* story */
+.story {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.line {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+
+  @include mq-max('xs') {
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+}
+
+.k {
+  flex: 0 0 4rem;
+  font-family: var(--cs-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+
+  // column layout: `flex-basis: 4rem` was forcing the label to 4rem TALL,
+  // opening a big void between each label and its value — size to content.
+  @include mq-max('xs') {
+    flex: none;
+  }
+}
+
+.kRes {
+  color: var(--accent);
+}
+
+.v {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--fg-muted);
+}
+
+.vRes {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 1.15rem 0;
+}
+
+/* fields */
+.field {
+  margin-bottom: 1.15rem;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.label {
+  font-family: var(--cs-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.hint,
+.autoBadge {
+  font-family: var(--cs-mono);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* segmented control */
+.seg {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  background: color-mix(in oklab, var(--fg) 4%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.segBtn {
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  height: 2.4rem;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+  transition: color 0.2s ease;
+  overflow: visible;
+
+  @include mq-max('xs') {
+    height: 2.9rem;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    white-space: normal;
+  }
+}
+
+.segActive,
+.segNudge {
+  color: var(--fg);
+}
+
+.pill {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  box-shadow: var(--cs-shadow-sm);
+}
+
+.segTxt {
+  position: relative;
+  z-index: 1;
+}
+
+.nudgeRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  pointer-events: none;
+  z-index: 2;
+  border: 1.5px solid var(--accent);
+
+  @include motion-ok {
+    animation: dorm-nudge 1.8s ease-out infinite;
+  }
+}
+
+@keyframes dorm-nudge {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.07);
+  }
+}
+
+.cursor {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  z-index: 5;
+  pointer-events: none;
+  display: inline-flex;
+  color: var(--fg);
+  filter: drop-shadow(0 2px 4px rgba(20, 17, 13, 0.3));
+}
+
+/* pricing options */
+.opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 0.9rem;
+  background: color-mix(in oklab, var(--fg) 3%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  @include hover {
+    &:not(.optLocked):hover {
+      border-color: var(--line-strong);
+    }
+  }
+}
+
+.optLocked {
+  cursor: not-allowed;
+}
+
+.optSel {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.optMain {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.optCheck {
+  width: 1rem;
+  height: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.optLabel {
+  position: relative;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: -0.008em;
+}
+
+.optStrike::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  height: 1.5px;
+  width: calc(100% + 2px);
+  background: var(--cs-err);
+  border-radius: 2px;
+
+  @include motion-ok {
+    width: 0;
+    animation: dorm-strike 320ms var(--ease-expo-out) forwards;
+  }
+}
+
+@keyframes dorm-strike {
+  to {
+    width: calc(100% + 2px);
+  }
+}
+
+.lock {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 7px;
+  background: color-mix(in oklab, var(--cs-err) 14%, transparent);
+  border: 1px solid color-mix(in oklab, var(--cs-err) 32%, transparent);
+  color: var(--cs-err);
+  flex-shrink: 0;
+}
+
+/* helper card */
+.helper {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  background: color-mix(in oklab, var(--accent) 8%, var(--cs-card));
+  border: 1px solid color-mix(in oklab, var(--accent) 32%, transparent);
+  border-radius: var(--radius-md);
+  padding: 0.8rem 0.9rem;
+  margin-bottom: 1.15rem;
+}
+
+.helperIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 32%, transparent);
+  color: var(--accent);
+}
+
+.helperText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.helperTitle {
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+
+.helperBody {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+/* comparison */
+.cmp {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--line);
+}
+
+.cmpCol {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.75rem;
+  background: color-mix(in oklab, var(--fg) 1.5%, transparent);
+  transition: background 0.32s ease, border-color 0.32s ease;
+}
+
+.cmpOn {
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  border-color: color-mix(in oklab, var(--accent) 32%, transparent);
+}
+
+.cmpHead {
+  font-family: var(--cs-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 0.55rem;
+}
+
+.cmpOn .cmpHead {
+  color: var(--fg);
+}
+
+.cmpRow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0;
+}
+
+.cmpIcon {
+  width: 0.9rem;
+  height: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cmpYes .cmpIcon {
+  color: var(--cs-ok);
+}
+
+.cmpNo .cmpIcon {
+  color: var(--cs-err);
+}
+
+.cmpLabel {
+  font-size: 0.78rem;
+  font-weight: 550;
+  color: var(--fg-muted);
+}
+
+.cmpNo .cmpLabel {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+@include mq-max('xs') {
+  .cmp {
+    grid-template-columns: 1fr;
+  }
+}

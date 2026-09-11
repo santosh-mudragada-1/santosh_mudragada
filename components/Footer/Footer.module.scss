@@ -1,0 +1,382 @@
+@use 'mixins' as *;
+
+.footer {
+  position: relative;
+  overflow: hidden;
+  // pinned to 90svh on every screen — the box height is fixed and the content
+  // is sized to fit within it (see the responsive blocks below).
+  height: 90svh;
+  padding-top: clamp(56px, 8vh, 116px);
+  background: var(--carbon);
+  color: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+
+// curved light cap over the seam; `d` scrubs bulge -> flat. Height (and so the
+// belly) follows the viewport — the 16" look, scaled down on small screens.
+.curve {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: clamp(88px, 21vh, 270px);
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+
+  path {
+    fill: #f4f0e9; // == --paper, the surface above the seam
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  // Kept on WebKit too: without a stable compositing layer, Safari can leave
+  // this stuck at the GSAP `y: -70` entrance offset (pulling the headline up
+  // into the light curve) or fail to repaint it. It's a single layer.
+  will-change: transform;
+}
+
+// --- headline — LET'S / MAKE / SOMETHING. -------------------------------
+// One fluid size, no breakpoint font-size overrides: the vw term sizes
+// "SOMETHING." to ~the full content width, capped at the desktop max and
+// floored at the smallest-mobile min. (The mq('lg') rule below is layout only
+// — it puts the first two words on one line on desktop, unchanged.)
+.headline {
+  padding-inline: var(--gutter);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2rem, 14vw, 7.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.lineMask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.02em;
+}
+
+// desktop: "LET'S" + "MAKE" share a line, "SOMETHING." drops below (2 lines).
+// Tablet + mobile keep all three stacked.
+@include mq('lg') {
+  .lineMask:nth-of-type(1),
+  .lineMask:nth-of-type(2) {
+    display: inline-block;
+    vertical-align: top;
+  }
+  .lineMask:nth-of-type(1) {
+    margin-inline-end: 0.24em;
+  }
+}
+
+// 16"-class screens and up: blow the headline up so "SOMETHING." spans ~60%
+// of the viewport. 14" and everything smaller keep the clamp() above.
+@media (min-width: 1600px) {
+  .headline {
+    font-size: 10.1vw;
+  }
+}
+
+.line {
+  display: block;
+  // Kept on WebKit too: the one-shot `gsap.from` completes and GSAP drops the
+  // 3D transform; inside `overflow: hidden` that layer teardown leaves the
+  // line blank on Safari. Two small text elements — cheap to keep promoted.
+  will-change: transform;
+}
+
+.square {
+  display: inline-block;
+  width: 0.16em;
+  height: 0.16em;
+  margin-left: 0.08em;
+  background: var(--accent);
+  vertical-align: baseline;
+}
+
+// --- full-bleed marquee band ----------------------------------------
+.band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-block: clamp(0.75rem, 0.4rem + 1.4vw, 2rem);
+  height: clamp(100px, 12vw, 200px);
+  background: var(--accent);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.bandMeta {
+  position: absolute;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(20, 17, 13, 0.62);
+  z-index: 1;
+
+  &[data-pos='tl'] {
+    top: 0.55rem;
+    left: var(--gutter);
+  }
+  &[data-pos='br'] {
+    bottom: 0.55rem;
+    right: var(--gutter);
+  }
+}
+
+.marquee {
+  display: flex;
+  flex: none;
+  white-space: nowrap;
+  will-change: transform;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 1rem + 3.4vw, 4.2rem);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+}
+
+.star {
+  margin: 0 0.55em;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+// --- direct block ------------------------------------------------------
+// `margin-top: auto` drops the contact block + the bottom row to the footer
+// floor, absorbing whatever slack the 90svh footer has at any size. The
+// headline + strip stay together at the top; socials and the bottom row stay
+// adjacent (no gap between them).
+.direct {
+  padding-inline: var(--gutter);
+  margin-top: auto;
+  padding-top: clamp(1.5rem, 0.5rem + 3vw, 3.5rem);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 0.15em var(--space-md);
+}
+
+.label {
+  grid-column: 1;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.email {
+  grid-column: 1;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 0.8rem + 1.9vw, 2.5rem);
+  letter-spacing: -0.02em;
+  color: var(--paper);
+  transition: color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      color: var(--accent);
+    }
+  }
+}
+
+.copy {
+  grid-column: 1;
+  justify-self: start;
+  margin-top: 0.35em;
+  font-size: 0.78rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  border-bottom: 1px solid rgba(244, 240, 233, 0.32);
+  padding-bottom: 2px;
+  transition: color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      color: var(--paper);
+    }
+  }
+}
+
+.socials {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: end;
+  display: flex;
+  gap: var(--space-md);
+}
+
+.social {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  transition: color 0.3s var(--ease-quart-in-out);
+
+  @include hover {
+    &:hover {
+      color: var(--paper);
+    }
+  }
+}
+
+// --- bottom row — sits directly under the direct/socials block ----------
+.bottom {
+  padding: var(--space-md) var(--gutter) var(--space-md);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-sm) var(--space-md);
+}
+
+.bottomNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: 0.9rem;
+
+  a,
+  button {
+    color: var(--smoke-300);
+    transition: color 0.3s var(--ease-quart-in-out);
+
+    @include hover {
+      &:hover {
+        color: var(--paper);
+      }
+    }
+  }
+}
+
+.toTop {
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+}
+
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em var(--space-md);
+  font-size: 0.8rem;
+  color: var(--smoke-500);
+}
+
+// --- tablet & down: headline goes to 3 bigger lines, the strip grows, and
+// the blocks are spread through the fixed 90svh box so there's no dead gap.
+// Page nav + strip corner labels are dropped; socials sit in a row under the
+// email + copy. -----------------------------------------------------------
+@include mq-max('lg') {
+  .footer {
+    padding-top: clamp(48px, 7vh, 88px);
+  }
+  .curve {
+    height: clamp(56px, 11vh, 130px); // a slimmer cap on small screens
+  }
+  // spread headline · strip · contact · bottom through the whole box
+  .inner {
+    justify-content: space-between;
+  }
+
+  .bandMeta {
+    display: none; // no "reply within…" / email inside the strip
+  }
+
+  // .headline font-size is the single fluid clamp() above — no override here
+  .band {
+    height: clamp(120px, 9vw + 9vh, 260px);
+    margin-block: clamp(0.8rem, 2vw, 2.2rem);
+  }
+  .marquee span {
+    font-size: clamp(2.4rem, 1rem + 6vw, 5rem);
+  }
+
+  .direct {
+    grid-template-columns: 1fr;
+    margin-top: 0; // the flex spread handles placement now
+    padding-top: clamp(1rem, 0.4rem + 2vw, 2.2rem);
+  }
+  .label {
+    font-size: 0.82rem;
+  }
+  .email {
+    font-size: clamp(1.7rem, 0.8rem + 4vw, 3rem);
+  }
+  .copy {
+    font-size: 0.9rem;
+    margin-top: 0.6em;
+  }
+  .socials {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: var(--space-md);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-sm) var(--space-lg);
+  }
+  .social {
+    font-size: clamp(0.9rem, 0.6rem + 0.9vw, 1.2rem);
+  }
+  // drop Home / Work / About / Contact — Back to top stays.
+  // !important beats the inline `display: inline-flex` the Magnetic span sets.
+  .navPage {
+    display: none !important;
+  }
+  // Back to top -> bottom-right, © / role -> bottom-left
+  .bottom {
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-2xs) var(--space-md);
+    padding-block: var(--space-sm);
+  }
+}
+
+@include mq-max('sm') {
+  .footer {
+    padding-top: clamp(32px, 5vh, 60px);
+  }
+  // .headline font-size is the single fluid clamp() above — no override here
+  .band {
+    height: clamp(88px, 12vw + 6vh, 160px);
+  }
+  .marquee span {
+    font-size: clamp(1.5rem, 0.8rem + 4vw, 2.6rem);
+  }
+  .email {
+    font-size: clamp(1.05rem, 0.6rem + 3vw, 1.8rem);
+  }
+  .legal {
+    display: none; // no © / role line on mobile
+  }
+  // socials stay a horizontal row under email + copy; wrap to a second line
+  // rather than overflow the screen on the narrowest phones
+  .socials {
+    margin-top: var(--space-sm);
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-sm);
+  }
+  .bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

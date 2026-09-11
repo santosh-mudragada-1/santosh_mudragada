@@ -1,0 +1,28 @@
+@use 'mixins' as *;
+
+.hero {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  background: var(--bg);
+  overflow: clip; // the composition covers this box; the gooey blur bleeds
+}
+
+// tablet & mobile: still a full-viewport hero — the composition covers it
+// (centred, full height). Nothing in the hero is interactive here (no reveal,
+// no links), so make the whole section click-through: the fixed burger sits
+// over its top-right corner and must stay tappable. Desktop keeps pointer
+// events so the cursor reveal still works.
+@include mq-max('lg') {
+  .hero {
+    height: 100svh;
+    min-height: 600px;
+    pointer-events: none;
+  }
+}
+
+@include mq-max('sm') {
+  .hero {
+    min-height: 520px;
+  }
+}

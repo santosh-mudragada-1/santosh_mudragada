@@ -1,0 +1,150 @@
+@use 'mixins' as *;
+
+// Chess.com work-card art. Sits inside WorkCard's clipped `.inner`, so the
+// board can run past the bottom edge and the mask feathers it into the dark
+// ground. Every measurement below is in container units (`cqw` = 1% of the
+// card's width, `cqh` = 1% of its height, `cqmin` = 1% of its shorter side),
+// so the whole composition scales with the card at any size or ratio.
+//
+// Layers carry `data-par` (a scroll-parallax multiplier); GSAP scrubs `y` on
+// each, so a `data-par` layer must never also set `transform` in CSS —
+// centring is left/right + flex, rotation lives on inner elements.
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  container-type: size;
+  background:
+    radial-gradient(120% 90% at 50% 4%, rgba(129, 182, 76, 0.12), transparent 58%),
+    var(--carbon);
+}
+
+// --- Chess.com brand lockup, watermarked behind the board -------------
+.emblem {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2cqh;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  opacity: 0.46;
+  pointer-events: none;
+  user-select: none;
+}
+
+.logo {
+  display: block;
+  width: min(40cqw, 128cqh);
+  height: auto;
+  filter: drop-shadow(0 0.6cqh 2cqh rgba(0, 0, 0, 0.5));
+}
+
+// --- scattered pieces ------------------------------------------------------
+.floats {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.floater {
+  position: absolute;
+  display: block;
+}
+
+.floaterImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: var(--op, 0.4);
+  transform: rotate(var(--rot, 0deg));
+  object-fit: contain;
+  filter: drop-shadow(0 0.8cqh 1.6cqh rgba(0, 0, 0, 0.5));
+  user-select: none;
+}
+
+// --- board + eval bar --------------------------------------------------
+// `.stage` is only the parallax carrier (GSAP owns its transform); the sized,
+// masked flex row lives on `.stageInner`.
+.stage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 21cqh;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.stageInner {
+  width: min(48cqw, 73cqh);
+  display: flex;
+  align-items: stretch;
+  gap: 1cqh;
+
+  // feather the board (and the bar with it) into the dark card bottom
+  --fade: linear-gradient(to bottom, #000 0%, #000 46%, rgba(0, 0, 0, 0.04) 70%, transparent 84%);
+  -webkit-mask-image: var(--fade);
+  mask-image: var(--fade);
+}
+
+.evalCol {
+  display: flex;
+  align-items: stretch;
+  flex: none;
+}
+
+.boardWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+// --- classification badges --------------------------------------------
+.badge {
+  position: absolute;
+  width: max(22px, 8.5cqh);
+  height: auto;
+  z-index: 3;
+  filter: drop-shadow(0 0.5cqh 1cqh rgba(0, 0, 0, 0.45));
+  user-select: none;
+}
+
+.badgeGood {
+  top: 20cqh;
+  right: 22cqw;
+}
+
+.badgeBad {
+  top: 34cqh;
+  left: 18cqw;
+}
+
+// --- tablet & down: WorkCard forces the card square, so cqw == cqh -----
+@include mq-max('lg') {
+  .stage {
+    top: 20cqh;
+  }
+  .stageInner {
+    width: 74cqw;
+  }
+  .logo {
+    width: 56cqw;
+  }
+  .badgeGood {
+    top: 15cqh;
+    right: 3cqw;
+  }
+  .badgeBad {
+    top: 34cqh;
+    left: 3cqw;
+  }
+}
+
+@include reduced-motion {
+  .floaterImg {
+    transform: rotate(var(--rot, 0deg)) !important;
+  }
+}

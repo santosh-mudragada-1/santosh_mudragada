@@ -1,0 +1,828 @@
+'use client';
+
+import { useEffect, useRef, useState, type RefObject } from 'react';
+import { gsap } from '@/lib/gsap/gsap';
+import { useIsTouch } from '@/lib/hooks/useIsTouch';
+import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
+import styles from './HeroReveal.module.scss';
+
+type Props = {
+  /** true once the preloader has handed off (or immediately under reduced motion) */
+  play: boolean;
+};
+
+// the composition is authored at 16" — everything below is in these units
+const VBW = 1728;
+const VBH = 1052;
+
+const CUTOUT = '/images/hero-cutout.webp';
+const BG = '/images/hero-bg.webp';
+const DEPTH = '/images/hero-depth.webp';
+
+// curved marquee — repeated so there's always text across the visible arc.
+// Ends with "— " so the same separator joins every repeat.
+const MARQUEE =
+  'Santosh Mudragada — Product Designer + Builder — UI/UX Designer — ';
+const MARQUEE_REPEAT = 5;
+const MARQUEE_PXPS = 88; // scroll speed, viewBox units / second
+
+// the arc the marquee rides — a gentle upward bow across the crossed hands
+// (the depth crop occludes it there), sitting fully inside the canvas.
+// Runs well past both edges so it never runs dry.
+const CURVE = `M -520 ${Math.round(VBH * 0.97)} Q ${VBW / 2} ${Math.round(
+  VBH * 0.83,
+)} ${VBW + 520} ${Math.round(VBH * 0.97)}`;
+
+// the provided ↘ arrow (public/arrow.svg), inlined so it can be recoloured and
+// masked for the negative copy. Source is 34x34, weight-5 baked into the fill.
+const ARROW_D =
+  'M4.26777 0.732233C3.29146 -0.244078 1.70854 -0.244078 0.732233 0.732233C-0.244078 1.70854 -0.244078 3.29146 0.732233 4.26777L2.5 2.5L4.26777 0.732233ZM31.5 34C32.8807 34 34 32.8807 34 31.5L34 9C34 7.61929 32.8807 6.5 31.5 6.5C30.1193 6.5 29 7.61929 29 9V29H9C7.61929 29 6.5 30.1193 6.5 31.5C6.5 32.8807 7.61929 34 9 34L31.5 34ZM2.5 2.5L0.732233 4.26777L29.7322 33.2678L31.5 31.5L33.2678 29.7322L4.26777 0.732233L2.5 2.5Z';
+const ARROW_SCALE = 1.9;
+
+// gooey blobs — lead leads & is near-instant, trail lags and shrinks. More
+// of them + a wider lag spread = a longer liquid streak on a fast move.
+// `r` is the resting radius (viewBox units); `d` is the follow-tween duration,
+// i.e. how far this blob lags the cursor.
+const BLOBS = [
+  { r: 205, d: 0.05 },
+  { r: 184, d: 0.14 },
+  { r: 164, d: 0.26 },
+  { r: 143, d: 0.41 },
+  { r: 122, d: 0.59 },
+  { r: 101, d: 0.8 },
+  { r: 81, d: 1.04 },
+  { r: 62, d: 1.31 },
+  { r: 44, d: 1.61 },
+  { r: 27, d: 1.95 },
+];
+
+// scattered copy positions (viewBox units, matched to the 1728x1052 spec)
+const SCATTER = {
+  fromX: 140,
+  fromY1: 300,
+  fromY2: 392,
+  toX: 1218,
+  toY1: 506,
+  toY2: 604,
+};
+
+// don't let the reveal circle ride up under the fixed header
+const HEADER_ZONE = 96;
+
+export function HeroReveal({ play }: Props) {
+  const isTouch = useIsTouch();
+  const isWebKit = useIsWebKit();
+  const reduced = usePrefersReducedMotion();
+  const wide = useMediaQuery('(min-width: 1024px)');
+  const mobile = useMediaQuery('(max-width: 639.98px)');
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Scattered copy is desktop-only now. Rendered on SSR / pre-mount too so the
+  // entrance still tags it; tablet + mobile drop it once `wide` resolves.
+  const scat = SCATTER;
+  const arrowScale = ARROW_SCALE;
+  const arrowDX = 96;
+  const arrowDY = 58;
+  const showScatter = !mounted || wide;
+
+  // WebKit chokes on the per-frame feGaussianBlur + SVG <mask> of the liquid
+  // reveal. It gets the same idea a different way: a compositor-only CSS
+  // radial-gradient mask that rides the cursor (see the WebKit branch below).
+  const useReveal = mounted && !isTouch && !reduced && !isWebKit;
+  const useWkReveal = mounted && !isTouch && !reduced && isWebKit;
+  // mobile has no hero reveal at all (no cursor, no scroll-fade)
+  const useTouchFade = mounted && isTouch && !reduced && !mobile;
+  // when no reveal is running the whole canvas is inert so taps reach the
+  // burger / anything behind it
+  const inert = mounted && !useReveal && !useWkReveal;
+
+  const svgRef = useRef<SVGSVGElement>(null);
+  const groupRefs = useRef<Array<SVGGElement | null>>([]);
+  const dotRefs = useRef<Array<SVGCircleElement | null>>([]);
+  const tp1Ref = useRef<SVGTextPathElement>(null);
+  const tp2Ref = useRef<SVGTextPathElement>(null);
+  const measureRef = useRef<SVGTextElement>(null);
+  const bgRef = useRef<SVGImageElement>(null);
+  const inGroupRef = useRef<SVGGElement>(null); // everything that eases in
+  const hostRef = useRef<HTMLDivElement>(null); // WebKit: the layer stack
+  const wkBgRef = useRef<HTMLDivElement>(null); // WebKit: with-bg photo wrapper
+  const wkNegRef = useRef<HTMLDivElement>(null); // WebKit: cream negative text
+
+  const marqueeText = MARQUEE.repeat(MARQUEE_REPEAT);
+
+  // WebKit renders the marquee + scattered copy twice — dark (rest state) and a
+  // cream "negative" copy shown only inside the reveal circle. Same geometry as
+  // the Chromium <g> pair; factored here so the two WebKit <svg>s don't repeat
+  // it. Only the dark copy carries the `.inItem` entrance hooks.
+  const wkTextContent = (
+    light: boolean,
+    tpRef: RefObject<SVGTextPathElement>,
+    curveId: string,
+  ) => {
+    const io = light ? '' : ` ${styles.inItem}`;
+    const mFill = light ? '#f4f0e9' : '#141210';
+    const bFill = light ? '#f4f0e9' : '#3a1b0e';
+    const aFill = light ? '#f4f0e9' : '#ff4d1a';
+    return (
+      <>
+        <text className={`${styles.marquee}${io}`} fill={mFill}>
+          <textPath ref={tpRef} href={`#${curveId}`} startOffset="0">
+            {marqueeText}
+          </textPath>
+        </text>
+        {showScatter && (
+        <g fill={bFill}>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={scat.fromX}
+            y={scat.fromY1}
+          >
+            from
+          </text>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={scat.fromX}
+            y={scat.fromY2}
+          >
+            problems<tspan fill={aFill}>!</tspan>
+          </text>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={scat.toX}
+            y={scat.toY1}
+          >
+            to
+          </text>
+          {/* outer <g> holds the position; GSAP animates the inner .inItem */}
+          <g transform={`translate(${scat.toX + arrowDX} ${scat.toY1 - arrowDY})`}>
+            <g className={light ? undefined : styles.inItem}>
+              <path
+                d={ARROW_D}
+                transform={`scale(${arrowScale})`}
+                fill={aFill}
+              />
+            </g>
+          </g>
+          <text
+            className={`${styles.scatter}${io}`}
+            x={scat.toX}
+            y={scat.toY2}
+          >
+            possibilities<tspan fill={aFill}>.</tspan>
+          </text>
+        </g>
+        )}
+      </>
+    );
+  };
+
+  // --- cursor liquid-mask reveal ------------------------------------------
+  useEffect(() => {
+    if (!useReveal) return;
+    const svg = svgRef.current;
+    const groups = groupRefs.current.filter(Boolean) as SVGGElement[];
+    const dots = dotRefs.current.filter(Boolean) as SVGCircleElement[];
+    if (!svg || groups.length !== BLOBS.length || dots.length !== BLOBS.length)
+      return;
+
+    const follow = groups.map((g, i) => ({
+      x: gsap.quickTo(g, 'x', { duration: BLOBS[i].d, ease: 'power3' }),
+      y: gsap.quickTo(g, 'y', { duration: BLOBS[i].d, ease: 'power3' }),
+    }));
+
+    const drifts = dots.map((c, i) => {
+      if (i === 0) return null;
+      const a = 12 + i * 4;
+      return gsap.to(c, {
+        x: i % 2 ? a : -a,
+        y: i % 2 ? -a * 0.8 : a * 0.9,
+        duration: 1.7 + i * 0.45,
+        ease: 'sine.inOut',
+        repeat: -1,
+        yoyo: true,
+      });
+    });
+
+    let inside = false;
+
+    // screen px -> viewBox units, honouring viewBox + preserveAspectRatio
+    const toVB = (e: PointerEvent): [number, number] => {
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return [VBW / 2, VBH / 2];
+      const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+      return [p.x, p.y];
+    };
+    const place = (x: number, y: number, snap: boolean) => {
+      groups.forEach((g, i) => {
+        if (snap) gsap.set(g, { x, y });
+        else {
+          follow[i].x(x);
+          follow[i].y(y);
+        }
+      });
+    };
+    const grow = () =>
+      gsap.to(dots, {
+        attr: { r: (i: number) => BLOBS[i].r },
+        duration: 0.5,
+        ease: 'power2.out',
+        stagger: 0.04,
+        overwrite: 'auto',
+      });
+    const collapse = () =>
+      gsap.to(dots, {
+        attr: { r: 0 },
+        duration: 0.4,
+        ease: 'power2.in',
+        stagger: { each: 0.04, from: 'end' },
+        overwrite: 'auto',
+      });
+
+    const onEnter = (e: PointerEvent) => {
+      const [x, y] = toVB(e);
+      place(x, y, true);
+      inside = true;
+      grow();
+    };
+    const onMove = (e: PointerEvent) => {
+      const [x, y] = toVB(e);
+      if (!inside) {
+        place(x, y, true);
+        inside = true;
+        grow();
+      } else {
+        place(x, y, false);
+      }
+    };
+    const onLeave = () => {
+      inside = false;
+      collapse();
+    };
+
+    svg.addEventListener('pointerenter', onEnter);
+    svg.addEventListener('pointermove', onMove, { passive: true });
+    svg.addEventListener('pointerleave', onLeave);
+    svg.addEventListener('pointercancel', onLeave);
+    // pointerleave doesn't fire when the hero is covered without the cursor
+    // moving (a page-transition curtain drops over it) or the window blurs —
+    // the blob would otherwise stay frozen mid-reveal until the next move.
+    window.addEventListener('blur', onLeave);
+    window.addEventListener('transition:complete', onLeave);
+
+    // Safari: pause the idle drift while the hero is off-screen
+    let driftIO: IntersectionObserver | null = null;
+    if (isWebKit) {
+      driftIO = new IntersectionObserver(
+        ([entry]) => {
+          drifts.forEach((t) => {
+            if (!t) return;
+            if (entry.isIntersecting) t.resume();
+            else t.pause();
+          });
+        },
+        { rootMargin: '200px 0px' },
+      );
+      driftIO.observe(svg);
+    }
+
+    return () => {
+      svg.removeEventListener('pointerenter', onEnter);
+      svg.removeEventListener('pointermove', onMove);
+      svg.removeEventListener('pointerleave', onLeave);
+      svg.removeEventListener('pointercancel', onLeave);
+      window.removeEventListener('blur', onLeave);
+      window.removeEventListener('transition:complete', onLeave);
+      driftIO?.disconnect();
+      gsap.killTweensOf(dots);
+      gsap.killTweensOf(groups);
+      drifts.forEach((t) => t?.kill());
+      // leave nothing frozen open if this effect re-runs (env hooks resolving,
+      // a route re-mount): reset the blobs so the next run starts closed.
+      gsap.set(dots, { attr: { r: 0 } });
+      gsap.set(groups, { x: 0, y: 0 });
+    };
+  }, [useReveal, isWebKit]);
+
+  // --- curved marquee (dark + negative copies move together) -------------
+  useEffect(() => {
+    if (reduced || !mounted) return;
+    const a = tp1Ref.current;
+    const b = tp2Ref.current;
+    if (!a) return;
+
+    let cancelled = false;
+    let tw: gsap.core.Tween | null = null;
+    let io: IntersectionObserver | null = null;
+
+    const start = () => {
+      if (cancelled || !a) return;
+      // one repeat's flat advance — measured off a plain <text>, not the
+      // <textPath> (Safari's getComputedTextLength on textPath is unreliable,
+      // which broke the loop distance there). This is still the exact seamless
+      // scroll distance: startOffset moves the text along the path by user
+      // units, and the string is periodic with this advance.
+      let one = 0;
+      try {
+        one =
+          measureRef.current?.getComputedTextLength() ??
+          a.getComputedTextLength() / MARQUEE_REPEAT;
+      } catch {
+        /* ignore */
+      }
+      if (!one) return;
+
+      const targets = b ? [a, b] : [a];
+      gsap.set(targets, { attr: { startOffset: 0 } });
+      // right -> left: startOffset drops by one repeat, then loops
+      tw = gsap.to(targets, {
+        attr: { startOffset: -one },
+        duration: one / MARQUEE_PXPS,
+        ease: 'none',
+        repeat: -1,
+      });
+
+      if (isWebKit && svgRef.current) {
+        io = new IntersectionObserver(
+          ([e]) => (e.isIntersecting ? tw?.resume() : tw?.pause()),
+          { rootMargin: '200px 0px' },
+        );
+        io.observe(svgRef.current);
+      }
+    };
+
+    // measure only after the display font is ready — the fallback font has a
+    // different advance width, which is what made the loop jitter
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      document.fonts.ready.then(start).catch(start);
+    } else {
+      start();
+    }
+
+    return () => {
+      cancelled = true;
+      io?.disconnect();
+      tw?.kill();
+    };
+  }, [reduced, isWebKit, mounted]);
+
+  // --- entrance (once the preloader hands off) --------------------------
+  useEffect(() => {
+    const grp = inGroupRef.current;
+    if (!grp) return;
+    const pieces = grp.querySelectorAll(`.${styles.inItem}`);
+
+    if (reduced || !play) {
+      gsap.set(grp, { autoAlpha: reduced ? 1 : play ? 1 : 0 });
+      gsap.set(pieces, { autoAlpha: 1, y: 0 });
+      return;
+    }
+
+    const tl = gsap.timeline();
+    tl.fromTo(
+      grp,
+      { autoAlpha: 0 },
+      { autoAlpha: 1, duration: 0.5, ease: 'power2.out' },
+    ).fromTo(
+      pieces,
+      { autoAlpha: 0, y: 26 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.85,
+        ease: 'expo.out',
+        stagger: 0.08,
+      },
+      0.08,
+    );
+    return () => {
+      // Snap to the finished state before killing. `fromTo` drops every piece
+      // to autoAlpha 0 up front, so an interrupted timeline (StrictMode, a
+      // route re-mount, an env-hook re-render) would otherwise leave the
+      // marquee / scattered copy stuck invisible.
+      tl.progress(1).kill();
+    };
+  }, [play, reduced]);
+
+  // --- touch: bg fades in on scroll ------------------------------------
+  useEffect(() => {
+    if (!useTouchFade) return;
+    const el = isWebKit ? wkBgRef.current : bgRef.current;
+    const trig = isWebKit ? hostRef.current : svgRef.current;
+    if (!el || !trig) return;
+    const tween = gsap.fromTo(
+      el,
+      { autoAlpha: 0 },
+      {
+        autoAlpha: 0.5,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: trig,
+          start: 'center 85%',
+          end: 'bottom top',
+          scrub: true,
+        },
+      },
+    );
+    return () => {
+      tween.scrollTrigger?.kill();
+      tween.kill();
+    };
+  }, [useTouchFade, isWebKit]);
+
+  // --- WebKit reveal: a CSS radial-gradient mask that rides the cursor ---
+  // No feGaussianBlur, no SVG <mask>. Safari won't re-evaluate a mask-image
+  // that references a CSS var when the var changes, so GSAP tweens a plain
+  // state object and writes the whole gradient string to both layers (the
+  // with-bg photo + the cream negative text) each frame — still compositor-only.
+  useEffect(() => {
+    if (!useWkReveal) return;
+    const host = hostRef.current;
+    const bg = wkBgRef.current;
+    const neg = wkNegRef.current;
+    if (!host || !bg || !neg) return;
+
+    const st = { x: 0, y: 0, r: 0, o: 0 };
+    const maxR = () => Math.max(180, Math.min(window.innerWidth * 0.2, 300));
+
+    const paint = () => {
+      const r = st.r < 1 ? 1 : st.r;
+      const m = `radial-gradient(circle ${r}px at ${st.x}px ${st.y}px, #000 ${
+        r * 0.52
+      }px, rgba(0,0,0,0) ${r}px)`;
+      for (const el of [bg, neg] as HTMLElement[]) {
+        el.style.webkitMaskImage = m;
+        el.style.maskImage = m;
+        el.style.opacity = `${st.o}`;
+      }
+    };
+    paint();
+
+    const xTo = gsap.quickTo(st, 'x', { duration: 0.3, ease: 'power3', onUpdate: paint });
+    const yTo = gsap.quickTo(st, 'y', { duration: 0.3, ease: 'power3', onUpdate: paint });
+
+    let inside = false;
+    const reveal = () =>
+      gsap.to(st, {
+        r: maxR(),
+        o: 1,
+        duration: 0.5,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        onUpdate: paint,
+      });
+    const conceal = () => {
+      inside = false;
+      gsap.to(st, {
+        r: 0,
+        o: 0,
+        duration: 0.4,
+        ease: 'power2.in',
+        overwrite: 'auto',
+        onUpdate: paint,
+      });
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const rect = host.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      // keep the circle out of the fixed header strip at the top of the hero
+      if (e.clientY < HEADER_ZONE) {
+        if (inside) conceal();
+        return;
+      }
+      if (!inside) {
+        inside = true;
+        st.x = x;
+        st.y = y;
+        paint();
+        reveal();
+      } else {
+        xTo(x);
+        yTo(y);
+      }
+    };
+
+    host.addEventListener('pointermove', onMove, { passive: true });
+    host.addEventListener('pointerleave', conceal);
+    host.addEventListener('pointercancel', conceal);
+
+    return () => {
+      host.removeEventListener('pointermove', onMove);
+      host.removeEventListener('pointerleave', conceal);
+      host.removeEventListener('pointercancel', conceal);
+      gsap.killTweensOf(st);
+    };
+  }, [useWkReveal, wide]);
+
+  // ---- WebKit: stacked layers + a CSS radial-gradient mask reveal --------
+  // Same visual composition as the Chromium SVG, but split into separate
+  // layers so the reveal can be a plain CSS mask on plain elements (no
+  // feGaussianBlur, no SVG <mask> — both freeze the section in Safari).
+  if (mounted && isWebKit) {
+    const fit = 'cover' as const; // full-bleed, centred — on every screen
+    return (
+      <div
+        ref={hostRef}
+        className={styles.canvas}
+        data-narrow={!wide || undefined}
+        data-inert={inert || undefined}
+      >
+        {/* layer 4 — base cutout */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.wkImg}
+          style={{ objectFit: fit }}
+          src={CUTOUT}
+          alt=""
+          aria-hidden
+          draggable={false}
+          decoding="async"
+        />
+
+        {/* layer 3 — with-background photo: revealed by the cursor circle,
+            or scroll-faded in on touch. The mask sits on the wrapper <div>
+            (Safari is unreliable masking a replaced <img> directly). */}
+        {(useWkReveal || useTouchFade) && (
+          <div
+            ref={wkBgRef}
+            className={useWkReveal ? styles.wkReveal : styles.wkBg}
+            aria-hidden
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className={styles.wkImg}
+              style={{ objectFit: fit }}
+              src={BG}
+              alt=""
+              draggable={false}
+              decoding="async"
+            />
+          </div>
+        )}
+
+        {/* layer 2 — text, dark (rest state) */}
+        <svg
+          ref={svgRef}
+          className={styles.wkText}
+          viewBox={`0 0 ${VBW} ${VBH}`}
+          preserveAspectRatio="xMidYMid slice"
+          role="img"
+          aria-label="Santosh Mudragada — Product Designer + Builder, UI/UX Designer"
+        >
+          <defs>
+            <path id="heroCurve" d={CURVE} fill="none" />
+          </defs>
+          <text
+            ref={measureRef}
+            className={styles.marquee}
+            x="-99999"
+            y="-99999"
+            aria-hidden
+          >
+            {MARQUEE}
+          </text>
+          <g ref={inGroupRef}>
+            <g className={styles.textDark}>
+              {wkTextContent(false, tp1Ref, 'heroCurve')}
+            </g>
+          </g>
+        </svg>
+
+        {/* layer 2b — same copy, cream, shown only inside the reveal circle */}
+        {useWkReveal && (
+          <div ref={wkNegRef} className={styles.wkReveal} aria-hidden>
+            <svg
+              className={styles.wkText}
+              viewBox={`0 0 ${VBW} ${VBH}`}
+              preserveAspectRatio="xMidYMid slice"
+              aria-hidden
+            >
+              <defs>
+                <path id="heroCurveNeg" d={CURVE} fill="none" />
+              </defs>
+              {wkTextContent(true, tp2Ref, 'heroCurveNeg')}
+            </svg>
+          </div>
+        )}
+
+        {/* layer 1 — foreground depth crop, over the curved text */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.wkImg}
+          style={{ objectFit: fit }}
+          src={DEPTH}
+          alt=""
+          aria-hidden
+          draggable={false}
+          decoding="async"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <svg
+      ref={svgRef}
+      className={styles.canvas}
+      data-narrow={!wide || undefined}
+      data-inert={inert || undefined}
+      viewBox={`0 0 ${VBW} ${VBH}`}
+      preserveAspectRatio="xMidYMid slice"
+      role="img"
+      aria-label="Santosh Mudragada — Product Designer + Builder, UI/UX Designer"
+    >
+      <defs>
+        {useReveal && (
+          <>
+            <filter
+              id="heroGoo"
+              x="-70%"
+              y="-70%"
+              width="240%"
+              height="240%"
+              colorInterpolationFilters="sRGB"
+            >
+              <feGaussianBlur
+                in="SourceGraphic"
+                stdDeviation="46"
+                result="b"
+              />
+              <feColorMatrix
+                in="b"
+                type="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 34 -14"
+              />
+            </filter>
+            <mask id="heroBlob">
+              <g filter="url(#heroGoo)">
+                {BLOBS.map((_, i) => (
+                  <g
+                    key={i}
+                    ref={(el) => {
+                      groupRefs.current[i] = el;
+                    }}
+                  >
+                    <circle
+                      ref={(el) => {
+                        dotRefs.current[i] = el;
+                      }}
+                      cx="0"
+                      cy="0"
+                      r="0"
+                      fill="#fff"
+                    />
+                  </g>
+                ))}
+              </g>
+            </mask>
+          </>
+        )}
+        <path id="heroCurve" d={CURVE} fill="none" />
+      </defs>
+
+      {/* off-screen — one marquee repeat, measured for a seamless loop */}
+      <text
+        ref={measureRef}
+        className={styles.marquee}
+        x="-99999"
+        y="-99999"
+        aria-hidden
+      >
+        {MARQUEE}
+      </text>
+
+      {/* layer 4 — base cutout (always visible) */}
+      <image
+        href={CUTOUT}
+        x="0"
+        y="0"
+        width={VBW}
+        height={VBH}
+        preserveAspectRatio="xMidYMid slice"
+      />
+
+      {/* layer 3 — with-background, revealed through the blob (or scroll-faded
+          on touch). Not rendered at all on WebKit — no reveal there. */}
+      {(useReveal || useTouchFade) && (
+        <image
+          ref={bgRef}
+          className={styles.bg}
+          href={BG}
+          x="0"
+          y="0"
+          width={VBW}
+          height={VBH}
+          preserveAspectRatio="xMidYMid slice"
+          mask={useReveal ? 'url(#heroBlob)' : undefined}
+          data-scrub={useTouchFade || undefined}
+        />
+      )}
+
+      {/* layers 2 + 1 ease in together */}
+      <g ref={inGroupRef}>
+        {/* layer 2 — text, dark (rest state, over the cream) */}
+        <g className={styles.textDark}>
+          <text className={`${styles.marquee} ${styles.inItem}`} fill="#141210">
+            <textPath ref={tp1Ref} href="#heroCurve" startOffset="0">
+              {marqueeText}
+            </textPath>
+          </text>
+          {showScatter && (
+          <g fill="#3a1b0e">
+            <text
+              className={`${styles.scatter} ${styles.inItem}`}
+              x={scat.fromX}
+              y={scat.fromY1}
+            >
+              from
+            </text>
+            <text
+              className={`${styles.scatter} ${styles.inItem}`}
+              x={scat.fromX}
+              y={scat.fromY2}
+            >
+              problems
+              <tspan fill="#ff4d1a">!</tspan>
+            </text>
+            <text
+              className={`${styles.scatter} ${styles.inItem}`}
+              x={scat.toX}
+              y={scat.toY1}
+            >
+              to
+            </text>
+            {/* outer <g> keeps the position; GSAP animates the inner .inItem
+                (an untransformed <g>) so it can't clobber the translate */}
+            <g
+              transform={`translate(${scat.toX + arrowDX} ${scat.toY1 - arrowDY})`}
+            >
+              <g className={styles.inItem}>
+                <path
+                  d={ARROW_D}
+                  transform={`scale(${arrowScale})`}
+                  fill="#ff4d1a"
+                />
+              </g>
+            </g>
+            <text
+              className={`${styles.scatter} ${styles.inItem}`}
+              x={scat.toX}
+              y={scat.toY2}
+            >
+              possibilities
+              <tspan fill="#ff4d1a">.</tspan>
+            </text>
+          </g>
+          )}
+        </g>
+
+        {/* layer 2b — same text, light, shown ONLY through the blob (negative) */}
+        {useReveal && (
+          <g
+            className={styles.textLight}
+            mask="url(#heroBlob)"
+            fill="#f4f0e9"
+            aria-hidden
+          >
+            <text className={styles.marquee}>
+              <textPath ref={tp2Ref} href="#heroCurve" startOffset="0">
+                {marqueeText}
+              </textPath>
+            </text>
+            <text className={styles.scatter} x={scat.fromX} y={scat.fromY1}>
+              from
+            </text>
+            <text className={styles.scatter} x={scat.fromX} y={scat.fromY2}>
+              problems!
+            </text>
+            <text className={styles.scatter} x={scat.toX} y={scat.toY1}>
+              to
+            </text>
+            <g
+              transform={`translate(${scat.toX + arrowDX} ${scat.toY1 - arrowDY})`}
+            >
+              <path d={ARROW_D} transform={`scale(${arrowScale})`} />
+            </g>
+            <text className={styles.scatter} x={scat.toX} y={scat.toY2}>
+              possibilities.
+            </text>
+          </g>
+        )}
+      </g>
+
+      {/* layer 1 — foreground depth crop, over the curved text */}
+      <image
+        href={DEPTH}
+        x="0"
+        y="0"
+        width={VBW}
+        height={VBH}
+        preserveAspectRatio="xMidYMid slice"
+      />
+    </svg>
+  );
+}

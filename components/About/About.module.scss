@@ -1,0 +1,81 @@
+@use 'mixins' as *;
+
+.section {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  touch-action: pan-y;
+  // the revealed colour panel; falls back to the page surface (reduced motion)
+  background: var(--about-bg, var(--bg));
+  transition: background-color 0.5s var(--ease-quart-in-out);
+
+  // subtle grain — only visible in reduced-motion (the canvas covers it in
+  // paint mode, where the grain is tiled into each panel instead)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+.texts {
+  position: absolute;
+  inset: 0;
+  // reduced-motion only — in paint mode the canvases cover it
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  pointer-events: none;
+}
+
+.text {
+  grid-area: 1 / 1;
+  max-width: 22ch;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(2rem, 1.2rem + 4.6vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--about-ink, var(--ink));
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-quart-in-out);
+
+  &[data-active] {
+    opacity: 1;
+  }
+}
+
+// highlighted words — the accent face (Erica One)
+.accent {
+  font-family: var(--font-accent);
+  font-weight: 400;
+}
+
+.canvasBack,
+.canvasTop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.canvasBack {
+  z-index: 2; // the next panel, revealed as the top is erased
+}
+
+.canvasTop {
+  z-index: 3; // the panel currently being erased
+}

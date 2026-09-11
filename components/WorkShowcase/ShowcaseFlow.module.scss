@@ -1,0 +1,147 @@
+@use 'mixins' as *;
+
+// ===========================================================================
+// Scroll showcase — mobile / reduced-motion / no-JS flow.
+// ===========================================================================
+
+.root {
+  position: relative;
+}
+
+.block {
+  position: relative;
+  padding: clamp(4.5rem, 15vh, 8rem) var(--gutter);
+  display: flex;
+  flex-direction: column;
+
+  // hairline seam between tones
+  & + & {
+    box-shadow: inset 0 1px 0 rgba(20, 17, 13, 0.06);
+  }
+
+  // one-shot reveal — only once JS is present; invisible to no-JS / SSR
+  [data-js] & {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s var(--ease-quart-in-out),
+      transform 0.7s var(--ease-quart-in-out);
+  }
+
+  [data-js] &[data-seen] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.count {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--smoke-500);
+  margin-bottom: clamp(1.5rem, 6vw, 2.25rem);
+
+  i {
+    font-style: normal;
+    opacity: 0.5;
+  }
+}
+
+.category {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.1rem, 1.3rem + 5vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+.descriptor {
+  margin-top: 0.9rem;
+  font-size: clamp(1rem, 0.95rem + 0.5vw, 1.2rem);
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.visualLink {
+  display: block;
+  margin-top: clamp(1.75rem, 6vw, 2.5rem);
+  border-radius: 12px;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 5px;
+  }
+}
+
+.supporting {
+  margin-top: clamp(1.25rem, 5vw, 1.75rem);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--smoke-500);
+  max-width: 46ch;
+}
+
+.cta {
+  align-self: flex-start;
+  margin-top: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line-strong);
+
+  span {
+    display: inline-block;
+    transition: transform var(--dur-fast) var(--ease-quart-in-out);
+  }
+
+  @include hover {
+    border-color: var(--accent);
+    span {
+      transform: translateX(4px);
+    }
+  }
+}
+
+// From ~560px up (small tablets / large phones, and desktop under reduced
+// motion) give it more air and a centred measure — still not the desktop
+// composition, just a comfortable single column.
+@include mq('xs') {
+  .block {
+    padding-inline: clamp(2rem, 8vw, 5rem);
+  }
+  .descriptor {
+    max-width: 40ch;
+  }
+}
+
+@include mq('md') {
+  .block > * {
+    width: 100%;
+    max-width: 640px;
+    margin-inline: auto;
+  }
+  .visualLink {
+    max-width: 720px;
+  }
+}
+
+@include reduced-motion {
+  .block,
+  [data-js] .block {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
