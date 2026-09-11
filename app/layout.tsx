@@ -127,11 +127,28 @@ export const metadata: Metadata = {
     description: SITE.description,
     siteName: SITE.name,
     url: SITE.url,
+    images: [
+      {
+        url: '/og.png',
+        width: 1728,
+        height: 1040,
+        alt: SITE.name,
+      },
+    ],
+    videos: [
+      {
+        url: `${SITE.url}/og-preview.mp4`,
+        type: 'video/mp4',
+        width: 1728,
+        height: 1040,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: SITE.name,
     description: SITE.description,
+    images: ['/og.png'],
   },
   robots: { index: true, follow: true },
 };

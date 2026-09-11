@@ -23,6 +23,15 @@ const SWATCH: Partial<Record<string, string>> = {
 
 const COPY_RESET_MS = 1800;
 
+// Soft-break hints for the giant email so a long address wraps at a sensible
+// point — after "@", and after the first "." (the local part, if it has
+// one) — instead of `overflow-wrap: anywhere` picking an arbitrary mid-word
+// spot on narrow screens. A zero-width space is an invisible break
+// opportunity; written as an escape (not pasted in literally) so it stays
+// visible/greppable in source instead of silently vanishing in an editor.
+const ZWSP = '\u200B';
+const EMAIL_DISPLAY = SITE.email.replace('.', `.${ZWSP}`).replace('@', `@${ZWSP}`);
+
 export function Contact() {
   const reduced = usePrefersReducedMotion();
   const isTouch = useIsTouch();
@@ -173,10 +182,7 @@ export function Contact() {
             data-cursor-sticky
             aria-label={`Copy email address ${SITE.email}`}
           >
-            <span className={styles.emailText}>
-              {SITE.email.split('@')[0]}@<wbr />
-              {SITE.email.split('@')[1]}
-            </span>
+            <span className={styles.emailText}>{EMAIL_DISPLAY}</span>
             <span className={styles.arrow} aria-hidden>
               →
             </span>

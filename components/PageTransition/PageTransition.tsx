@@ -10,8 +10,15 @@ import { routeLabel } from './labels';
 
 // While covered: never lift before this (so the curtain can't just flash), and
 // never stay past this even if the route never reports committed (failsafe).
+// HOLD_MAX_MS used to be 3000 — on a slow first-time load (cold cache, no
+// prefetch yet) a heavier route's JS chunk can genuinely take longer than
+// that to arrive. When it did, the failsafe forced a reveal of the STILL-OLD
+// page (pathname hadn't committed yet), which then visibly swapped to the
+// new one a moment later once the slow fetch finally landed — the "shows the
+// same page, then changes again" report. Raised well past any realistic
+// route-chunk fetch time; it's a last-resort safety net, not a target.
 const HOLD_MIN_MS = 350;
-const HOLD_MAX_MS = 3000;
+const HOLD_MAX_MS = 8000;
 
 /**
  * App Router page transition — a curved SVG curtain, matched to

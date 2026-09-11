@@ -2,8 +2,7 @@ export const SITE = {
   name: 'Design with Santosh',
   fullName: 'Santosh Mudragada',
   role: 'Product Designer & Builder',
-  // TODO(stage-3): confirm the public contact address before the Contact section.
-  email: 'hello@designwithsantosh.com',
+  email: 'hello@designwithsantosh.in',
   url: 'https://designwithsantosh.com',
   description:
     'Portfolio of Santosh Mudragada — product designer and builder. Design, motion, interaction and shipping real products.',
