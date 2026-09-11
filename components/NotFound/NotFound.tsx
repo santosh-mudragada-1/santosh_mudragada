@@ -200,17 +200,18 @@ export function NotFound() {
         </Link>
       </div>
 
-      <figure ref={lostRef} className={styles.lost} aria-hidden>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photoSrc(LOST_PHOTO)}
-          alt={ALT[LOST_PHOTO] ?? ''}
-          loading="eager"
-          decoding="async"
-          draggable={false}
-        />
-        <figcaption>Wrong turn</figcaption>
-      </figure>
+      <div className={styles.lostWrap}>
+        <figure ref={lostRef} className={styles.lost} aria-hidden>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photoSrc(LOST_PHOTO)}
+            alt={ALT[LOST_PHOTO] ?? ''}
+            loading="eager"
+            decoding="async"
+            draggable={false}
+          />
+        </figure>
+      </div>
     </div>
   );
 }
