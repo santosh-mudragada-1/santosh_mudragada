@@ -168,7 +168,7 @@ export const ENGINEERING = {
   // ↓↓↓ non-specific on purpose — see the note at the top of this file
   transition:
     'People ask how I got from wings to interfaces. I have never had a tidy answer. I kept following the part of the work I actually enjoyed, and after a while it had turned into something else.',
-  pull: 'The line from there to here is not straight. I have stopped apologising for that.',
+  pull: "It took a few turns to get here. I wouldn't change them.",
 };
 
 export const PEOPLE = {
@@ -257,7 +257,7 @@ export const QUIET = {
 
 export const CARE = {
   chapter: '07',
-  title: ['And then there are the people', 'I would put all of it down for.'],
+  title: ['And then there are the little moments', 'I end up carrying home.'],
   line: 'That is about all I will say here.',
 };
 
