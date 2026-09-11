@@ -135,14 +135,6 @@ export const metadata: Metadata = {
         alt: SITE.name,
       },
     ],
-    videos: [
-      {
-        url: `${SITE.url}/og-preview.mp4`,
-        type: 'video/mp4',
-        width: 1728,
-        height: 1040,
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
