@@ -8,7 +8,7 @@ import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
 import { useWorkNav } from '@/lib/hooks/useWorkNav';
 import { Magnetic } from '@/components/Magnetic';
-import { NAV_LINKS, SITE, SOCIALS } from '@/lib/constants/site';
+import { MAILTO_HREF, NAV_LINKS, SITE, SOCIALS } from '@/lib/constants/site';
 import styles from './Footer.module.scss';
 
 const CW = 1000;
@@ -177,7 +177,7 @@ export function Footer() {
         </h2>
 
         <a
-          href={`mailto:${SITE.email}`}
+          href={MAILTO_HREF}
           className={styles.band}
           data-cursor="hi"
           data-cursor-sticky
@@ -205,7 +205,7 @@ export function Footer() {
           <span className={styles.label}>Direct</span>
           <Magnetic strength={0.15}>
             <a
-              href={`mailto:${SITE.email}`}
+              href={MAILTO_HREF}
               className={styles.email}
               data-cursor-reveal
               data-cursor-sticky
