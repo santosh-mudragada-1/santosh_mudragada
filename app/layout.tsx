@@ -122,6 +122,7 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   authors: [{ name: SITE.fullName }],
+  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     title: SITE.name,

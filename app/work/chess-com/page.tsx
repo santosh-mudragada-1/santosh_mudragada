@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Chess.com — Game-Based Puzzles',
   description:
     'An independent design concept for Chess.com: your own blunders, detected by the engine and handed back as fair, verified puzzles. Product design case study by Santosh Mudragada.',
+  alternates: { canonical: '/work/chess-com' },
 };
 
 export default function ChessComCaseStudyPage() {

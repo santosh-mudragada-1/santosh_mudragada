@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'About',
   description:
     "There's more to Santosh Mudragada than the design work. A visual essay: an engineering start, the people, travel, photography, slow mornings and quiet ones.",
+  alternates: { canonical: '/about' },
 };
 
 export default function AboutPage() {

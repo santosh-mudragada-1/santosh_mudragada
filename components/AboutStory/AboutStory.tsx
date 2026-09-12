@@ -8,6 +8,9 @@ import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { Figure } from './Figure';
 import { TravelReel } from './TravelReel';
 import { PhotoRoll } from './PhotoRoll';
+// NOTE: <ToolsShowcase /> is hidden for now — bring it back below (chapter
+// 09, "From idea to interface.") when it returns.
+// import { ToolsShowcase } from './ToolsShowcase';
 import {
   ADVENTURE,
   CARE,
@@ -385,6 +388,20 @@ function Present() {
   );
 }
 
+function CtaArrow() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
+      <path
+        d="M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function Ending() {
   return (
     <section className={styles.ending} data-theme="dark" aria-label="End">
@@ -395,18 +412,16 @@ function Ending() {
         <p className={styles.endingLine} data-reveal="">
           {ENDING.line}
         </p>
-        <Link href={ENDING.ctaHref} className={styles.endingCta} data-cursor="link" data-cursor-sticky>
-          {ENDING.cta}
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
-            <path
-              d="M5 12h13m0 0-5.5-5.5M18 12l-5.5 5.5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </Link>
+        <div className={styles.endingCtas}>
+          <Link href={ENDING.ctaHref} className={styles.endingCta} data-cursor="link" data-cursor-sticky>
+            {ENDING.cta}
+            <CtaArrow />
+          </Link>
+          <Link href={ENDING.cta2Href} className={styles.endingCta} data-cursor="link" data-cursor-sticky>
+            {ENDING.cta2}
+            <CtaArrow />
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -581,6 +596,7 @@ export function AboutStory() {
       <Quiet />
       <Care />
       <Present />
+      {/* <ToolsShowcase /> */}
       <Ending />
     </div>
   );

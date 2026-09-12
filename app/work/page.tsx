@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'Work',
   description: 'Selected product design work by Santosh Mudragada.',
+  alternates: { canonical: '/work' },
 };
 
 export default function WorkPage() {

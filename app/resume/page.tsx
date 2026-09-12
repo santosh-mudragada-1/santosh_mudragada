@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Resume',
   description:
     'A concise overview of Santosh Mudragada — experience, selected work, education and design background. Download the PDF.',
+  alternates: { canonical: '/resume' },
 };
 
 export default function ResumePage() {

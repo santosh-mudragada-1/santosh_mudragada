@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useNavContrast } from '@/lib/hooks/useNavContrast';
+import { useContactModal } from '@/lib/contact-modal';
 import { Magnetic } from '@/components/Magnetic';
 import { SITE, SOCIALS } from '@/lib/constants/site';
 import { src as photoSrc } from '@/components/AboutStory/story';
@@ -31,6 +32,7 @@ export function Contact() {
   const [copied, setCopied] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const { open: openContactForm } = useContactModal();
 
   // the hero + elsewhere sections are full-bleed dark — flip the fixed nav
   // to light while either sits under the header band
@@ -43,6 +45,12 @@ export function Contact() {
       window.setTimeout(() => setCopied(false), COPY_RESET_MS);
     } catch {
       /* clipboard unavailable — the address is still selectable as plain text */
+    } finally {
+      // The site's only working contact form lives in the global
+      // ContactModal (otherwise reachable solely from the Footer, which
+      // this page deliberately omits) — surface it here too so /contact
+      // itself leads somewhere actionable, not just a copy-to-clipboard.
+      openContactForm();
     }
   };
 

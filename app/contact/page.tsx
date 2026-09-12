@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Contact',
   description:
     'Get in touch with Santosh Mudragada, product designer and builder. Let’s make something.',
+  alternates: { canonical: '/contact' },
 };
 
 // Standalone — deliberately ends without the site <Footer>.

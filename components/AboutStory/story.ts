@@ -271,10 +271,154 @@ export const PRESENT = {
   pull: ['Design is what I do.', 'Curiosity is the thing underneath it.'],
 };
 
+// The kit, staged as one composition rather than a logo grid. `x`/`y` are
+// percent positions on a 100x100 canvas (viewBox for the connector lines
+// matches 1:1); `size` is a coarse hierarchy tier, not an exact px value —
+// see ToolsShowcase.module.scss for what each tier resolves to. `ar` is the
+// asset's real width/height so its box never distorts the source logo.
+export type ToolStage = 'THINK' | 'DESIGN' | 'MOVE' | 'BUILD' | 'SHIP';
+
+export const TOOLS = {
+  chapter: '09',
+  title: ['From idea', 'to interface.'],
+  lines: ["The tools change. The obsession with making things better doesn't."],
+  detail: '10 tools. Countless rabbit holes.',
+
+  items: [
+    {
+      name: 'ChatGPT',
+      logo: 'chatgpt.jpg',
+      ar: 1,
+      stage: 'THINK' as ToolStage,
+      size: 'lg',
+      x: 19,
+      y: 17,
+      rotate: -3,
+      blurb: 'For breaking down problems and exploring directions.',
+    },
+    {
+      name: 'Claude',
+      logo: 'claude.webp',
+      ar: 1,
+      stage: 'THINK' as ToolStage,
+      size: 'lg',
+      x: 35,
+      y: 6,
+      rotate: 2,
+      blurb: 'For exploring ideas before committing.',
+    },
+    {
+      name: 'Gemini',
+      logo: 'gemini.webp',
+      ar: 1,
+      stage: 'THINK' as ToolStage,
+      size: 'sm',
+      x: 8,
+      y: 35,
+      rotate: -6,
+      blurb: "Another perspective when I'm stuck.",
+    },
+    {
+      name: 'FigJam',
+      logo: 'figjam.png',
+      ar: 1.905,
+      stage: 'DESIGN' as ToolStage,
+      size: 'md',
+      x: 28,
+      y: 49,
+      rotate: 3,
+      blurb: 'Where messy ideas become clearer.',
+    },
+    {
+      name: 'Figma',
+      logo: 'figma.webp',
+      ar: 1,
+      stage: 'DESIGN' as ToolStage,
+      size: 'xl',
+      x: 47,
+      y: 38,
+      rotate: -2,
+      blurb: 'Where ideas become interfaces.',
+    },
+    {
+      name: 'After Effects',
+      logo: 'after-effects.webp',
+      ar: 1.026,
+      stage: 'MOVE' as ToolStage,
+      size: 'md',
+      x: 64,
+      y: 50,
+      rotate: 4,
+      blurb: 'For motion, storytelling and visual experiments.',
+    },
+    {
+      name: 'Rive',
+      logo: 'rive.avif',
+      ar: 1,
+      stage: 'MOVE' as ToolStage,
+      size: 'sm',
+      x: 75,
+      y: 29,
+      rotate: -5,
+      blurb: 'For interactive motion that belongs in the interface.',
+    },
+    {
+      name: 'VS Code',
+      logo: 'vscode.jpeg',
+      ar: 1.4,
+      stage: 'BUILD' as ToolStage,
+      size: 'md',
+      x: 58,
+      y: 71,
+      rotate: -3,
+      blurb: 'Where the design becomes real.',
+    },
+    {
+      name: 'GitHub',
+      logo: 'github.webp',
+      ar: 1,
+      stage: 'BUILD' as ToolStage,
+      size: 'sm',
+      x: 76,
+      y: 64,
+      rotate: 5,
+      blurb: 'Where ideas become something shippable.',
+    },
+    {
+      name: 'Vercel',
+      logo: 'vercel.jpg',
+      ar: 1,
+      stage: 'SHIP' as ToolStage,
+      size: 'lg',
+      x: 90,
+      y: 87,
+      rotate: 0,
+      blurb: 'Where it finally leaves my laptop.',
+    },
+  ],
+
+  // faint always; the pair lights up when either end is the active tool
+  connections: [
+    ['ChatGPT', 'Claude'],
+    ['Claude', 'Gemini'],
+    ['FigJam', 'Figma'],
+    ['Figma', 'After Effects'],
+    ['After Effects', 'Rive'],
+    ['Rive', 'VS Code'],
+    ['VS Code', 'GitHub'],
+    ['GitHub', 'Vercel'],
+  ] as [string, string][],
+
+  // the "everything moves toward Vercel" chain, lit in sequence on its hover
+  shipChain: ['Figma', 'After Effects', 'Rive', 'VS Code', 'GitHub', 'Vercel'],
+};
+
 export const ENDING = {
   line: 'Anyway. That is a bit more of me.',
   cta: 'Back to the work',
   ctaHref: '/work',
+  cta2: 'Get in touch',
+  cta2Href: '/contact',
 };
 
 // Real, ordered prose for crawlers / screen readers — the scroll piece is
@@ -289,4 +433,5 @@ export const SR_PARAGRAPHS: string[] = [
   'I like cafés and slow mornings. I like saying yes to things, kayaking, rented motorbikes, bad roads, before I know quite what they involve. I also like solitude: mountains, water, being somewhere unreachable.',
   'There are a few people I would put everything else down for.',
   'Somewhere across all of that I became a designer. Not because any one experience taught me a lesson, but because the habit underneath it, look closer, follow the interesting part, turned into the work. Design is what I do; curiosity is the thing underneath it.',
+  "From idea to interface: ChatGPT, Claude and Gemini to think things through; FigJam and Figma to design; After Effects and Rive for motion; VS Code and GitHub to build it; Vercel to ship it. The tools change, the process doesn't.",
 ];

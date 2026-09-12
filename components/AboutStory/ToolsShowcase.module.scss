@@ -1,0 +1,194 @@
+@use 'mixins' as *;
+
+// ===========================================================================
+// TOOLS — "From idea to interface." One composition, not a logo grid: each
+// tool's size + position stands in for where it sits in the workflow
+// (THINK → DESIGN → MOVE → BUILD → SHIP). Hover quiets the rest instead of
+// opening a card. The composition needs real width to read, so it's desktop
+// only — mobile/tablet skip the section entirely (no simplified fallback).
+// ===========================================================================
+
+.section {
+  position: relative;
+  width: 100%;
+
+  @include mq-max('lg') {
+    display: none;
+  }
+}
+
+// --- desktop composition -----------------------------------------------------
+.canvas {
+  position: relative;
+  max-width: 1520px;
+  margin: clamp(2.5rem, 6vw, 4.5rem) auto 0;
+  aspect-ratio: 16 / 9.2;
+  min-height: 460px;
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+
+  line {
+    stroke: var(--line-strong);
+    stroke-width: 0.15;
+    opacity: 0.05;
+    vector-effect: non-scaling-stroke;
+    transition: opacity 0.5s var(--ease-quart-in-out);
+  }
+}
+
+// GSAP owns this element's transform for the one-time scroll assembly
+// (scale/x/y) — never give it an independent translate/rotate/scale, or the
+// tween's cleanup permanently zeroes them and the hover state below goes dead.
+.toolSlot {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+
+  // let the active tool's stacking rise above overlapping neighbours —
+  // z-index on the button alone can't escape its own slot's paint order
+  &:has(.tool:hover),
+  &:has(.tool:focus-visible),
+  &:has(.tool[aria-pressed='true']) {
+    z-index: 5;
+  }
+}
+
+.tool {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  translate: var(--push-x, 0px) var(--push-y, 0px);
+  rotate: var(--rot, 0deg);
+  scale: var(--scale, 1);
+  opacity: var(--rest-opacity, 1);
+  filter: drop-shadow(0 0 0 rgba(20, 17, 13, 0));
+  transition:
+    translate 0.5s var(--ease-quart-in-out),
+    rotate 0.4s var(--ease-quart-in-out),
+    scale 0.4s var(--ease-quart-in-out),
+    opacity 0.5s var(--ease-quart-in-out),
+    filter 0.4s var(--ease-quart-in-out);
+
+  &[data-size='xl'] {
+    width: clamp(120px, 12.5vw, 176px);
+  }
+  &[data-size='lg'] {
+    width: clamp(96px, 10vw, 140px);
+  }
+  &[data-size='md'] {
+    width: clamp(76px, 8vw, 112px);
+  }
+  &[data-size='sm'] {
+    width: clamp(52px, 5.5vw, 78px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 6px;
+    border-radius: 4px;
+  }
+
+  @include hover {
+    &:hover {
+      --rot: 0deg !important;
+      --scale: 1.14;
+      opacity: 1;
+      z-index: 5;
+      filter: drop-shadow(0 20px 34px rgba(20, 17, 13, 0.28));
+    }
+  }
+
+  &:focus-visible,
+  &[aria-pressed='true'] {
+    --rot: 0deg !important;
+    --scale: 1.14;
+    opacity: 1;
+    z-index: 5;
+    filter: drop-shadow(0 20px 34px rgba(20, 17, 13, 0.28));
+  }
+}
+
+.magnet {
+  width: 100%;
+}
+
+.toolImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+.info {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  max-width: 22ch;
+  pointer-events: none;
+  animation: toolInfoIn 0.35s var(--ease-quart-in-out);
+}
+
+@keyframes toolInfoIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.infoStage {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.68rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.infoBlurb {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: var(--fs-0);
+  line-height: 1.32;
+  color: var(--fg);
+  text-wrap: balance;
+}
+
+.detail {
+  position: absolute;
+  left: 1%;
+  bottom: 0;
+  z-index: 1;
+  max-width: 20ch;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  color: var(--fg-muted);
+  opacity: 0.65;
+}
+
+// ===========================================================================
+// reduced motion — interaction stays, transitions collapse to instant
+// ===========================================================================
+@include reduced-motion {
+  .tool,
+  .info,
+  .lines line {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
