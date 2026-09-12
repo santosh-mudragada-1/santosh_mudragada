@@ -1,15 +1,17 @@
 .svg {
   position: absolute;
-  // start point (≈4% / 6% of the viewBox) lands ~14vw in and just above the
-  // section top, so the line drops in from the top; end point (≈96% / 75%)
-  // lands past the right edge, well clear of the bottom.
-  left: 14vw;
+  // Pushed past the left edge (was 0, before that 14vw in) so the line's
+  // rounded start cap is itself off-screen — it reads as emerging from
+  // outside the page rather than starting cleanly on it. Widened by the
+  // same amount so the right end still lands exactly where it always has
+  // (112vw total either way: previously 0 + 112vw, now -14vw + 126vw).
+  left: -14vw;
   top: -13vh;
   // Explicit height (not `auto`) — Safari doesn't derive an intrinsic ratio
   // from viewBox alone on an absolutely positioned <svg>, so `height: auto`
   // there collapses to 150px.
-  width: 98vw;
-  height: calc(98vw * 1408 / 2176);
+  width: 126vw;
+  height: calc(126vw * 1408 / 2176);
   aspect-ratio: 2176 / 1408;
   z-index: 0;
   pointer-events: none;

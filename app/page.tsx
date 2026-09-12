@@ -2,6 +2,7 @@ import { Hero } from '@/components/Hero';
 import { WorkShowcaseV2 } from '@/components/WorkShowcaseV2';
 import { Gallery } from '@/components/Gallery';
 import { About } from '@/components/About';
+import { Testimonials } from '@/components/Testimonials';
 import { Footer } from '@/components/Footer';
 import { HashScroll } from '@/components/HashScroll';
 
@@ -30,6 +31,7 @@ export default function HomePage() {
         <Hero />
         <WorkShowcaseV2 />
         <About />
+        <Testimonials />
         <Gallery />
       </main>
       <Footer />

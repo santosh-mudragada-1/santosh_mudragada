@@ -1,0 +1,383 @@
+@use 'mixins' as *;
+
+// ============================================================================
+// Testimonials — sits between About and Archive. Alternating profile /
+// testimonial card pairs riding one infinite marquee (Footer's proven
+// duplicate-and-loop-at--50% technique). Hovering the strip smoothly ramps
+// the marquee to a stop rather than hard-pausing it; it keeps running even
+// while a note is expanded. Touch and reduced-motion drop the loop entirely
+// for a plain scrollable row.
+// ============================================================================
+
+.section {
+  position: relative;
+  background: var(--bg);
+  // NOT clipped here — .viewport below already clips the wide marquee track
+  // horizontally on its own, so this section is free to let card shadows
+  // bleed past its top/bottom edge instead of getting a hard cutoff line.
+  padding-block: clamp(120px, 16vh, 220px) clamp(80px, 12vh, 160px);
+}
+
+.head {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  padding-bottom: clamp(2.5rem, 7vh, 5.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.kicker {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.arrow {
+  color: var(--accent);
+}
+
+.title {
+  margin-top: clamp(0.75rem, 2vw, 1.25rem);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--fs-5);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg);
+}
+
+.intro {
+  margin-top: clamp(1rem, 2.5vw, 1.75rem);
+  max-width: 42ch;
+  font-size: clamp(1rem, 0.95rem + 0.45vw, 1.25rem);
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+// -- the strip ------------------------------------------------------------
+
+.viewport {
+  width: 100%;
+  overflow-x: hidden;
+  // `overflow-x: hidden` forces `overflow-y` to compute as `auto` (browsers
+  // convert a lone `visible` axis to `auto` when the other isn't visible),
+  // which still clips ink overflow like box-shadow at this box's edge — so
+  // the padding here has to be generous enough to fit the card shadow AND
+  // the hover-lift translateY, not just a token gap.
+  padding-block: 90px;
+
+  &[data-mode='scroll'] {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding-inline: var(--gutter);
+  }
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  gap: clamp(1.75rem, 3.4vw, 3.5rem);
+  padding-inline: var(--gutter);
+  // unlike Gallery's rows (will-change disabled on WebKit — those only move
+  // during an active scroll-scrub), this track animates continuously the
+  // whole time it's visible, so keeping it promoted to its own layer on
+  // every browser avoids a re-promotion hitch rather than causing one.
+  will-change: transform;
+}
+
+[data-mode='scroll'] .track {
+  padding-inline: 0;
+}
+
+.pair {
+  // svh (not vh) — matches how the rest of this codebase sizes against the
+  // viewport (Gallery/About use 100svh) so mobile browser chrome resizing
+  // the address bar doesn't jump the card height.
+  --th: clamp(420px, 60svh, 780px);
+  display: flex;
+  align-items: stretch;
+  gap: clamp(0.9rem, 1.6vw, 1.4rem);
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  opacity: 1;
+}
+
+// -- profile card -----------------------------------------------------------
+
+.profile {
+  position: relative;
+  flex: 0 0 auto;
+  width: auto;
+  aspect-ratio: 4 / 5;
+  height: var(--th);
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--bg-elev);
+  box-shadow: 0 24px 48px -28px rgba(20, 17, 13, 0.35);
+  transition:
+    transform 0.5s var(--ease-quart-in-out),
+    box-shadow 0.5s var(--ease-quart-in-out);
+}
+
+@include hover {
+  .profile:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 34px 62px -26px rgba(20, 17, 13, 0.45);
+  }
+}
+
+.profileImg {
+  position: absolute;
+  inset: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+}
+
+.profileScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 11, 10, 0.72), rgba(12, 11, 10, 0) 55%);
+
+  &[data-tone='peach'] {
+    background: linear-gradient(to top, rgba(84, 46, 26, 0.55), rgba(84, 46, 26, 0) 55%);
+  }
+}
+
+.profileFoot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem 1.05rem 1.15rem;
+  color: #fff8f4;
+}
+
+.profileName {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.profileQuote {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: clamp(1.35rem, 1.05rem + 1.3vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-tight);
+}
+
+// -- testimonial card ---------------------------------------------------
+
+.card {
+  position: relative;
+  flex: 0 0 auto;
+  width: auto;
+  aspect-ratio: 4 / 5;
+  height: var(--th);
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  background: var(--bg-elev);
+  box-shadow: 0 24px 48px -30px rgba(20, 17, 13, 0.3);
+  transition:
+    transform 0.5s var(--ease-quart-in-out),
+    box-shadow 0.5s var(--ease-quart-in-out);
+}
+
+@include hover {
+  .card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 32px 58px -28px rgba(20, 17, 13, 0.4);
+  }
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.cardThumb {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+
+  &[data-tone='peach'] {
+    background: var(--accent-tint);
+  }
+}
+
+.cardWho {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cardName {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.3rem;
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardRole {
+  font-size: 0.95rem;
+  color: var(--fg-muted);
+}
+
+.cardNum {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  color: var(--fg-muted);
+}
+
+// Wraps .cardBody so the custom scroll thumb below can be positioned
+// against a fixed box that DOESN'T itself scroll (a track/thumb placed
+// inside the scrolling element would just scroll away with the text).
+.cardBodyWrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  // font-size lives here (not on .cardText) so the em-based max-height below
+  // always tracks the actual rendered text size.
+  font-size: var(--fs-1);
+  max-height: 11.5em;
+  transition: max-height 0.6s var(--ease-quart-in-out);
+}
+
+.cardBodyWrap[data-open] {
+  max-height: min(60%, 440px);
+}
+
+.cardBody {
+  height: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
+  // the native scrollbar is hidden entirely — a browser/OS "idle" scrollbar
+  // can't be relied on to stay visible everywhere, so .scrollTrack/.scrollThumb
+  // below are a fully custom indicator this component controls outright.
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.cardBody[data-open] {
+  overflow-y: auto;
+  padding-right: 14px;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.scrollTrack {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  pointer-events: none;
+}
+
+.scrollThumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 24px;
+  border-radius: 2px;
+  background: rgba(255, 77, 26, 0.55);
+  opacity: 0;
+}
+
+.cardText {
+  font-size: 1em;
+  line-height: var(--lh-body);
+  color: var(--fg-muted);
+  transition: color 0.5s var(--ease-quart-in-out);
+
+  p {
+    margin: 0 0 0.85em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.cardBody[data-open] .cardText {
+  color: var(--fg);
+}
+
+.cardFoot {
+  flex: 0 0 auto;
+  margin-top: 0.85rem;
+}
+
+.more {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  @include hover {
+    color: var(--accent-strong);
+  }
+}
+
+@include mq-max('sm') {
+  .section {
+    padding-block: clamp(80px, 12vh, 140px);
+  }
+
+  // 60svh reads a bit tall relative to card width on narrow phones; ease it
+  // down slightly so the card doesn't dominate the whole screen.
+  .pair {
+    --th: clamp(360px, 52svh, 560px);
+  }
+}

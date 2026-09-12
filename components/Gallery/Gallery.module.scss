@@ -1,11 +1,14 @@
 @use 'mixins' as *;
 
 .section {
-  // sits right after the full-screen paint section, ahead of the footer curve
+  // sits right after Testimonials, ahead of the footer curve. NOT clipped —
+  // GalleryPath's line is meant to drop in from above the section's own top
+  // edge (see its `top: -13vh`), bleeding into Testimonials, and clipping
+  // here would cut that off. .rows below clips the wide rows horizontally
+  // on its own, so nothing here still needs the section-level clip.
   position: relative; // anchors the absolutely-placed background line
   padding-block: clamp(280px, 38vh, 520px);
   background: var(--bg); // == --paper, matches the footer curve fill
-  overflow: clip;
 }
 
 .rows {
@@ -14,6 +17,7 @@
   display: flex;
   flex-direction: column;
   gap: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  overflow-x: clip;
 }
 
 .row {
