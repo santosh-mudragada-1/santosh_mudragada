@@ -35,8 +35,8 @@ export const CONTACT: ContactItem[] = [
   },
   {
     label: 'Portfolio',
-    value: 'santoshmudragada.framer.website',
-    href: 'https://santoshmudragada.framer.website/',
+    value: 'designwithsantosh.in',
+    href: 'https://designwithsantosh.in/',
     external: true,
   },
   {
