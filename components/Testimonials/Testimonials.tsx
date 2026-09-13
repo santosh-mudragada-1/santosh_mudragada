@@ -17,11 +17,14 @@ import styles from './Testimonials.module.scss';
  *
  * Hovering the strip smoothly ramps the marquee's timeScale to 0 instead of
  * hard-pausing it — same technique as Footer's `rampMarquee` — so nothing
- * ever jumps. The marquee keeps running even while a note is expanded, so
- * reading one never feels like it stalled the section.
+ * ever jumps. On a hover-capable pointer the marquee keeps running even while
+ * a note is expanded, so reading one never feels like it stalled the section;
+ * on touch (no hover signal to pause on) it pauses instead while a note is
+ * open, so the card you tapped doesn't slide away mid-read.
  *
- * Touch devices and reduced-motion get the same cards in a plain,
- * horizontally-scrollable (not looping) row instead — no GSAP at all.
+ * The marquee runs on every viewport that allows motion, touch included —
+ * only `prefers-reduced-motion` drops to a plain, horizontally-scrollable
+ * (not looping) row instead, no GSAP at all.
  */
 export function Testimonials() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -30,10 +33,19 @@ export function Testimonials() {
   const marqueeTween = useRef<gsap.core.Tween | null>(null);
 
   const reduced = usePrefersReducedMotion();
+  // Only gates the hover-to-pause behavior now — the marquee itself runs on
+  // touch too (see richMode below). Coarse/no-hover pointers get the
+  // note-open pause instead, since there's no hover signal to pause on.
   const canHover = useMediaQuery('(hover: hover) and (pointer: fine)');
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const richMode = mounted && canHover && !reduced;
+  // The marquee runs everywhere motion is allowed, touch included — the
+  // earlier touch fallback (plain `overflow-x: auto` row) was itself a
+  // mobile-scroll bug: swiping it could axis-lock a vertical page-scroll
+  // gesture to that row. An always-on, non-interactive marquee has nothing
+  // to capture a swipe with. Only `prefers-reduced-motion` still gets the
+  // static scroll row.
+  const richMode = mounted && !reduced;
 
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const bodyRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -140,21 +152,39 @@ export function Testimonials() {
       // distance shifts on resize — rebuild rather than let it drift stale.
       window.addEventListener('resize', build);
 
-      const onEnter = () => applyPause(true);
-      const onLeave = () => applyPause(false);
-      viewport.addEventListener('pointerenter', onEnter);
-      viewport.addEventListener('pointerleave', onLeave);
+      // Hover-to-pause only makes sense with a real hover pointer. Touch has
+      // no hover signal, so it's handled separately below by pausing while a
+      // note is open instead (see the effect after this one).
+      let onEnter: (() => void) | undefined;
+      let onLeave: (() => void) | undefined;
+      if (canHover) {
+        onEnter = () => applyPause(true);
+        onLeave = () => applyPause(false);
+        viewport.addEventListener('pointerenter', onEnter);
+        viewport.addEventListener('pointerleave', onLeave);
+      }
 
       return () => {
         window.removeEventListener('resize', build);
-        viewport.removeEventListener('pointerenter', onEnter);
-        viewport.removeEventListener('pointerleave', onLeave);
+        if (onEnter) viewport.removeEventListener('pointerenter', onEnter);
+        if (onLeave) viewport.removeEventListener('pointerleave', onLeave);
         tween?.kill();
         marqueeTween.current = null;
       };
     },
-    { scope: sectionRef, dependencies: [richMode, applyPause] },
+    { scope: sectionRef, dependencies: [richMode, canHover, applyPause] },
   );
+
+  // Touch has no hover to pause the marquee while reading an open note (the
+  // hover listeners above are skipped entirely for it), so without this the
+  // card you just opened would keep sliding away mid-read. Hover-capable
+  // pointers deliberately keep the opposite behavior (marquee keeps moving
+  // while a note is open, only hovering the strip pauses it) per an explicit
+  // earlier request — this only applies where hover isn't available.
+  useEffect(() => {
+    if (!richMode || canHover) return;
+    applyPause(expandedKey !== null);
+  }, [richMode, canHover, expandedKey, applyPause]);
 
   // No scroll-triggered entrance animation here on purpose: an earlier
   // opacity fade-in (CSS keyframe kicked off by an IntersectionObserver)

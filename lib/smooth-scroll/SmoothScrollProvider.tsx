@@ -78,13 +78,14 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       smoothWheel: true,
       wheelMultiplier: 1,
       touchMultiplier: 1.2,
-      // Route touch through Lenis's rAF loop, same as the wheel. Native touch
-      // scroll batches its events during a momentum fling, which starves the
-      // ScrollTrigger bridge and makes pinned / scrubbed sections (the About
-      // travel reel, the photo pile) freeze then snap. Interpolated touch keeps
-      // those buttery; the cost is a slight glide on plain scrolling, which
-      // matches how the wheel already behaves everywhere else.
-      syncTouch: true,
+      // Off by default — native touch scroll is the browser's own compositor
+      // scroll and feels lightest, especially on Android. `requestSyncTouch()`
+      // (lenis-instance.ts) flips this on ONLY while a section that actually
+      // needs frame-by-frame touch tracking is active (About's TravelReel,
+      // PhotoRoll — native touch scroll batches its events during a momentum
+      // fling, which starves the ScrollTrigger bridge and makes those pinned/
+      // scrubbed sections freeze then snap). Everywhere else stays native.
+      syncTouch: false,
     });
 
     lenisRef.current = lenisInstance;

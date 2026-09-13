@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap/gsap';
+import { requestSyncTouch } from '@/lib/smooth-scroll';
 import { ALT, DIMS, PHOTOGRAPHY, src, srcSm } from './story';
 import styles from './PhotoRoll.module.scss';
 
@@ -36,8 +37,11 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
  * column, and it lives in the stylesheet, not a React breakpoint flag, so GSAP
  * never inherits a half-applied transform from a layout about to change.
  *
- * Touch smoothness needs Lenis `syncTouch: true` (see SmoothScrollProvider) so
- * `onUpdate` fires every frame instead of in fling-batched bursts. On coarse
+ * Touch smoothness needs Lenis `syncTouch: true`, requested from the shared
+ * Lenis instance only while this section is pinned/active (see
+ * `requestSyncTouch` in lib/smooth-scroll — the rest of the site stays on
+ * native touch scroll) so `onUpdate` fires every frame instead of in
+ * fling-batched bursts. On coarse
  * pointers each card also gets more scroll distance, and the deal finishes at
  * 90% progress so the last card is fully placed before the pin releases (that
  * was the "jumps back from below" at the end).
@@ -113,6 +117,8 @@ export function PhotoRoll() {
           }
         };
 
+        let releaseSyncTouch: (() => void) | null = null;
+
         apply(0);
         ScrollTrigger.create({
           trigger: section,
@@ -124,9 +130,19 @@ export function PhotoRoll() {
           fastScrollEnd: true,
           invalidateOnRefresh: true,
           onUpdate: (self) => apply(self.progress),
+          onToggle: (self) => {
+            if (self.isActive) {
+              releaseSyncTouch ??= requestSyncTouch();
+            } else {
+              releaseSyncTouch?.();
+              releaseSyncTouch = null;
+            }
+          },
         });
 
         return () => {
+          releaseSyncTouch?.();
+          releaseSyncTouch = null;
           els.forEach((el) => {
             el.style.transform = '';
             el.style.opacity = '';

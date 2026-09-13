@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
+import { requestSyncTouch } from '@/lib/smooth-scroll';
 import { ALT, DIMS, src, srcSm, TRAVEL } from './story';
 import styles from './TravelReel.module.scss';
 
@@ -15,9 +16,12 @@ const MOTION = '(prefers-reduced-motion: no-preference)';
  * purpose so it reads as a strip of pictures, not a carousel. Only
  * `prefers-reduced-motion` drops to a plain horizontal swipe strip.
  *
- * Touch smoothness depends on Lenis running with `syncTouch: true` (see
- * SmoothScrollProvider) so the scrub tracks the finger frame by frame. The pin
- * rig is built inside `gsap.matchMedia()` so it reverts cleanly.
+ * Touch smoothness depends on Lenis running with `syncTouch: true` so the
+ * scrub tracks the finger frame by frame — requested from the shared Lenis
+ * instance only while this section is actually pinned/active (see
+ * `requestSyncTouch` in lib/smooth-scroll), so the rest of the site keeps
+ * native (lighter) touch scroll. The pin rig is built inside
+ * `gsap.matchMedia()` so it reverts cleanly.
  */
 export function TravelReel() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -32,6 +36,8 @@ export function TravelReel() {
       const mm = gsap.matchMedia();
       mm.add(MOTION, () => {
         const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+
+        let releaseSyncTouch: (() => void) | null = null;
 
         const tween = gsap.to(track, {
           x: () => -distance(),
@@ -48,6 +54,14 @@ export function TravelReel() {
             anticipatePin: 1,
             fastScrollEnd: true,
             invalidateOnRefresh: true,
+            onToggle: (self) => {
+              if (self.isActive) {
+                releaseSyncTouch ??= requestSyncTouch();
+              } else {
+                releaseSyncTouch?.();
+                releaseSyncTouch = null;
+              }
+            },
           },
         });
 
@@ -71,6 +85,11 @@ export function TravelReel() {
             },
           );
         });
+
+        return () => {
+          releaseSyncTouch?.();
+          releaseSyncTouch = null;
+        };
       });
 
       return () => mm.revert();

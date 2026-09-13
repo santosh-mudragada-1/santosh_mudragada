@@ -3,4 +3,4 @@ export {
   useSmoothScroll,
   useLenis,
 } from './SmoothScrollProvider';
-export { getLenisInstance } from './lenis-instance';
+export { getLenisInstance, requestSyncTouch } from './lenis-instance';

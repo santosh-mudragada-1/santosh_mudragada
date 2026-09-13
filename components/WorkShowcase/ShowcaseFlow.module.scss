@@ -114,6 +114,18 @@
   }
 }
 
+// Below the 700px threshold where <WorkShowcaseV2> switches to this flow at
+// all, the `15vh`-driven block padding was reading as a wall of empty space
+// between cards (each block getting ~200-250px of top+bottom padding alone
+// on a typical phone height) — tighten it here rather than for every
+// consumer of this shared component (a wide reduced-motion viewport still
+// gets the roomier default).
+@include mq-max(700px) {
+  .block {
+    padding-block: clamp(2.75rem, 9vh, 4.5rem);
+  }
+}
+
 // From ~560px up (small tablets / large phones, and desktop under reduced
 // motion) give it more air and a centred measure — still not the desktop
 // composition, just a comfortable single column.
