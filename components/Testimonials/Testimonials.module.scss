@@ -76,6 +76,13 @@
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
     padding-inline: var(--gutter);
+    // Without this, `touch-action` defaults to `auto` here: a touch that
+    // starts on a card with any horizontal component gets its whole gesture
+    // claimed by this scroller's pan axis (the browser locks axis on first
+    // move), so a swipe meant to scroll the page down instead feels dead —
+    // it landed on the row, not past it. `pan-x` tells the browser only
+    // horizontal panning belongs to this element; vertical passes through.
+    touch-action: pan-x;
   }
 }
 

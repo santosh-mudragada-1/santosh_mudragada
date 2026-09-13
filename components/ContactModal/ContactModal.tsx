@@ -280,6 +280,12 @@ export function ContactModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.99 }}
             transition={{ duration: DUR.slow, ease: EASE.quartInOut }}
+            // Lenis is stop()'d while this modal is open; on touch it still
+            // preventDefaults every touchmove that isn't under a
+            // data-lenis-prevent node (see lenis.mjs's onVirtualScroll),
+            // which silently blocked this panel's own overflow-y:auto scroll
+            // on mobile. Same escape hatch Testimonials' open-note panel uses.
+            data-lenis-prevent
           >
             <button
               type="button"
