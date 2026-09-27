@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { RESUME_PDF } from './content';
 import styles from './DownloadResume.module.scss';
+import { track } from '@/lib/analytics';
 
 /**
  * The résumé download. A real same-origin `<a download>` so the browser saves
@@ -28,6 +29,7 @@ export function DownloadResume() {
     <a
       href={RESUME_PDF}
       download="Santosh-Mudragada-Resume.pdf"
+      onClick={() => track('resume_downloaded')}
       type="application/pdf"
       className={styles.button}
       data-in={mounted || undefined}

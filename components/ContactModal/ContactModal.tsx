@@ -17,6 +17,7 @@ import { Magnetic } from '@/components/Magnetic';
 import { EASE, DUR } from '@/lib/motion/config';
 import { ROLE_OPTIONS, PROJECT_OPTIONS } from './data';
 import styles from './ContactModal.module.scss';
+import { captureError, track } from '@/lib/analytics';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -60,6 +61,7 @@ export function ContactModal() {
   // over from a submit that was still in flight when the modal last closed
   useEffect(() => {
     if (isOpen) {
+      track('contact_opened');
       clearPendingTimers();
       setForm(EMPTY);
       setStatus('idle');
@@ -245,8 +247,11 @@ export function ContactModal() {
         throw new Error(data?.error || 'Could not send — please try again.');
       }
       setStatus('sent');
+      track('contact_submitted', { role: form.role, project: form.project });
       timersRef.current.push(window.setTimeout(() => close(), 2600));
     } catch (err) {
+      track('contact_failed');
+      captureError(err, { where: 'contact_form' });
       setStatus('error');
       setErrorMsg(err instanceof Error ? err.message : 'Could not send — please try again.');
       timersRef.current.push(window.setTimeout(() => setStatus('idle'), 3200));

@@ -21,6 +21,9 @@ import { ContactModal } from '@/components/ContactModal';
 import { Cursor } from '@/components/Cursor';
 import { PageTransition } from '@/components/PageTransition';
 import { SITE } from '@/lib/constants/site';
+import Script from 'next/script';
+import { AnalyticsEvents } from '@/components/Analytics/AnalyticsEvents';
+import { ANALYTICS_ENDPOINT } from '@/lib/analytics';
 
 // --- Type system -----------------------------------------------------------
 // Latin renders from Noto Sans; each Indic script falls through to its own
@@ -175,7 +178,24 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ContactModal />
           <Cursor />
           <PageTransition>{children}</PageTransition>
+          <AnalyticsEvents />
         </Providers>
+
+        {/* My Analytics — page views, sessions, errors + the feedback button. Loads after the page is interactive. */}
+        {process.env.NEXT_PUBLIC_ANALYTICS_PROJECT_ID && process.env.NEXT_PUBLIC_ANALYTICS_KEY && (
+          <Script
+            id="my-analytics"
+            src={`${ANALYTICS_ENDPOINT}/sdk.js`}
+            strategy="afterInteractive"
+            data-project-id={process.env.NEXT_PUBLIC_ANALYTICS_PROJECT_ID}
+            data-key={process.env.NEXT_PUBLIC_ANALYTICS_KEY}
+            data-track-localhost={process.env.NEXT_PUBLIC_ANALYTICS_TRACK_LOCALHOST}
+            data-feedback="true"
+            data-feedback-position="bottom-left"
+            data-accent="#ff4d1a"
+            data-theme="light"
+          />
+        )}
       </body>
     </html>
   );
