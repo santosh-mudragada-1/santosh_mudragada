@@ -8,13 +8,14 @@ import { useSmoothScroll } from '@/lib/smooth-scroll';
 const HEADER_OFFSET = -96;
 
 /**
- * Click handler for "Work" nav links (href `/#work`). On the home page it
- * smooth-scrolls to the #work section instead of routing away; on any other
- * page it does nothing and lets <Link href="/#work"> navigate home, where
- * <HashScroll> finishes the jump. Modifier-clicks always fall through so
- * "open in new tab" still works.
+ * Click handler for same-page-scroll nav links (href `/#<id>`, e.g. `/#work`,
+ * `/#products`). On the home page it smooth-scrolls to that section instead
+ * of routing away; on any other page it does nothing and lets <Link> navigate
+ * home, where <HashScroll> finishes the jump. Modifier-clicks always fall
+ * through so "open in new tab" still works. The target id is read off the
+ * clicked link's own href, so one hook instance serves every hash link.
  */
-export function useWorkNav() {
+export function useHashNav() {
   const pathname = usePathname();
   const { scrollTo, start } = useSmoothScroll();
 
@@ -23,8 +24,12 @@ export function useWorkNav() {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
         return;
       }
-      if (pathname !== '/') return; // other routes: let the <Link> go to /#work
-      const target = document.getElementById('work');
+      if (pathname !== '/') return; // other routes: let the <Link> navigate home
+
+      const href = e.currentTarget.getAttribute('href') ?? '';
+      const id = href.split('#')[1];
+      if (!id) return;
+      const target = document.getElementById(id);
       if (!target) return;
 
       e.preventDefault();
@@ -33,7 +38,7 @@ export function useWorkNav() {
       window.setTimeout(() => {
         start();
         scrollTo(target, { offset: HEADER_OFFSET });
-        history.replaceState(null, '', '/#work');
+        history.replaceState(null, '', `/#${id}`);
       }, 60);
     },
     [pathname, scrollTo, start],

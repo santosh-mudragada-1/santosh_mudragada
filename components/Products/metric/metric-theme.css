@@ -1,0 +1,109 @@
+/* Metric's own design system, vendored from the product — theme tokens + utility
+   classes only (no preflight/reset import, so it never touches the rest of the
+   site's global styles). Scoped by Tailwind's content scan to this folder and
+   the /products/metric route below. */
+@import 'tailwindcss/theme.css' layer(theme);
+/* Intentionally NOT `layer(utilities)`: CSS cascade layers always lose to
+   unlayered rules regardless of specificity, and the site's own reset
+   (styles/_reset.scss `* { margin: 0; padding: 0; }`) is unlayered — inside
+   a layer, every Tailwind spacing utility here would silently get zeroed by
+   it. Left unlayered, a `.px-6` class selector normally outranks the
+   reset's universal selector, which is what we want. */
+@import 'tailwindcss/utilities.css';
+
+@source '../../../app/products/metric/**/*.{ts,tsx}';
+@source './**/*.{ts,tsx}';
+
+@theme {
+  --font-display: 'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Google Sans Flex', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+
+  --text-readout: clamp(3.5rem, 2.5rem + 6vw, 7rem);
+  --text-readout--line-height: 0.92;
+  --text-readout--letter-spacing: -0.02em;
+
+  --radius-panel: 2rem;
+
+  /* Chrome — true-black instrument-panel neutrals, no color cast. */
+  --color-canvas: #08080a;
+  --color-surface: #131316;
+  --color-surface-raised: #1c1c1f;
+  --color-surface-hover: #232327;
+  --color-border: #26262b;
+  --color-border-strong: #3a3a3f;
+
+  --color-text: #f5f5f2;
+  --color-text-muted: #9a9aa1;
+  --color-text-dim: #5c5c62;
+
+  --color-ink: #08080a;
+  --color-chalk: #f5f5f2;
+  --color-invert: var(--color-chalk);
+  --color-on-invert: var(--color-ink);
+  --shadow-invert: 0 8px 24px -10px #f5f5f259;
+
+  /* Per-game accents — the ONLY other place color appears */
+  --color-accent-reaction: #ff4d3d;
+  --color-accent-reaction-dim: #ff4d3d1f;
+  --color-accent-aim: #17b8ac;
+  --color-accent-aim-dim: #17b8ac1f;
+  --color-accent-sequence: #8b5cf6;
+  --color-accent-sequence-dim: #8b5cf61f;
+  --color-accent-number: #f7b500;
+  --color-accent-number-dim: #f7b5001f;
+  --color-accent-chimp: #6366f1;
+  --color-accent-chimp-dim: #6366f11f;
+  --color-accent-visual: #84cc16;
+  --color-accent-visual-dim: #84cc161f;
+  --color-accent-verbal: #22d3ee;
+  --color-accent-verbal-dim: #22d3ee1f;
+  --color-accent-typing: #fb4570;
+  --color-accent-typing-dim: #fb45701f;
+
+  /* Daily-puzzle accents — same "one identity color per game" rule */
+  --color-accent-zip: #3b82f6;
+  --color-accent-zip-dim: #3b82f61f;
+  --color-accent-tango: #f97316;
+  --color-accent-tango-dim: #f973161f;
+  --color-accent-queens: #d946ef;
+  --color-accent-queens-dim: #d946ef1f;
+  --color-accent-patches: #059669;
+  --color-accent-patches-dim: #0596691f;
+  --color-accent-hardword: #eab308;
+  --color-accent-hardword-dim: #eab3081f;
+
+  --color-success: #2fd67c;
+  --color-success-dim: #2fd67c1f;
+  --color-danger: #ff5d5d;
+  --color-danger-dim: #ff5d5d1f;
+}
+
+/* Showreel card — `--accent` is set per-card inline (one of the --color-accent-* tokens
+   above), so one rule drives the hover glow/blurb-reveal for all 13 games instead of a
+   Tailwind class per accent. */
+.game-card {
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.game-card:hover {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 24px 48px -24px var(--accent);
+}
+
+.game-card-blurb {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.game-card:hover .game-card-blurb {
+  opacity: 1;
+  transform: translateY(0);
+}

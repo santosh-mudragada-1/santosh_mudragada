@@ -3,37 +3,27 @@ export type Product = {
   blurb: string;
   status: 'Live' | 'Beta' | 'Building' | 'Archived';
   href: string;
-  src: string;
+  /** Looping product-reel clip — the card's primary visual. */
+  video: string;
+  /** Shown immediately and while the video buffers. */
+  poster: string;
 };
 
-// PLACEHOLDER — replace with real experiments / side projects.
 export const PRODUCTS: Product[] = [
   {
-    name: 'Tempo',
-    blurb: 'A calmer way to plan a week. Time-blocking without the guilt.',
-    status: 'Beta',
-    href: '#',
-    src: '/images/product-01.svg',
-  },
-  {
-    name: 'Grainy',
-    blurb: 'Film-grain and halation for the web, as a tiny drop-in library.',
+    name: 'Metric',
+    blurb: 'Reflex and memory games, built for speed — reaction time, aim training, the chimp test and more.',
     status: 'Live',
-    href: '#',
-    src: '/images/product-02.svg',
+    href: '/products/metric',
+    video: '/products/product-metric.webm',
+    poster: '/products/product-metric-poster.webp',
   },
   {
-    name: 'Northstar',
-    blurb: 'Personal metrics dashboard. One number that matters per day.',
-    status: 'Building',
-    href: '#',
-    src: '/images/product-03.svg',
-  },
-  {
-    name: 'Pocket Atlas',
-    blurb: 'Offline city guides made from the places friends actually go.',
-    status: 'Building',
-    href: '#',
-    src: '/images/product-04.svg',
+    name: 'InkRiot',
+    blurb: 'A draw-and-guess party game — doodle avatars, a 20-color palette, and combo streaks with friends.',
+    status: 'Live',
+    href: '/products/inkriot',
+    video: '/products/product-inkriot.mov',
+    poster: '/products/product-inkriot-poster.webp',
   },
 ];

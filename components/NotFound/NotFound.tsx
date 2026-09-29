@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { useIsTouch } from '@/lib/hooks/useIsTouch';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
-import { useWorkNav } from '@/lib/hooks/useWorkNav';
+import { useHashNav } from '@/lib/hooks/useHashNav';
 import { useNavContrast } from '@/lib/hooks/useNavContrast';
 import { ALT, src as photoSrc } from '@/components/AboutStory/story';
 import styles from './NotFound.module.scss';
@@ -158,7 +158,7 @@ export function NotFound() {
     { scope: rootRef, dependencies: [reduced] },
   );
 
-  const onWorkNav = useWorkNav();
+  const onHashNav = useHashNav();
   useNavContrast(rootRef);
 
   return (
@@ -194,7 +194,7 @@ export function NotFound() {
           className={styles.action}
           data-dir="forward"
           data-cursor="link"
-          onClick={onWorkNav}
+          onClick={onHashNav}
         >
           Back to work <span aria-hidden>→</span>
         </Link>

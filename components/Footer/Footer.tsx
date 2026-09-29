@@ -6,7 +6,7 @@ import { gsap, useGSAP } from '@/lib/gsap/gsap';
 import { useIsWebKit } from '@/lib/hooks/useIsWebKit';
 import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 import { useSmoothScroll } from '@/lib/smooth-scroll';
-import { useWorkNav } from '@/lib/hooks/useWorkNav';
+import { useHashNav } from '@/lib/hooks/useHashNav';
 import { useContactModal } from '@/lib/contact-modal';
 import { Magnetic } from '@/components/Magnetic';
 import { NAV_LINKS, SITE, SOCIALS } from '@/lib/constants/site';
@@ -30,7 +30,7 @@ const MARQUEE = 'Start a project';
  */
 export function Footer() {
   const { scrollTo } = useSmoothScroll();
-  const onWorkNav = useWorkNav();
+  const onHashNav = useHashNav();
   const { open: openContact } = useContactModal();
   const reduced = usePrefersReducedMotion();
   const isWebKit = useIsWebKit();
@@ -273,7 +273,7 @@ export function Footer() {
                     data-cursor-reveal
                     data-cursor-sticky
                     scroll={!isHash}
-                    onClick={isHash ? onWorkNav : undefined}
+                    onClick={isHash ? onHashNav : undefined}
                   >
                     {l.label}
                   </Link>

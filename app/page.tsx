@@ -5,9 +5,7 @@ import { About } from '@/components/About';
 import { Testimonials } from '@/components/Testimonials';
 import { Footer } from '@/components/Footer';
 import { HashScroll } from '@/components/HashScroll';
-
-// NOTE: <Products /> is hidden for now — bring it back here when it returns.
-// import { Products } from '@/components/Products';
+import { Products } from '@/components/Products';
 
 export default function HomePage() {
   return (
@@ -31,6 +29,7 @@ export default function HomePage() {
         <Hero />
         <WorkShowcaseV2 />
         <About />
+        <Products />
         <Testimonials />
         <Gallery />
       </main>

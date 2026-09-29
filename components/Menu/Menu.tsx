@@ -15,6 +15,7 @@ import styles from './Menu.module.scss';
 const LINKS = [
   { title: 'Home', href: '/' },
   { title: 'Work', href: '/#work' },
+  { title: 'Products', href: '/#products' },
   { title: 'About', href: '/about' },
   { title: 'Contact', href: '/contact' },
 ];

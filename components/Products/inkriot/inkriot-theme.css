@@ -1,0 +1,87 @@
+/* InkRiot's own design system, vendored from the product — theme tokens + utility
+   classes only (no preflight/reset import, so it never touches the rest of the
+   site's global styles). Scoped by Tailwind's content scan to this folder and
+   the /products/inkriot route below. */
+@import 'tailwindcss/theme.css' layer(theme);
+/* Intentionally NOT `layer(utilities)`: CSS cascade layers always lose to
+   unlayered rules regardless of specificity, and the site's own reset
+   (styles/_reset.scss `* { margin: 0; padding: 0; }`) is unlayered — inside
+   a layer, every Tailwind spacing utility here would silently get zeroed by
+   it. Left unlayered, a `.px-6` class selector normally outranks the
+   reset's universal selector, which is what we want. */
+@import 'tailwindcss/utilities.css';
+
+@source '../../../app/products/inkriot/**/*.{ts,tsx}';
+@source './**/*.{ts,tsx}';
+
+@theme {
+  --font-display: 'Bagel Fat One', ui-rounded, system-ui, sans-serif;
+  --font-hand: 'Gochi Hand', 'Comic Sans MS', cursive;
+  --font-sans: 'Nunito', ui-rounded, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-panel: 26px;
+
+  /* Chrome — sky-blue graph paper, indigo ink, cream sticker paper. Vendored
+     1:1 from the game's own tokens.css so the showcase reads as the product. */
+  --color-canvas: #cfe6ff;
+  --color-grid: rgba(27, 19, 64, 0.075);
+  --color-paper: #fffdf7;
+  --color-paper-2: #fff8e7;
+  --color-ink: #1b1340;
+  --color-ink-soft: #4a4270;
+  --color-ink-faint: #8a84ad;
+  --color-line: rgba(27, 19, 64, 0.12);
+  --color-line-strong: rgba(27, 19, 64, 0.24);
+
+  /* Crayon box — the ONLY other place color appears */
+  --color-tomato: #ff5a36;
+  --color-sun: #ffc928;
+  --color-gum: #ff7ec7;
+  --color-mint: #2fd4a0;
+  --color-grape: #7b5cff;
+  --color-sky: #3ea8ff;
+
+  /* Per-feature accents — one crayon color per showreel card */
+  --color-accent-draw: #ff5a36;
+  --color-accent-draw-dim: #ff5a361a;
+  --color-accent-avatar: #ff7ec7;
+  --color-accent-avatar-dim: #ff7ec71a;
+  --color-accent-combo: #ffc928;
+  --color-accent-combo-dim: #ffc9281a;
+  --color-accent-confetti: #2fd4a0;
+  --color-accent-confetti-dim: #2fd4a01a;
+  --color-accent-palette: #3ea8ff;
+  --color-accent-palette-dim: #3ea8ff1a;
+  --color-accent-lobby: #7b5cff;
+  --color-accent-lobby-dim: #7b5cff1a;
+
+  --color-success: #17b881;
+  --color-danger: #f0364f;
+
+  --shadow-card: 3px 3px 0 #1b1340;
+  --shadow-pop: 6px 6px 0 #1b1340;
+}
+
+/* Sky-blue graph paper, matching the game's own canvas background. */
+.ink-grid {
+  background-color: var(--color-canvas);
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Showreel card — `--accent` is set per-card inline (one of the --color-accent-*
+   tokens above). Sticker/neubrutalist hover: the card lifts toward the viewer
+   and its flat shadow grows and picks up the card's own accent color. */
+.feature-card {
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.25s cubic-bezier(0.32, 1.72, 0.6, 1),
+    box-shadow 0.25s cubic-bezier(0.32, 1.72, 0.6, 1);
+}
+
+.feature-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0 var(--accent);
+}

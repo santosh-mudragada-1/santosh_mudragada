@@ -1,17 +1,21 @@
 @use 'mixins' as *;
 
 .section {
-  // breathing room before the full-screen paint section
-  padding-block: var(--space-lg) clamp(140px, 18vh, 240px);
+  padding-block: clamp(120px, 16vh, 220px) clamp(140px, 18vh, 240px);
   overflow: clip;
 }
 
+// Eyebrow + title sizing mirrors Testimonials/WorkShowcaseV2's `.kicker`/`.title`
+// so the section reads at the same weight as its neighbors, not a smaller aside.
 .head {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  padding-bottom: clamp(2.5rem, 7vh, 5.5rem);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  max-width: 40rem;
-  margin: 0 var(--gutter) var(--space-lg);
+  align-items: flex-start;
 }
 
 .eyebrow {
@@ -22,62 +26,54 @@
   color: var(--fg-muted);
 }
 
-.lead {
-  font-size: var(--fs-3);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.viewport {
-  overflow: hidden;
-  padding-inline: var(--gutter);
-
-  &[data-touch] {
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-}
-
-.track {
-  display: flex;
-  gap: clamp(1rem, 0.6rem + 1.6vw, 2rem);
-  width: max-content;
-  will-change: transform;
-}
-
-.card {
-  scroll-snap-align: start;
-  flex: 0 0 auto;
-  width: clamp(300px, 30vw, 460px);
+.title {
+  margin-top: clamp(0.75rem, 2vw, 1.25rem);
+  max-width: 20ch;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--fs-5);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
   color: var(--fg);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+// One large feature block, not a browsable card — this is the "stop and
+// look" moment, so it gets the room a small carousel tile never could.
+.card {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--carbon);
+  color: var(--paper);
+  box-shadow: 0 40px 80px -32px rgba(12, 11, 10, 0.45);
 }
 
 .media {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: var(--carbon);
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s var(--ease-quart-in-out);
+  @include mq-max('sm') {
+    aspect-ratio: 3 / 4;
   }
+}
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    box-shadow: inset 0 0 0 1px var(--line-strong);
-    pointer-events: none;
-    z-index: 3;
-  }
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--carbon-2);
+  transition: transform 0.7s var(--ease-quart-in-out);
 }
 
 .scrim {
@@ -86,20 +82,21 @@
   z-index: 1;
   background: linear-gradient(
     to top,
-    rgba(8, 7, 6, 0.78) 0%,
-    rgba(8, 7, 6, 0.34) 30%,
-    rgba(8, 7, 6, 0) 58%
+    rgba(8, 7, 6, 0.86) 0%,
+    rgba(8, 7, 6, 0.5) 26%,
+    rgba(8, 7, 6, 0.05) 55%,
+    rgba(8, 7, 6, 0) 70%
   );
 }
 
 .status {
   position: absolute;
-  top: 0.8rem;
-  left: 0.8rem;
+  top: clamp(1rem, 0.7rem + 1vw, 1.6rem);
+  left: clamp(1rem, 0.7rem + 1vw, 1.6rem);
   z-index: 2;
-  padding: 0.25em 0.7em;
+  padding: 0.3em 0.85em;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.03em;
   background: var(--paper);
@@ -114,7 +111,6 @@
   }
 }
 
-// content sits inside the card, over the image
 .body {
   position: absolute;
   left: 0;
@@ -123,8 +119,9 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 0.3em;
-  padding: clamp(1rem, 0.7rem + 1.2vw, 1.6rem);
+  align-items: flex-start;
+  gap: 0.5em;
+  padding: clamp(1.5rem, 1rem + 2.2vw, 3rem);
   color: var(--paper);
 }
 
@@ -133,31 +130,56 @@
   align-items: center;
   gap: 0.4em;
   font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: var(--fs-2);
+  font-weight: 700;
+  font-size: var(--fs-3);
   letter-spacing: -0.02em;
 }
 
 .arrow {
-  font-size: 0.7em;
+  font-size: 0.6em;
   color: rgba(244, 240, 233, 0.7);
   transition: transform 0.4s var(--ease-quart-in-out);
 }
 
 .blurb {
-  font-size: 0.92rem;
-  color: rgba(244, 240, 233, 0.74);
-  line-height: 1.45;
+  max-width: 46ch;
+  font-size: clamp(0.95rem, 0.88rem + 0.35vw, 1.1rem);
+  color: rgba(244, 240, 233, 0.78);
+  line-height: 1.5;
+}
+
+.cta {
+  margin-top: 0.6em;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65em 1.3em;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 240, 233, 0.3);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--paper);
+  background: rgba(244, 240, 233, 0.08);
+  backdrop-filter: blur(6px);
+  transition:
+    background 0.35s var(--ease-quart-in-out),
+    border-color 0.35s var(--ease-quart-in-out),
+    transform 0.35s var(--ease-quart-in-out);
 }
 
 @include hover {
   .card:hover {
-    .media img {
-      transform: scale(1.04);
+    .video {
+      transform: scale(1.045);
     }
     .arrow {
       transform: translate(3px, -3px);
       color: var(--accent);
+    }
+    .cta {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--on-accent);
+      transform: translateX(2px);
     }
   }
 }

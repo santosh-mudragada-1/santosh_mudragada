@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, type ReactNode } from 'react';
-import { MotionConfig } from 'framer-motion';
-import { SmoothScrollProvider } from '@/lib/smooth-scroll';
-import { MenuProvider } from '@/lib/menu/MenuProvider';
-import { ContactModalProvider } from '@/lib/contact-modal';
-import { detectWebKit } from '@/lib/hooks/useIsWebKit';
-import { EASE, DUR } from '@/lib/motion/config';
+import { useEffect, type ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
+import { AnalyticsProvider } from "@my-analytics/client/react";
+import { SmoothScrollProvider } from "@/lib/smooth-scroll";
+import { MenuProvider } from "@/lib/menu/MenuProvider";
+import { ContactModalProvider } from "@/lib/contact-modal";
+import { detectWebKit } from "@/lib/hooks/useIsWebKit";
+import { EASE, DUR } from "@/lib/motion/config";
 
 /**
  * Single client boundary for app-wide providers. Kept deliberately small —
@@ -22,20 +23,25 @@ export function Providers({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!detectWebKit()) return;
     const root = document.documentElement;
-    root.classList.add('is-webkit');
-    return () => root.classList.remove('is-webkit');
+    root.classList.add("is-webkit");
+    return () => root.classList.remove("is-webkit");
   }, []);
 
   return (
-    <MotionConfig
-      reducedMotion="user"
-      transition={{ duration: DUR.base, ease: EASE.quartInOut }}
+    <AnalyticsProvider
+      projectId={process.env.NEXT_PUBLIC_ANALYTICS_PROJECT_ID ?? ""}
+      apiKey={process.env.NEXT_PUBLIC_ANALYTICS_KEY ?? ""}
     >
-      <SmoothScrollProvider>
-        <MenuProvider>
-          <ContactModalProvider>{children}</ContactModalProvider>
-        </MenuProvider>
-      </SmoothScrollProvider>
-    </MotionConfig>
+      <MotionConfig
+        reducedMotion="user"
+        transition={{ duration: DUR.base, ease: EASE.quartInOut }}
+      >
+        <SmoothScrollProvider>
+          <MenuProvider>
+            <ContactModalProvider>{children}</ContactModalProvider>
+          </MenuProvider>
+        </SmoothScrollProvider>
+      </MotionConfig>
+    </AnalyticsProvider>
   );
 }

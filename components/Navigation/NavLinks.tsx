@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Magnetic } from '@/components/Magnetic';
-import { useWorkNav } from '@/lib/hooks/useWorkNav';
+import { useHashNav } from '@/lib/hooks/useHashNav';
 import { NAV_LINKS } from '@/lib/constants/site';
 import styles from './Navigation.module.scss';
 
 /** Top-of-page primary links. Cross-fades to the menu trigger on scroll. */
 export function NavLinks() {
-  const onWorkNav = useWorkNav();
+  const onHashNav = useHashNav();
   const pathname = usePathname();
 
   return (
@@ -25,7 +25,7 @@ export function NavLinks() {
               href={link.href}
               className={styles.navLink}
               scroll={!isHash}
-              onClick={isHash ? onWorkNav : undefined}
+              onClick={isHash ? onHashNav : undefined}
               aria-current={isCurrent ? 'page' : undefined}
             >
               {link.label}

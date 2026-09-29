@@ -91,6 +91,29 @@ export function Navigation() {
       };
       applyResting();
 
+      // This effect re-runs the instant `pathname` commits, which on a route
+      // this component didn't fully own before — e.g. the new page's own
+      // `[data-nav-boundary]` hero — can still be mid-layout (webfonts not
+      // swapped in yet, curtain still covering) for a frame or two. The
+      // synchronous call above can measure a stale `st.start` against a
+      // boundary that's about to resize, landing the burger in "shown but
+      // still pointer-events: none" (or the reverse) until a real scroll
+      // crossing self-corrects it via onEnter/onLeaveBack. Re-measure once
+      // more after layout/paint has actually settled.
+      const raf = requestAnimationFrame(() => {
+        st.refresh();
+        applyResting();
+      });
+
+      // ...and again once this route's webfonts (if any) have swapped in —
+      // a late font swap can still resize the boundary after the rAF above.
+      let fontsCancelled = false;
+      document.fonts?.ready?.then(() => {
+        if (fontsCancelled) return;
+        st.refresh();
+        applyResting();
+      });
+
       // re-assert once the page transition has fully settled at scroll 0
       const onTransitionDone = () => {
         st.refresh();
@@ -99,6 +122,8 @@ export function Navigation() {
       window.addEventListener('transition:complete', onTransitionDone);
 
       return () => {
+        cancelAnimationFrame(raf);
+        fontsCancelled = true;
         st.kill();
         window.removeEventListener('transition:complete', onTransitionDone);
         gsap.set([links, circle], { clearProps: 'all' });

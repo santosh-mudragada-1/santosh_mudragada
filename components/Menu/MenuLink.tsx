@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Magnetic } from '@/components/Magnetic';
-import { useWorkNav } from '@/lib/hooks/useWorkNav';
+import { useHashNav } from '@/lib/hooks/useHashNav';
 import { linkSlide, indicatorScale } from './anim';
 import styles from './Menu.module.scss';
 
@@ -24,7 +24,7 @@ export function MenuLink({
   onHover,
   onClick,
 }: MenuLinkProps) {
-  const onWorkNav = useWorkNav();
+  const onHashNav = useHashNav();
   const isHash = href.includes('#');
 
   return (
@@ -51,7 +51,7 @@ export function MenuLink({
           data-cursor-sticky
           scroll={!isHash}
           onClick={(e) => {
-            if (isHash) onWorkNav(e);
+            if (isHash) onHashNav(e);
             onClick();
           }}
         >
