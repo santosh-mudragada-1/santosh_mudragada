@@ -15,7 +15,6 @@
   "dependencies": {
     "@gsap/react": "^2.1.1",
     "@heroicons/react": "^2.2.0",
-    "@my-analytics/client": "https://my-analytics-ruby.vercel.app/sdk/my-analytics-client-0.1.2.tgz",
     "framer-motion": "^11.3.19",
     "gsap": "^3.12.5",
     "lenis": "^1.1.13",
