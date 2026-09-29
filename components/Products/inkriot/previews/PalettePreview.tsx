@@ -9,6 +9,16 @@ import { usePrefersReducedMotion } from '@/lib/hooks/usePrefersReducedMotion';
 const SWATCHES = ['#1B1340', '#FF5A36', '#FFC928', '#FF7EC7', '#2FD4A0', '#7B5CFF', '#3EA8FF', '#FFFDF7'];
 const BRUSH_SIZES = [3, 5, 7, 9];
 
+// Swatch row geometry (h-4 w-4 + gap-1) and the ring (h-6 w-6) that encircles
+// each one in turn — computed, not guessed, so the ring always lands centred
+// on a swatch instead of drifting between them.
+const SWATCH_SIZE = 16;
+const SWATCH_GAP = 4;
+const SWATCH_STEP = SWATCH_SIZE + SWATCH_GAP;
+const RING_SIZE = 24;
+const RING_OFFSET = (RING_SIZE - SWATCH_SIZE) / 2;
+const ringLeft = (i: number) => i * SWATCH_STEP - RING_OFFSET;
+
 export function PalettePreview() {
   const stageRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
@@ -19,13 +29,12 @@ export function PalettePreview() {
   useGSAP(
     () => {
       if (reduced) return;
-      const SWATCH_STEP = 22;
-      gsap.set(ringRef.current, { left: 0, opacity: 1 });
+      gsap.set(ringRef.current, { left: ringLeft(0), opacity: 1 });
       gsap.set(brushRefs.current, { scale: 1 });
 
       const tl = gsap.timeline({ repeat: -1 });
       SWATCHES.forEach((_, i) => {
-        tl.to(ringRef.current, { left: i * SWATCH_STEP, duration: 0.28, ease: 'power2.inOut' }).to(
+        tl.to(ringRef.current, { left: ringLeft(i), duration: 0.28, ease: 'power2.inOut' }).to(
           {},
           { duration: 0.22 },
         );
@@ -59,7 +68,7 @@ export function PalettePreview() {
         ))}
         <div
           ref={ringRef}
-          className="pointer-events-none absolute top-1/2 h-6 w-6 -translate-x-1 -translate-y-1/2 rounded-full border-2 border-accent-palette"
+          className="pointer-events-none absolute top-1/2 h-6 w-6 -translate-y-1/2 rounded-full border-2 border-accent-palette"
         />
       </div>
       <div className="flex items-center gap-2">

@@ -40,8 +40,16 @@ export function ZipPreview() {
         duration: 1.7,
         ease: 'none',
         onUpdate: function () {
+          if (!headRef.current || !path.isConnected) return;
           const point = path.getPointAtLength(this.progress() * length);
-          gsap.set(headRef.current, { attr: { cx: point.x, cy: point.y }, opacity: 1 });
+          if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+          // Plain DOM writes, not gsap.set() — a set() here would register a
+          // fresh revertible action on this context every single frame, and
+          // unwinding hundreds of them on unmount is what was writing a
+          // stale/empty cx back onto a circle already being torn down.
+          headRef.current.setAttribute('cx', String(point.x));
+          headRef.current.setAttribute('cy', String(point.y));
+          headRef.current.style.opacity = '1';
         },
       });
       ORDER.forEach((idx, i) => {

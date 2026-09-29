@@ -7,6 +7,7 @@ const LABELS: Record<string, string> = {
   '/contact': 'Contact',
   '/resume': 'Resume',
   '/products/metric': 'Metric',
+  '/products/inkriot': 'InkRiot',
 };
 
 export function routeLabel(pathname: string): string {

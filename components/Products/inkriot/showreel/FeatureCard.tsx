@@ -47,10 +47,7 @@ export function FeatureCard({ feature, index }: FeatureCardProps) {
         <Preview />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <h3 className="font-display text-lg text-ink lowercase">{feature.name}</h3>
-        <p className="text-sm leading-snug text-ink-soft">{feature.blurb}</p>
-      </div>
+      <h3 className="font-display text-lg text-ink lowercase">{feature.name}</h3>
     </div>
   );
 }

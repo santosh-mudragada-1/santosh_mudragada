@@ -17,6 +17,12 @@ export function Navigation() {
   const reduced = usePrefersReducedMotion();
   // below lg the inline links are hidden — the burger is the only nav
   const compact = useMediaQuery('(max-width: 1023.98px)');
+  // The scroll-linked burger swap has repeatedly landed in a shown-but-inert
+  // state on this route (its own webfonts / GSAP setup keep resizing the
+  // `[data-nav-boundary]` hero right as the swap's first measurement runs).
+  // Simpler and more robust than chasing the race again: this route always
+  // shows the plain links instead of playing the swap at all.
+  const forceLinks = pathname === '/products/inkriot';
 
   const linksRef = useRef<HTMLDivElement>(null);
   const circleRef = useRef<HTMLButtonElement>(null);
@@ -45,6 +51,15 @@ export function Navigation() {
       if (compact) {
         gsap.set(links, { autoAlpha: 0 }); // burger shown via CSS (!important)
         setCircleHit(true);
+        return;
+      }
+
+      // This route: always the plain links, burger never shown, no
+      // scroll-linked swap to race against.
+      if (forceLinks) {
+        gsap.set(links, { autoAlpha: 1 });
+        gsap.set(circle, { scale: 0 });
+        setCircleHit(false);
         return;
       }
 
@@ -130,7 +145,7 @@ export function Navigation() {
         if (circleWrap) circleWrap.style.pointerEvents = '';
       };
     },
-    { dependencies: [pathname, reduced, compact] },
+    { dependencies: [pathname, reduced, compact, forceLinks] },
   );
 
   return (

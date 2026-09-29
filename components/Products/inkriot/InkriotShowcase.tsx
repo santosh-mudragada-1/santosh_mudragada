@@ -17,10 +17,7 @@ export function InkriotShowcase() {
   return (
     <div ref={rootRef} className="ink-grid min-h-screen overflow-x-clip font-sans text-ink">
       <div className="mx-auto flex max-w-3xl flex-col px-[var(--gutter)]">
-        <header
-          data-nav-boundary
-          className="flex flex-col items-center gap-5 pt-[clamp(8rem,5rem+5vh,9.5rem)] pb-14 text-center"
-        >
+        <header className="flex flex-col items-center gap-5 pt-[clamp(8rem,5rem+5vh,9.5rem)] pb-14 text-center">
           <span className="font-sans text-xs font-bold tracking-[0.2em] text-ink-faint uppercase">Product</span>
           <h1 className="font-display text-5xl text-ink sm:text-6xl" style={{ textShadow: '4px 4px 0 var(--color-tomato)' }}>
             inkriot

@@ -65,12 +65,7 @@ export function ShowreelRow({ eyebrow, title, description, features }: ShowreelR
   return (
     <section ref={sectionRef} className="flex flex-col gap-6 py-4">
       <div data-reveal className="flex flex-col gap-2 px-[var(--gutter)]">
-        <div className="flex items-baseline gap-3">
-          <span className="font-sans text-xs font-bold tracking-[0.16em] text-ink-faint uppercase">{eyebrow}</span>
-          <span className="font-sans text-xs font-bold text-ink-faint tabular-nums">
-            {String(features.length).padStart(2, '0')} features
-          </span>
-        </div>
+        <span className="font-sans text-xs font-bold tracking-[0.16em] text-ink-faint uppercase">{eyebrow}</span>
         <h2 className="font-display text-2xl text-ink lowercase sm:text-3xl">{title}</h2>
         <p className="max-w-md text-sm leading-relaxed text-ink-soft">{description}</p>
       </div>

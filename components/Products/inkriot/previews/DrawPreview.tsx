@@ -33,8 +33,15 @@ export function DrawPreview() {
           duration: 1.5,
           ease: 'power1.inOut',
           onUpdate: function () {
+            if (!tipRef.current || !path.isConnected) return;
             const point = path.getPointAtLength(this.progress() * length);
-            gsap.set(tipRef.current, { attr: { cx: point.x, cy: point.y } });
+            if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+            // Plain DOM writes, not gsap.set() — a set() here would register a
+            // fresh revertible action on this context every single frame, and
+            // unwinding hundreds of them on unmount is what was writing a
+            // stale/empty cx back onto a circle already being torn down.
+            tipRef.current.setAttribute('cx', String(point.x));
+            tipRef.current.setAttribute('cy', String(point.y));
           },
         })
         .to(blotRef.current, { scale: 1, duration: 0.25, ease: 'back.out(2.5)' })
