@@ -181,7 +181,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <AnalyticsEvents />
         </Providers>
 
-        {/* My Analytics — page views, sessions, errors + the feedback button. Loads after the page is interactive. */}
+        {/* My Analytics — page views, sessions and errors (no feedback button). Loads after the page is interactive. */}
         {process.env.NEXT_PUBLIC_ANALYTICS_PROJECT_ID && process.env.NEXT_PUBLIC_ANALYTICS_KEY && (
           <Script
             id="my-analytics"
@@ -190,10 +190,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             data-project-id={process.env.NEXT_PUBLIC_ANALYTICS_PROJECT_ID}
             data-key={process.env.NEXT_PUBLIC_ANALYTICS_KEY}
             data-track-localhost={process.env.NEXT_PUBLIC_ANALYTICS_TRACK_LOCALHOST}
-            data-feedback="true"
-            data-feedback-position="bottom-left"
-            data-accent="#ff4d1a"
-            data-theme="light"
           />
         )}
       </body>
